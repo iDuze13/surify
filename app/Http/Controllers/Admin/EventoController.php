@@ -66,7 +66,7 @@ class EventoController extends Controller
             'rango_precio' => 'nullable|string|max:255',
             'descripcion'  => 'nullable|string',
             'imagen_file'  => 'nullable|image|max:10240',
-            'imagen_url'   => 'nullable|string|max:500',
+            'imagen_url'   => 'nullable|string|max:2048',
         ]);
 
         // Si seleccionó destino, tomamos su provincia automáticamente

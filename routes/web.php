@@ -16,9 +16,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\GastronomiaController as AdminGastronomiaController;
 use App\Http\Controllers\Admin\ProvinciaController as AdminProvinciaController;
 
+
 // Solo esta línea limpia tiene que quedar en tu web.php:
 Route::post('/cambiar-modo-vista', [App\Http\Controllers\Admin\RolController::class, 'cambiarModoVista'])->name('admin.cambiar_vista');
-
+Route::post('/idioma', [\App\Http\Controllers\TraduccionController::class, 'cambiarIdioma'])->name('idioma.cambiar');
+Route::post('/traducir', [\App\Http\Controllers\TraduccionController::class, 'traducirTexto'])->name('traducir');
 
 // ==================== ADMIN ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
