@@ -38,7 +38,7 @@ class ResenaController extends Controller
         $resena->evento_id = $validated['evento_id'] ?? null;
         $resena->calificacion = $validated['calificacion'];
         $resena->comentario = $validated['comentario'];
-        
+
         $resena->save();
 
         // Si se subieron imágenes, las procesamos y guardamos en la tabla relacional
@@ -52,5 +52,39 @@ class ResenaController extends Controller
         }
 
         return redirect()->back()->with('success', '¡Gracias por compartir tu experiencia!');
+    }
+    public function update(Request $request, Resena $resena)
+    {
+        // Solo el autor puede editar su reseña
+        if ($resena->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'No tenés permiso para editar esta reseña.');
+        }
+
+        $validated = $request->validate([
+            'calificacion' => 'required|integer|min:1|max:5',
+            'comentario'   => 'required|string|min:5|max:1000',
+        ]);
+
+        $resena->update($validated);
+
+        return redirect()->back()->with('success', 'Reseña actualizada correctamente.');
+    }
+
+    public function destroy(Resena $resena)
+    {
+        // Solo el autor puede eliminar su reseña
+        if ($resena->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'No tenés permiso para eliminar esta reseña.');
+        }
+
+        // Eliminar imágenes asociadas
+        foreach ($resena->imagenes as $imagen) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', $imagen->url));
+            $imagen->delete();
+        }
+
+        $resena->delete();
+
+        return redirect()->back()->with('success', 'Reseña eliminada correctamente.');
     }
 }

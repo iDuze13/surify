@@ -21,6 +21,8 @@ use App\Http\Controllers\Admin\ProvinciaController as AdminProvinciaController;
 Route::post('/cambiar-modo-vista', [App\Http\Controllers\Admin\RolController::class, 'cambiarModoVista'])->name('admin.cambiar_vista');
 Route::post('/idioma', [\App\Http\Controllers\TraduccionController::class, 'cambiarIdioma'])->name('idioma.cambiar');
 Route::post('/traducir', [\App\Http\Controllers\TraduccionController::class, 'traducirTexto'])->name('traducir');
+Route::put('/resenas/{resena}', [ResenaController::class, 'update'])->name('resenas.update');
+Route::delete('/resenas/{resena}', [ResenaController::class, 'destroy'])->name('resenas.destroy');
 
 // ==================== ADMIN ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -197,3 +199,4 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/visitados/toggle', [\App\Http\Controllers\DestinoVisitadoController::class, 'toggle'])->name('visitados.toggle');
 require __DIR__ . '/auth.php';
+

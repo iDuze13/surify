@@ -77,7 +77,8 @@
             </div>
         </section>
         @endif
-        {{-- ========== CLIMA ========== --}}
+
+        {{-- Clima --}}
         @if($clima)
         <section class="bg-white border-y border-slate-200 py-6 my-4 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 md:px-8">
@@ -86,8 +87,6 @@
                     Clima en {{ $destino->nombre }} ahora
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {{-- Clima actual --}}
                     <div class="bg-gradient-to-br from-[#28628f] to-[#1a4669] rounded-2xl p-6 text-white flex items-center gap-6">
                         <div class="text-center">
                             <img src="https://openweathermap.org/img/wn/{{ $clima['weather'][0]['icon'] }}@2x.png"
@@ -113,19 +112,14 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Pronóstico --}}
                     @if($pronostico)
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Próximas horas</p>
                         <div class="grid grid-cols-4 gap-2">
                             @foreach(array_slice($pronostico['list'], 0, 4) as $item)
                             <div class="text-center bg-white rounded-xl p-2 border border-slate-100">
-                                <p class="text-xs text-slate-400 font-semibold">
-                                    {{ \Carbon\Carbon::parse($item['dt_txt'])->format('H:i') }}
-                                </p>
-                                <img src="https://openweathermap.org/img/wn/{{ $item['weather'][0]['icon'] }}.png"
-                                    class="w-10 h-10 mx-auto" alt="">
+                                <p class="text-xs text-slate-400 font-semibold">{{ \Carbon\Carbon::parse($item['dt_txt'])->format('H:i') }}</p>
+                                <img src="https://openweathermap.org/img/wn/{{ $item['weather'][0]['icon'] }}.png" class="w-10 h-10 mx-auto" alt="">
                                 <p class="text-sm font-black text-slate-700">{{ round($item['main']['temp']) }}°</p>
                                 <p class="text-[10px] text-slate-400 capitalize leading-tight">{{ $item['weather'][0]['description'] }}</p>
                             </div>
@@ -133,11 +127,11 @@
                         </div>
                     </div>
                     @endif
-
                 </div>
             </div>
         </section>
         @endif
+
         {{-- Reseñas --}}
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
@@ -190,6 +184,28 @@
                             @endif
 
                             <p class="text-xs text-slate-300 mt-2">{{ $resena->created_at->diffForHumans() }}</p>
+
+                            {{-- Botones editar/eliminar solo para el autor --}}
+                            @auth
+                            @if(auth()->id() === $resena->user_id)
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="abrirEditarResena({{ $resena->id }}, {{ $resena->calificacion }}, '{{ addslashes($resena->comentario) }}')"
+                                    class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-50 border border-[#28628f] text-[#28628f] text-xs font-bold hover:bg-blue-100 transition-all">
+                                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                                    Editar
+                                </button>
+                                <form action="{{ route('resenas.destroy', $resena->id) }}" method="POST"
+                                    class="form-eliminar flex-1" data-title="¿Eliminar reseña?" data-text="Esta acción no se puede revertir.">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                        class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-50 border border-rose-400 text-rose-500 text-xs font-bold hover:bg-rose-100 transition-all">
+                                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                            @endif
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -244,25 +260,19 @@
         $esVisitado = auth()->user()->destinosVisitados->where('destino_id', $destino->id)->count() > 0;
         @endphp
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col gap-3">
-            <button id="btn-favorito"
-                onclick="toggleFavorito({{ $destino->id }})"
+            <button id="btn-favorito" onclick="toggleFavorito({{ $destino->id }})"
                 class="{{ $esFavorito ? 'bg-pink-400 text-white border-pink-400' : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-400' }} w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm">
-                <span id="icono-favorito" class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' {{ $esFavorito ? 1 : 0 }};">
-                    favorite
-                </span>
+                <span id="icono-favorito" class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' {{ $esFavorito ? 1 : 0 }};">favorite</span>
                 <span id="texto-favorito">{{ $esFavorito ? 'En favoritos ♥' : 'Agregar a favoritos' }}</span>
             </button>
-
-            <button id="btn-visitado"
-                onclick="toggleVisitado({{ $destino->id }})"
+            <button id="btn-visitado" onclick="toggleVisitado({{ $destino->id }})"
                 class="{{ $esVisitado ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-slate-600 border-slate-200 hover:border-[#28628f] hover:text-[#28628f]' }} w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm">
-                <span id="icono-visitado" class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' {{ $esVisitado ? 1 : 0 }};">
-                    verified
-                </span>
+                <span id="icono-visitado" class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' {{ $esVisitado ? 1 : 0 }};">verified</span>
                 <span id="texto-visitado">{{ $esVisitado ? 'Visitado ✓' : 'Marcar como visitado' }}</span>
             </button>
         </div>
         @endauth
+
         {{-- Compartir --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Compartir destino</h3>
@@ -276,7 +286,6 @@
                     </svg>
                     WhatsApp
                 </a>
-
                 <a href="https://twitter.com/intent/tweet?text={{ urlencode('¡Descubrí ' . $destino->nombre . ' en Surify! 🇦🇷') }}&url={{ urlencode(url()->current()) }}"
                     target="_blank"
                     class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 transition-all text-decoration-none">
@@ -285,7 +294,6 @@
                     </svg>
                     X / Twitter
                 </a>
-
                 <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
                     target="_blank"
                     class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 text-xs font-bold hover:bg-blue-100 transition-all text-decoration-none">
@@ -294,7 +302,6 @@
                     </svg>
                     Facebook
                 </a>
-
                 <button onclick="copiarLink()" id="btn-copiar"
                     class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 transition-all">
                     <span class="material-symbols-outlined text-[16px]">link</span>
@@ -302,12 +309,12 @@
                 </button>
             </div>
         </div>
+
         {{-- Escribir reseña --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
             <span class="material-symbols-outlined text-4xl text-[#28628f] block mb-3">rate_review</span>
             <h3 class="text-base font-bold text-slate-800 mb-2">¿Visitaste este lugar?</h3>
             <p class="text-slate-500 text-sm mb-5">Compartí tu experiencia con otros viajeros.</p>
-
             @auth
             <button onclick="document.getElementById('modal-resena-destino').classList.remove('hidden')"
                 class="bg-[#28628f] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#1a4669] transition-all shadow-sm inline-flex items-center gap-2 w-full justify-center">
@@ -333,11 +340,9 @@
     </aside>
 </div>
 
-{{-- Modal reseña --}}
+{{-- Modal nueva reseña --}}
 <div id="modal-resena-destino" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-
-        {{-- Header --}}
         <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
             <div class="flex items-center justify-between mb-1">
                 <nav class="flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
@@ -353,13 +358,9 @@
             <h2 class="text-xl font-bold text-slate-800">Compartí tu experiencia: {{ $destino->nombre }}</h2>
             <p class="text-sm text-slate-500 mt-1">Ayudá a otros a descubrir lo mejor de este destino.</p>
         </div>
-
-        {{-- Formulario --}}
         <form action="{{ route('resenas.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
             <input type="hidden" name="destino_id" value="{{ $destino->id }}">
-
-            {{-- Calificación y título --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Calificación General</label>
@@ -379,8 +380,6 @@
                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] transition-colors">
                 </div>
             </div>
-
-            {{-- Categorías --}}
             <div class="space-y-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Categorías</label>
                 <div class="flex flex-wrap gap-2">
@@ -392,16 +391,12 @@
                     @endforeach
                 </div>
             </div>
-
-            {{-- Comentario --}}
             <div class="space-y-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Tu Comentario</label>
                 <textarea name="comentario" rows="5" required
                     placeholder="¿Cuál fue lo mejor de tu visita? ¿Tenés consejos para senderos, horarios o actividades?"
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] transition-colors resize-none"></textarea>
             </div>
-
-            {{-- Fotos --}}
             <div class="space-y-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Fotos</label>
                 <div onclick="document.getElementById('fotos-input').click()"
@@ -412,15 +407,9 @@
                     <p class="text-sm font-semibold text-slate-700">Arrastrá y soltá tus fotos acá</p>
                     <p class="text-xs text-slate-400 mt-1">O hacé clic para explorar (hasta 5 fotos)</p>
                 </div>
-                <input type="file" id="fotos-input" name="imagenes[]" multiple accept="image/*"
-                    class="hidden" onchange="previewFotos(this)">
-
-                {{-- Preview fotos --}}
-                <div id="fotos-preview" class="flex gap-3 overflow-x-auto pb-2 mt-2 hidden">
-                </div>
+                <input type="file" id="fotos-input" name="imagenes[]" multiple accept="image/*" class="hidden" onchange="previewFotos(this)">
+                <div id="fotos-preview" class="flex gap-3 overflow-x-auto pb-2 mt-2 hidden"></div>
             </div>
-
-            {{-- Anónimo --}}
             <div class="flex items-start gap-3 py-3 border-t border-slate-100">
                 <input type="checkbox" name="anonima" value="1" id="anonima-destino"
                     class="mt-1 w-5 h-5 rounded border-slate-300 text-[#28628f] focus:ring-[#28628f]">
@@ -429,11 +418,8 @@
                     <span class="block text-xs text-slate-400 mt-0.5 italic">Tu nombre y foto no serán visibles para otros viajeros.</span>
                 </label>
             </div>
-
-            {{-- Botones --}}
             <div class="flex flex-col md:flex-row-reverse gap-3 pt-2">
-                <button type="submit"
-                    class="w-full md:w-auto px-8 py-3 bg-[#28628f] text-white font-bold rounded-full hover:bg-[#1a4669] transition-all shadow-md">
+                <button type="submit" class="w-full md:w-auto px-8 py-3 bg-[#28628f] text-white font-bold rounded-full hover:bg-[#1a4669] transition-all shadow-md">
                     Publicar Reseña
                 </button>
                 <button type="button" onclick="document.getElementById('modal-resena-destino').classList.add('hidden')"
@@ -444,6 +430,48 @@
         </form>
     </div>
 </div>
+
+{{-- Modal editar reseña --}}
+@auth
+<div id="modal-editar-resena" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-800">Editar reseña</h2>
+            <button onclick="document.getElementById('modal-editar-resena').classList.add('hidden')"
+                class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="form-editar-resena" action="" method="POST" class="p-6 space-y-4">
+            @csrf @method('PUT')
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Calificación</label>
+                <div class="flex gap-2" id="estrellas-editar">
+                    @for($i = 1; $i <= 5; $i++)
+                        <span class="material-symbols-outlined text-[28px] text-slate-200 cursor-pointer estrella-editar"
+                        style="font-variation-settings: 'FILL' 1;" data-value="{{ $i }}">star</span>
+                        @endfor
+                </div>
+                <input type="hidden" name="calificacion" id="editar-resena-calificacion" value="5">
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Comentario</label>
+                <textarea name="comentario" id="editar-resena-comentario" rows="4" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] resize-none"></textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 bg-[#28628f] text-white font-bold py-3 rounded-xl hover:bg-[#1a4669] transition-all">
+                    Guardar cambios
+                </button>
+                <button type="button" onclick="document.getElementById('modal-editar-resena').classList.add('hidden')"
+                    class="flex-1 border border-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-50 transition-all">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endauth
 
 <script>
     function setCalificacionDestino(valor) {
@@ -468,7 +496,6 @@
         const preview = document.getElementById('fotos-preview');
         preview.innerHTML = '';
         preview.classList.remove('hidden');
-
         Array.from(input.files).slice(0, 5).forEach(function(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -481,92 +508,75 @@
         });
     }
 
+    function abrirEditarResena(id, calificacion, comentario) {
+        document.getElementById('editar-resena-comentario').value = comentario;
+        document.getElementById('editar-resena-calificacion').value = calificacion;
+        document.getElementById('form-editar-resena').action = `/resenas/${id}`;
+
+        document.querySelectorAll('.estrella-editar').forEach(function(s) {
+            const v = parseInt(s.dataset.value);
+            s.style.color = v <= calificacion ? '#fbbf24' : '#e2e8f0';
+            s.onclick = function() {
+                document.getElementById('editar-resena-calificacion').value = v;
+                document.querySelectorAll('.estrella-editar').forEach(function(s2) {
+                    s2.style.color = parseInt(s2.dataset.value) <= v ? '#fbbf24' : '#e2e8f0';
+                });
+            };
+        });
+
+        document.getElementById('modal-editar-resena').classList.remove('hidden');
+    }
+
     function toggleFavorito(destinoId) {
         fetch('/favoritos/toggle', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    destino_id: destinoId
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                destino_id: destinoId
             })
-            .then(r => r.json())
-            .then(data => {
-                const btn = document.getElementById('btn-favorito');
-                const icono = document.getElementById('icono-favorito');
-                const texto = document.getElementById('texto-favorito');
-
-                if (data.favorito) {
-                    btn.className = 'bg-pink-400 text-white border-pink-400 w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
-                    icono.style.fontVariationSettings = "'FILL' 1";
-                    texto.textContent = 'En favoritos ♥';
-                } else {
-                    btn.className = 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-400 w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
-                    icono.style.fontVariationSettings = "'FILL' 0";
-                    texto.textContent = 'Agregar a favoritos';
-                }
-            });
+        }).then(r => r.json()).then(data => {
+            const btn = document.getElementById('btn-favorito');
+            const icono = document.getElementById('icono-favorito');
+            const texto = document.getElementById('texto-favorito');
+            if (data.favorito) {
+                btn.className = 'bg-pink-400 text-white border-pink-400 w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
+                icono.style.fontVariationSettings = "'FILL' 1";
+                texto.textContent = 'En favoritos ♥';
+            } else {
+                btn.className = 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-400 w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
+                icono.style.fontVariationSettings = "'FILL' 0";
+                texto.textContent = 'Agregar a favoritos';
+            }
+        });
     }
 
     function toggleVisitado(destinoId) {
         fetch('/visitados/toggle', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    destino_id: destinoId
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                destino_id: destinoId
             })
-            .then(r => r.json())
-            .then(data => {
-                const btn = document.getElementById('btn-visitado');
-                const icono = document.getElementById('icono-visitado');
-                const texto = document.getElementById('texto-visitado');
-
-                if (data.visitado) {
-                    btn.className = 'bg-emerald-500 text-white border-emerald-500 w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
-                    icono.style.fontVariationSettings = "'FILL' 1";
-                    texto.textContent = 'Visitado ✓';
-                } else {
-                    btn.className = 'bg-white text-slate-600 border-slate-200 hover:border-[#28628f] hover:text-[#28628f] w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
-                    icono.style.fontVariationSettings = "'FILL' 0";
-                    texto.textContent = 'Marcar como visitado';
-                }
-            });
-    }
-
-    function toggleVisitado(destinoId) {
-        fetch('/visitados/toggle', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    destino_id: destinoId
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
-                const btn = document.getElementById('btn-visitado');
-                const icono = document.getElementById('icono-visitado');
-                const texto = document.getElementById('texto-visitado');
-                if (data.visitado) {
-                    btn.classList.add('border-emerald-400', 'bg-emerald-50', 'text-emerald-500');
-                    btn.classList.remove('border-slate-200', 'text-slate-400');
-                    icono.style.fontVariationSettings = "'FILL' 1";
-                    texto.textContent = 'Visitado';
-                } else {
-                    btn.classList.remove('border-emerald-400', 'bg-emerald-50', 'text-emerald-500');
-                    btn.classList.add('border-slate-200', 'text-slate-400');
-                    icono.style.fontVariationSettings = "'FILL' 0";
-                    texto.textContent = 'Marcar visitado';
-                }
-            });
+        }).then(r => r.json()).then(data => {
+            const btn = document.getElementById('btn-visitado');
+            const icono = document.getElementById('icono-visitado');
+            const texto = document.getElementById('texto-visitado');
+            if (data.visitado) {
+                btn.className = 'bg-emerald-500 text-white border-emerald-500 w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
+                icono.style.fontVariationSettings = "'FILL' 1";
+                texto.textContent = 'Visitado ✓';
+            } else {
+                btn.className = 'bg-white text-slate-600 border-slate-200 hover:border-[#28628f] hover:text-[#28628f] w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm';
+                icono.style.fontVariationSettings = "'FILL' 0";
+                texto.textContent = 'Marcar como visitado';
+            }
+        });
     }
 
     function copiarLink() {
