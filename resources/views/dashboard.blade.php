@@ -79,7 +79,6 @@
             </a>
         </div>
         @php
-        /** @var \Illuminate\Support\Collection|array $provincias */
         $provincias = $provincias ?? collect();
         @endphp
         <div class="overflow-x-auto">
@@ -159,6 +158,16 @@
                     <span class="material-symbols-outlined text-rose-300 text-[20px]">chat_bubble</span>
                     Moderar Reseñas
                 </a>
+
+                {{-- Botón Backup --}}
+                <form method="POST" action="{{ route('admin.backup') }}" id="form-backup">
+                    @csrf
+                    <button type="button" onclick="confirmarBackup()"
+                        class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-medium w-full text-left">
+                        <span class="material-symbols-outlined text-yellow-300 text-[20px]">database</span>
+                        Generar Backup BD
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -221,7 +230,6 @@
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] resize-none"></textarea>
             </div>
 
-            {{-- Imágenes existentes --}}
             <div class="space-y-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Imágenes actuales</label>
                 <div id="imagenes-actuales" class="flex flex-wrap gap-2 min-h-[40px]">
@@ -229,7 +237,6 @@
                 </div>
             </div>
 
-            {{-- Agregar nuevas imágenes por URL --}}
             <div class="space-y-1" id="nuevas-imagenes-urls-container">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Agregar imágenes (URL)</label>
                 <div class="flex flex-col gap-2" id="inputs-urls">
@@ -256,6 +263,23 @@
 </div>
 
 <script>
+    function confirmarBackup() {
+        Swal.fire({
+            title: '¿Generar backup?',
+            text: 'Se generará un backup de la base de datos y se subirá a Cloudinary.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#28628f',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Sí, generar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('form-backup').submit();
+            }
+        });
+    }
+
     function abrirEditarProvincia(id, nombre, region, descripcion, imagenes) {
         document.getElementById('editar-provincia-nombre').value = nombre;
         document.getElementById('editar-provincia-region').value = region;
@@ -273,10 +297,8 @@
             container.innerHTML = '<p class="text-xs text-slate-400">No hay imágenes cargadas todavía.</p>';
         }
 
-        // Guardamos cuántas imágenes ya existen para controlar el límite
         window.imagenesActualesCount = imagenes ? imagenes.length : 0;
 
-        // Reset de inputs de URLs nuevas
         const inputsUrls = document.getElementById('inputs-urls');
         inputsUrls.innerHTML = '';
 
@@ -394,4 +416,5 @@
         });
     });
 </script>
+
 @endsection

@@ -24,6 +24,7 @@ Route::post('/traducir', [\App\Http\Controllers\TraduccionController::class, 'tr
 Route::put('/resenas/{resena}', [ResenaController::class, 'update'])->name('resenas.update');
 Route::delete('/resenas/{resena}', [ResenaController::class, 'destroy'])->name('resenas.destroy');
 Route::view('/terminos-y-condiciones', 'legal.terminos')->name('terminos');
+Route::post('/admin/backup', [\App\Http\Controllers\Admin\BackupController::class, 'generar'])->name('admin.backup');
 
 // ==================== ADMIN ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
