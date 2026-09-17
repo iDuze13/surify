@@ -23,6 +23,7 @@ Route::post('/idioma', [\App\Http\Controllers\TraduccionController::class, 'camb
 Route::post('/traducir', [\App\Http\Controllers\TraduccionController::class, 'traducirTexto'])->name('traducir');
 Route::put('/resenas/{resena}', [ResenaController::class, 'update'])->name('resenas.update');
 Route::delete('/resenas/{resena}', [ResenaController::class, 'destroy'])->name('resenas.destroy');
+Route::view('/terminos-y-condiciones', 'legal.terminos')->name('terminos');
 
 // ==================== ADMIN ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
