@@ -196,7 +196,7 @@ var coordOrigenSeleccionado = null;
 var coordDestinoSeleccionado = null;
 
 var mapaRuta = L.map('mapa-ruta', { zoomControl: true }).setView([-38, -63], 4);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key={{ env("CARTO_KEY") }}', {
     attribution: '© OpenStreetMap, © CartoDB', subdomains: 'abcd', maxZoom: 19
 }).addTo(mapaRuta);
 
