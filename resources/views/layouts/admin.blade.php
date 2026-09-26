@@ -362,7 +362,6 @@
     </script>
 
     <script>
-        //{{-- 🌟 JAVASCRIPT FIXED: Condición nativa por roles sin errores relacionales --}}
         var esAdmin = {{ auth()->check() && (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('AdministradorFestivales')) ? 'true' : 'false' }};
 
         function navegarSinRecarga(url) {
@@ -396,7 +395,6 @@
             if (url.includes('logout')) return;
             if (url.includes('#')) return;
 
-            //{{-- 🌟 INTERCEPTOR SPA CORREGIDO: Evita pisar las rutas del panel interno y duplicar layouts --}}
             if (
                 url.includes('login') ||
                 url.includes('register') ||

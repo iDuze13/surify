@@ -177,11 +177,14 @@
                     <p class="menu-label">Explorador</p>
                     <ul class="menu-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
                         <li><a class="is-active-menu" onclick="filtrarCategoria('todos')" style="cursor:pointer;"><i class="fa-solid fa-compass" style="margin-right:10px; font-size: 14px;"></i> Todos</a></li>
-                        <li><a onclick="filtrarCategoria('naturaleza')" style="cursor:pointer;"><i class="fa-solid fa-tree" style="margin-right:10px; font-size: 14px;"></i> Naturaleza</a></li>
-                        <li><a onclick="filtrarCategoria('ciudad')" style="cursor:pointer;"><i class="fa-solid fa-city" style="margin-right:10px; font-size: 14px;"></i> Ciudades</a></li>
-                        <li><a onclick="filtrarCategoria('cultura')" style="cursor:pointer;"><i class="fa-solid fa-landmark" style="margin-right:10px; font-size: 14px;"></i> Cultura</a></li>
-                        <li><a onclick="filtrarCategoria('montaña')" style="cursor:pointer;"><i class="fa-solid fa-mountain" style="margin-right:10px; font-size: 14px;"></i> Montañas</a></li>
-                        <li><a onclick="filtrarCategoria('playa')" style="cursor:pointer;"><i class="fa-solid fa-umbrella-beach" style="margin-right:10px; font-size: 14px;"></i> Playas</a></li>
+                        <li><a onclick="filtrarCategoria('Patrimonio Natural')" style="cursor:pointer;"><i class="fa-solid fa-tree" style="margin-right:10px; font-size: 14px;"></i> Naturaleza</a></li>
+                        <li><a onclick="filtrarCategoria('Ciudad')" style="cursor:pointer;"><i class="fa-solid fa-city" style="margin-right:10px; font-size: 14px;"></i> Ciudades</a></li>
+                        <li><a onclick="filtrarCategoria('Cultural')" style="cursor:pointer;"><i class="fa-solid fa-landmark" style="margin-right:10px; font-size: 14px;"></i> Cultura</a></li>
+                        <li><a onclick="filtrarCategoria('Aventura')" style="cursor:pointer;"><i class="fa-solid fa-mountain" style="margin-right:10px; font-size: 14px;"></i> Aventura</a></li>
+                        <li><a onclick="filtrarCategoria('Playa')" style="cursor:pointer;"><i class="fa-solid fa-umbrella-beach" style="margin-right:10px; font-size: 14px;"></i> Playas</a></li>
+                        <li><a onclick="filtrarCategoria('Gastronomía')" style="cursor:pointer;"><i class="fa-solid fa-utensils" style="margin-right:10px; font-size: 14px;"></i> Gastronomía</a></li>
+                        <li><a onclick="filtrarCategoria('Familiar')" style="cursor:pointer;"><i class="fa-solid fa-people-roof" style="margin-right:10px; font-size: 14px;"></i> Familiar</a></li>
+                        <li><a onclick="filtrarCategoria('Nieve')" style="cursor:pointer;"><i class="fa-solid fa-snowflake" style="margin-right:10px; font-size: 14px;"></i> Nieve</a></li>
                     </ul>
 
                     <hr style="margin: 12px 0; border-color: #e2e8f0;">
@@ -232,7 +235,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Botón flotante solo para celulares -->
         <button id="btn-toggle-sidebar" class="md:hidden interactuable light-panel" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); border-radius: 99px; padding: 10px 20px; font-weight: 800; font-size: 13px; color: #28628f !important; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 2px solid #28628f; z-index: 50;">
             <i class="fa-solid fa-eye-slash"></i> Ocultar Explorador
@@ -392,7 +395,7 @@
             maxBoundsViscosity: 1.0
         }).setView([-38.416097, -63.616672], 4);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key={{ env("CARTO_KEY") }}', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap, © CartoDB',
             subdomains: 'abcd',
             maxZoom: 20
@@ -431,7 +434,7 @@
         document.getElementById('card-categoria').textContent = destino.categoria;
         document.getElementById('card-link').href = '/destinos/' + destino.id;
         document.getElementById('card-destino').classList.add('visible');
-        
+
         // Volar (hacer zoom) hacia el destino
         if (mapaInstance && destino.lat && destino.lng) {
             mapaInstance.flyTo([destino.lat, destino.lng], 12, {
@@ -445,8 +448,13 @@
         document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
         event.target.closest('a').classList.add('is-active-menu');
 
+        // Comparación normalizada (sin importar mayúsculas/minúsculas ni espacios extra),
+        // para que coincida con lo que se haya guardado realmente en la categoría del destino.
+        var categoriaNormalizada = categoria.trim().toLowerCase();
+
         todosLosMarkers.forEach(function(marker) {
-            if (categoria === 'todos' || marker._destinoCategoria === categoria) {
+            var categoriaDestino = (marker._destinoCategoria || '').trim().toLowerCase();
+            if (categoria === 'todos' || categoriaDestino === categoriaNormalizada) {
                 if (!mapaInstance.hasLayer(marker)) mapaInstance.addLayer(marker);
             } else {
                 if (mapaInstance.hasLayer(marker)) mapaInstance.removeLayer(marker);
@@ -501,7 +509,7 @@
             if (window.marcadorUsuario) {
                 mapaInstance.removeLayer(window.marcadorUsuario);
             }
-            
+
             window.marcadorUsuario = L.marker([lat, lng], {
                     icon: iconoUsuario
                 })
@@ -658,39 +666,16 @@
 
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_KEY') }}&libraries=places"></script>
 
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const btnToggle = document.getElementById('btn-toggle-sidebar');
         const sidebar = document.getElementById('mobile-sidebar-container');
         let sidebarVisible = true;
-        
-        if(btnToggle && sidebar) {
+
+        if (btnToggle && sidebar) {
             btnToggle.addEventListener('click', function() {
                 sidebarVisible = !sidebarVisible;
-                if(sidebarVisible) {
-                    sidebar.style.display = 'block';
-                    btnToggle.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Ocultar Explorador';
-                } else {
-                    sidebar.style.display = 'none';
-                    btnToggle.innerHTML = '<i class="fa-solid fa-list"></i> Ver Explorador';
-                }
-            });
-        }
-    });
-</script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const btnToggle = document.getElementById('btn-toggle-sidebar');
-        const sidebar = document.getElementById('mobile-sidebar-container');
-        let sidebarVisible = true;
-        
-        if(btnToggle && sidebar) {
-            btnToggle.addEventListener('click', function() {
-                sidebarVisible = !sidebarVisible;
-                if(sidebarVisible) {
+                if (sidebarVisible) {
                     sidebar.style.display = 'block';
                     btnToggle.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Ocultar Explorador';
                 } else {

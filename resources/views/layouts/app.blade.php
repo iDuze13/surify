@@ -284,6 +284,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
+                @php
+                $provinciasSidebar = \App\Models\Provincia::orderBy('nombre')->get();
+                @endphp
                 @auth
                 @php
                 $user = auth()->user();
@@ -299,6 +302,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a href="{{ route('mapa.nacional') }}" class="side-link {{ request()->routeIs('mapa.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">map</span> Mapa</a>
                 <a href="{{ route('eventos.index') }}" class="side-link {{ request()->routeIs('eventos.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">event</span> Eventos</a>
                 <a href="{{ route('combustible.index') }}" class="side-link {{ request()->routeIs('combustible.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">local_gas_station</span> Combustible</a>
+
+                <button type="button" onclick="toggleProvinciasMenu()" class="side-link" style="width:100%; justify-content:space-between; border:none; background:none; cursor:pointer;">
+                    <span style="display:flex; align-items:center; gap:10px;"><span class="material-symbols-outlined text-[18px]">public</span> Provincias</span>
+                    <span class="material-symbols-outlined text-[18px]" id="provincias-chevron">expand_more</span>
+                </button>
+                <div id="provincias-submenu" style="display:none; flex-direction:column; gap:2px; padding-left: 30px;">
+                    @foreach($provinciasSidebar as $provincia)
+                    <a href="/provincia/{{ $provincia->nombre }}" class="side-link" style="font-size:13px; padding:6px 10px;">{{ $provincia->nombre }}</a>
+                    @endforeach
+                </div>
                 @endif
 
                 @if($esOperador)
@@ -331,6 +344,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a href="{{ route('home') }}" class="side-link {{ request()->routeIs('home') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">home</span> Inicio</a>
                 <a href="{{ route('mapa.nacional') }}" class="side-link {{ request()->routeIs('mapa.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">map</span> Mapa</a>
                 <a href="{{ route('eventos.index') }}" class="side-link {{ request()->routeIs('eventos.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">event</span> Eventos</a>
+
+                <button type="button" onclick="toggleProvinciasMenu()" class="side-link" style="width:100%; justify-content:space-between; border:none; background:none; cursor:pointer;">
+                    <span style="display:flex; align-items:center; gap:10px;"><span class="material-symbols-outlined text-[18px]">public</span> Provincias</span>
+                    <span class="material-symbols-outlined text-[18px]" id="provincias-chevron">expand_more</span>
+                </button>
+                <div id="provincias-submenu" style="display:none; flex-direction:column; gap:2px; padding-left: 30px;">
+                    @foreach($provinciasSidebar as $provincia)
+                    <a href="/provincia/{{ $provincia->nombre }}" class="side-link" style="font-size:13px; padding:6px 10px;">{{ $provincia->nombre }}</a>
+                    @endforeach
+                </div>
                 @endauth
             </nav>
         </aside>
@@ -447,6 +470,14 @@ document.addEventListener('DOMContentLoaded', function() {
         function toggleSidebar(open) {
             document.getElementById('main-sidebar').classList.toggle('open', open);
             document.getElementById('sidebar-overlay').classList.toggle('open', open);
+        }
+
+        function toggleProvinciasMenu() {
+            var sub = document.getElementById('provincias-submenu');
+            var chevron = document.getElementById('provincias-chevron');
+            var abierto = sub.style.display === 'flex';
+            sub.style.display = abierto ? 'none' : 'flex';
+            chevron.textContent = abierto ? 'expand_more' : 'expand_less';
         }
     </script>
 
