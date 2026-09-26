@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\CloudinaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    public function __construct(protected CloudinaryService $cloudinary) {}
+
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -36,9 +38,23 @@ class ProfileController extends Controller
     {
         $request->validate(['avatar' => 'required|image|max:2048']);
 
-        $path = $request->file('avatar')->store('avatars', 'public');
+        $user = $request->user();
+        $avatarAnterior = $user->avatar;
 
-        $request->user()->update(['avatar' => Storage::url($path)]);
+        $url = $this->cloudinary->subirImagen(
+            $request->file('avatar')->getRealPath(),
+            'surify/avatars'
+        );
+
+        $user->update(['avatar' => $url]);
+
+        // Borramos el avatar anterior de Cloudinary, si existía
+        if ($avatarAnterior) {
+            $publicId = $this->extraerPublicId($avatarAnterior);
+            if ($publicId) {
+                $this->cloudinary->eliminarImagen($publicId);
+            }
+        }
 
         return Redirect::route('profile.edit')->with('success', 'Foto de perfil actualizada');
     }
@@ -59,5 +75,18 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Extrae el public_id de Cloudinary a partir de la URL guardada,
+     * necesario para poder borrar la imagen del storage remoto.
+     */
+    private function extraerPublicId(string $url): ?string
+    {
+        if (preg_match('#/upload/(?:v\d+/)?(.+)\.\w+$#', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }
