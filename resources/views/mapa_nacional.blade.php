@@ -217,7 +217,7 @@
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%;">
+        <div style="position: absolute; bottom: 24px; left: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; z-index: 5;">
             <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px; width: 230px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px;">
                     <span style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:14px; color:#0f172a;">
@@ -634,7 +634,10 @@
         const request = {
             fields: ['displayName', 'formattedAddress', 'location', 'rating'],
             locationRestriction: {
-                center: { lat: lat, lng: lng },
+                center: {
+                    lat: lat,
+                    lng: lng
+                },
                 radius: 5000,
             },
             includedPrimaryTypes: [tipo === 'restaurant' ? 'restaurant' : (tipo === 'gas_station' ? 'gas_station' : 'lodging')],
@@ -642,8 +645,12 @@
         };
 
         try {
-            const { Place } = await google.maps.importLibrary("places");
-            const { places } = await Place.searchNearby(request);
+            const {
+                Place
+            } = await google.maps.importLibrary("places");
+            const {
+                places
+            } = await Place.searchNearby(request);
 
             if (places && places.length > 0) {
                 places.forEach(function(place) {
@@ -671,7 +678,9 @@
                         iconAnchor: [16, 16]
                     });
 
-                    const m = L.marker([plat, plng], { icon: customIcon })
+                    const m = L.marker([plat, plng], {
+                            icon: customIcon
+                        })
                         .addTo(mapaInstance)
                         .bindPopup(`
                             <div style="font-family:'Outfit',sans-serif; padding:4px; min-width: 140px;">
