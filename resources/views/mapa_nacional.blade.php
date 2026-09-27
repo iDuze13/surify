@@ -25,7 +25,6 @@
         height: calc(100vh - 4rem);
         overflow: hidden;
         background-color: #f8f9fa;
-        margin-top: -2rem;
     }
 
     #mapa-container {
@@ -166,7 +165,7 @@
     }
 </style>
 
-<div class="surify-map-dashboard -mx-4 sm:-mx-6 lg:-mx-8">
+<div class="surify-map-dashboard">
     <div id="mapa-container"></div>
 
     <div class="ui-overlay">
@@ -218,7 +217,22 @@
             </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-start; width: 100%;">
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%;">
+            <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px; width: 230px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px;">
+                    <span style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:14px; color:#0f172a;">
+                        <i class="fa-solid fa-map-pin" style="color:#28628f;"></i>
+                        <span id="card-provincia-nombre"></span>
+                    </span>
+                    <button onclick="document.getElementById('card-provincia-mapa').style.display='none';" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <a id="card-provincia-link" href="#" class="btn-ver" style="display:block; text-align:center; text-decoration:none; margin-top:10px;">
+                    Ir a la página de la provincia <i class="fa-solid fa-arrow-right" style="margin-left:4px;"></i>
+                </a>
+            </div>
+
             <div id="card-destino" class="interactuable light-panel" style="border-radius: 16px; overflow: hidden; width: 230px;">
                 <div style="position: relative;">
                     <img id="card-img" src="" alt="" style="width: 100%; height: 135px; object-fit: cover; display: block;">
@@ -395,10 +409,10 @@
             maxBoundsViscosity: 1.0
         }).setView([-38.416097, -63.616672], 4);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap, © CartoDB',
-            subdomains: 'abcd',
-            maxZoom: 20
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            subdomains: 'abc',
+            maxZoom: 19
         }).addTo(mapaInstance);
 
         // Agregar marcadores desde la BD
@@ -434,6 +448,7 @@
         document.getElementById('card-categoria').textContent = destino.categoria;
         document.getElementById('card-link').href = '/destinos/' + destino.id;
         document.getElementById('card-destino').classList.add('visible');
+        document.getElementById('card-provincia-mapa').style.display = 'none';
 
         // Volar (hacer zoom) hacia el destino
         if (mapaInstance && destino.lat && destino.lng) {
@@ -443,11 +458,9 @@
         }
     }
 
-    function filtrarCategoria(categoria) {
-        // Actualizar menú activo
-        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
-        event.target.closest('a').classList.add('is-active-menu');
-
+    // Aplica el filtro de categoría a los marcadores, sin tocar el resaltado del menú
+    // (se separó de filtrarCategoria para poder reutilizarla desde irAProvincia).
+    function aplicarFiltroCategoria(categoria) {
         // Comparación normalizada (sin importar mayúsculas/minúsculas ni espacios extra),
         // para que coincida con lo que se haya guardado realmente en la categoría del destino.
         var categoriaNormalizada = categoria.trim().toLowerCase();
@@ -462,8 +475,36 @@
         });
     }
 
+    function filtrarCategoria(categoria) {
+        // Actualizar menú activo
+        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
+        event.target.closest('a').classList.add('is-active-menu');
+        aplicarFiltroCategoria(categoria);
+    }
+
     function irAProvincia(nombre) {
-        window.location.href = '/provincia/' + encodeURIComponent(nombre);
+        // Mostramos todos los destinos (por si había un filtro de categoría activo)
+        // y resaltamos "Todos" en el menú, ya que dejamos de filtrar por categoría.
+        aplicarFiltroCategoria('todos');
+        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
+        var btnTodos = document.querySelector('.menu-list a[onclick*="filtrarCategoria(\'todos\')"]');
+        if (btnTodos) btnTodos.classList.add('is-active-menu');
+
+        // Hacemos zoom hacia la provincia elegida usando sus coordenadas precargadas
+        var coords = coordenadasProvincias[nombre];
+        if (coords && mapaInstance) {
+            mapaInstance.flyTo([coords.lat, coords.lng], coords.zoom, {
+                duration: 1.5
+            });
+        }
+
+        // Mostramos el cartelito con el link a la página completa de la provincia
+        document.getElementById('card-provincia-nombre').textContent = nombre;
+        document.getElementById('card-provincia-link').href = '/provincia/' + encodeURIComponent(nombre);
+        document.getElementById('card-provincia-mapa').style.display = 'block';
+
+        // Si había una tarjeta de destino abierta, la cerramos para no amontonar
+        document.getElementById('card-destino').classList.remove('visible');
     }
 
     function centrarEnArgentina() {
