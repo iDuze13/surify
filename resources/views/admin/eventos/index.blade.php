@@ -140,9 +140,7 @@
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </a>
                             <form method="POST" action="{{ route('admin.eventos.destroy', $evento) }}"
-                                class="form-eliminar"
-                                data-title="¿Eliminar {{ $evento->nombre }}?"
-                                data-text="Esta acción no se puede deshacer.">
+                                onsubmit="return confirm('¿Seguro que querés eliminar {{ $evento->nombre }}?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
