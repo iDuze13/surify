@@ -201,4 +201,3 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/visitados/toggle', [\App\Http\Controllers\DestinoVisitadoController::class, 'toggle'])->name('visitados.toggle');
 require __DIR__ . '/auth.php';
-
