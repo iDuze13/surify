@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Destino;
 use App\Models\Provincia;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DestinoController extends Controller
 {
+    public function __construct(protected CloudinaryService $cloudinary) {}
+
     public function index(Request $request)
     {
         $query = Destino::with('provincia')->latest();
@@ -53,12 +56,20 @@ class DestinoController extends Controller
             'nombre'       => 'required|string|max:255',
             'provincia_id' => 'required|exists:provincias,id',
             'descripcion'  => 'nullable|string',
-            'categoria' => 'nullable|in:Patrimonio Natural,Aventura,Gastronomía,Familiar,Cultural,Nieve,Playa,Ciudad',
+            'categoria'    => 'nullable|string|max:255',
             'rango_precio' => 'required|string|max:255',
-            'imagen_url'   => 'nullable|string|max:255',
+            'imagen'       => 'nullable|image|max:5120',
             'latitud'      => 'nullable|numeric|between:-90,90',
             'longitud'     => 'nullable|numeric|between:-180,180',
         ]);
+
+        $imagenUrl = null;
+        if ($request->hasFile('imagen')) {
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/admin/destinos'
+            );
+        }
 
         $destino = Destino::create([
             'nombre'       => $request->nombre,
@@ -66,7 +77,7 @@ class DestinoController extends Controller
             'descripcion'  => $request->descripcion,
             'categoria'    => $request->categoria,
             'rango_precio' => $request->rango_precio,
-            'imagen_url'   => $request->imagen_url,
+            'imagen_url'   => $imagenUrl,
             'activo'       => $request->has('activo'),
         ]);
 
@@ -90,10 +101,27 @@ class DestinoController extends Controller
             'descripcion'  => 'nullable|string',
             'categoria'    => 'nullable|string|max:255',
             'rango_precio' => 'required|string|max:255',
-            'imagen_url'   => 'nullable|string|max:255',
+            'imagen'       => 'nullable|image|max:5120',
             'latitud'      => 'nullable|numeric|between:-90,90',
             'longitud'     => 'nullable|numeric|between:-180,180',
         ]);
+
+        $imagenUrl = $destino->imagen_url;
+        if ($request->hasFile('imagen')) {
+            $imagenAnterior = $destino->imagen_url;
+
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/admin/destinos'
+            );
+
+            if ($imagenAnterior) {
+                $publicId = $this->extraerPublicId($imagenAnterior);
+                if ($publicId) {
+                    $this->cloudinary->eliminarImagen($publicId);
+                }
+            }
+        }
 
         $destino->update([
             'nombre'       => $request->nombre,
@@ -101,7 +129,7 @@ class DestinoController extends Controller
             'descripcion'  => $request->descripcion,
             'categoria'    => $request->categoria,
             'rango_precio' => $request->rango_precio,
-            'imagen_url'   => $request->imagen_url,
+            'imagen_url'   => $imagenUrl,
             'activo'       => $request->has('activo'),
         ]);
 
@@ -121,10 +149,20 @@ class DestinoController extends Controller
         $provincias = Provincia::orderBy('nombre')->get();
         return view('admin.destinos.edit', compact('destino', 'provincias'));
     }
+
     public function destroy(Destino $destino)
     {
         $destino->delete();
         return redirect()->route('admin.destinos.index')
             ->with('success', 'Destino eliminado correctamente.');
+    }
+
+    private function extraerPublicId(string $url): ?string
+    {
+        if (preg_match('#/upload/(?:v\d+/)?(.+)\.\w+$#', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

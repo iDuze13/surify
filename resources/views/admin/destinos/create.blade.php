@@ -116,7 +116,7 @@
 
         <div class="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-3">
             <span class="material-symbols-outlined text-amber-500 text-[20px] shrink-0">tips_and_updates</span>
-            <p class="text-xs text-amber-700">Las coordenadas se guardan como punto geográfico (PostGIS). Cuando esté disponible la API de Maps, se podrá seleccionar directamente desde el mapa.</p>
+            <p class="text-xs text-amber-700">Las coordenadas se guardan como texto por ahora. Cuando instalen PostGIS se migrará al tipo geometry.</p>
         </div>
     </div>
 

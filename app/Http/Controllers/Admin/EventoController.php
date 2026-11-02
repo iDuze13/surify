@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Evento;
 use App\Models\Provincia;
 use App\Models\Destino;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class EventoController extends Controller
 {
+    public function __construct(protected CloudinaryService $cloudinary) {}
+
     public function index(Request $request)
     {
         $filtro = $request->get('filtro', 'todos');
@@ -65,8 +67,7 @@ class EventoController extends Controller
             'tipo'         => 'nullable|string|max:255',
             'rango_precio' => 'nullable|string|max:255',
             'descripcion'  => 'nullable|string',
-            'imagen_file'  => 'nullable|image|max:10240',
-            'imagen_url'   => 'nullable|string|max:2048',
+            'imagen'       => 'nullable|image|max:10240',
         ]);
 
         // Si seleccionó destino, tomamos su provincia automáticamente
@@ -76,12 +77,12 @@ class EventoController extends Controller
             $provinciaId = $destino?->provincia_id ?? $provinciaId;
         }
 
-        // Imagen: prioridad archivo subido, luego URL ingresada
-        $rutaImagen = null;
-        if ($request->hasFile('imagen_file')) {
-            $rutaImagen = $request->file('imagen_file')->store('eventos', 'public');
-        } elseif ($request->filled('imagen_url')) {
-            $rutaImagen = $request->imagen_url;
+        $imagenUrl = null;
+        if ($request->hasFile('imagen')) {
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/admin/eventos'
+            );
         }
 
         Evento::create([
@@ -92,7 +93,7 @@ class EventoController extends Controller
             'destino_id'   => $request->destino_id ?: null,
             'tipo'         => $request->tipo,
             'rango_precio' => $request->rango_precio,
-            'imagen_url'   => $rutaImagen,
+            'imagen_url'   => $imagenUrl,
             'descripcion'  => $request->descripcion,
             'activo'       => $request->has('activo'),
         ]);
@@ -128,12 +129,23 @@ class EventoController extends Controller
             $provinciaId = $destino?->provincia_id ?? $provinciaId;
         }
 
-        $rutaImagen = $evento->imagen_url;
+        $imagenUrl = $evento->imagen_url;
         if ($request->hasFile('imagen')) {
-            if ($evento->imagen_url && !str_starts_with($evento->imagen_url, 'http') && Storage::disk('public')->exists($evento->imagen_url)) {
-                Storage::disk('public')->delete($evento->imagen_url);
+            $imagenAnterior = $evento->imagen_url;
+
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/admin/eventos'
+            );
+
+            // Solo intentamos borrar de Cloudinary; si la imagen anterior era
+            // una ruta vieja del storage local, no hay nada que borrar ahí.
+            if ($imagenAnterior && str_starts_with($imagenAnterior, 'http')) {
+                $publicId = $this->extraerPublicId($imagenAnterior);
+                if ($publicId) {
+                    $this->cloudinary->eliminarImagen($publicId);
+                }
             }
-            $rutaImagen = $request->file('imagen')->store('eventos', 'public');
         }
 
         $evento->update([
@@ -144,7 +156,7 @@ class EventoController extends Controller
             'destino_id'   => $request->destino_id ?: null,
             'tipo'         => $request->tipo,
             'rango_precio' => $request->rango_precio,
-            'imagen_url'   => $rutaImagen,
+            'imagen_url'   => $imagenUrl,
             'descripcion'  => $request->descripcion,
             'activo'       => $request->has('activo'),
         ]);
@@ -155,12 +167,24 @@ class EventoController extends Controller
 
     public function destroy(Evento $evento)
     {
-        if ($evento->imagen_url && !str_starts_with($evento->imagen_url, 'http') && Storage::disk('public')->exists($evento->imagen_url)) {
-            Storage::disk('public')->delete($evento->imagen_url);
+        if ($evento->imagen_url && str_starts_with($evento->imagen_url, 'http')) {
+            $publicId = $this->extraerPublicId($evento->imagen_url);
+            if ($publicId) {
+                $this->cloudinary->eliminarImagen($publicId);
+            }
         }
 
         $evento->delete();
         return redirect()->route('admin.eventos.index')
             ->with('success', 'Evento eliminado correctamente.');
+    }
+
+    private function extraerPublicId(string $url): ?string
+    {
+        if (preg_match('#/upload/(?:v\d+/)?(.+)\.\w+$#', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }
