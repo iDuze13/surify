@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Surify - Mapa Nacional')
+@section('main_class', 'p-0')
 
 @section('content')
 
@@ -25,7 +26,6 @@
         height: calc(100vh - 4rem);
         overflow: hidden;
         background-color: #f8f9fa;
-        margin-top: -2rem;
     }
 
     #mapa-container {
@@ -166,7 +166,7 @@
     }
 </style>
 
-<div class="surify-map-dashboard -mx-4 sm:-mx-6 lg:-mx-8">
+<div class="surify-map-dashboard">
     <div id="mapa-container"></div>
 
     <div class="ui-overlay">
@@ -218,7 +218,22 @@
             </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-start; width: 100%;">
+        <div style="position: absolute; bottom: 24px; left: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; z-index: 5;">
+            <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px; width: 230px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px;">
+                    <span style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:14px; color:#0f172a;">
+                        <i class="fa-solid fa-map-pin" style="color:#28628f;"></i>
+                        <span id="card-provincia-nombre"></span>
+                    </span>
+                    <button onclick="document.getElementById('card-provincia-mapa').style.display='none';" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <a id="card-provincia-link" href="#" class="btn-ver" style="display:block; text-align:center; text-decoration:none; margin-top:10px;">
+                    Ir a la página de la provincia <i class="fa-solid fa-arrow-right" style="margin-left:4px;"></i>
+                </a>
+            </div>
+
             <div id="card-destino" class="interactuable light-panel" style="border-radius: 16px; overflow: hidden; width: 230px;">
                 <div style="position: relative;">
                     <img id="card-img" src="" alt="" style="width: 100%; height: 135px; object-fit: cover; display: block;">
@@ -249,126 +264,30 @@
     var destinosData = @json($destinos);
 
     var coordenadasProvincias = {
-        'Buenos Aires': {
-            lat: -36.6769,
-            lng: -60.5583,
-            zoom: 7
-        },
-        'Catamarca': {
-            lat: -27.3357,
-            lng: -66.9477,
-            zoom: 7
-        },
-        'Chaco': {
-            lat: -26.9478,
-            lng: -60.1658,
-            zoom: 7
-        },
-        'Chubut': {
-            lat: -43.2934,
-            lng: -65.1078,
-            zoom: 6
-        },
-        'Córdoba': {
-            lat: -31.4135,
-            lng: -64.1811,
-            zoom: 7
-        },
-        'Corrientes': {
-            lat: -27.4692,
-            lng: -58.8306,
-            zoom: 7
-        },
-        'Entre Ríos': {
-            lat: -31.7748,
-            lng: -60.4956,
-            zoom: 7
-        },
-        'Formosa': {
-            lat: -24.8948,
-            lng: -59.8901,
-            zoom: 7
-        },
-        'Jujuy': {
-            lat: -23.1897,
-            lng: -65.9997,
-            zoom: 7
-        },
-        'La Pampa': {
-            lat: -36.6148,
-            lng: -64.2839,
-            zoom: 7
-        },
-        'La Rioja': {
-            lat: -29.4127,
-            lng: -66.8552,
-            zoom: 7
-        },
-        'Mendoza': {
-            lat: -32.8908,
-            lng: -68.8458,
-            zoom: 7
-        },
-        'Misiones': {
-            lat: -26.9478,
-            lng: -54.6964,
-            zoom: 7
-        },
-        'Neuquén': {
-            lat: -38.9516,
-            lng: -68.0591,
-            zoom: 7
-        },
-        'Río Negro': {
-            lat: -40.8135,
-            lng: -63.0154,
-            zoom: 7
-        },
-        'Salta': {
-            lat: -24.7821,
-            lng: -65.4117,
-            zoom: 7
-        },
-        'San Juan': {
-            lat: -30.8653,
-            lng: -68.8894,
-            zoom: 7
-        },
-        'San Luis': {
-            lat: -33.2950,
-            lng: -66.3356,
-            zoom: 7
-        },
-        'Santa Cruz': {
-            lat: -51.6230,
-            lng: -69.2168,
-            zoom: 6
-        },
-        'Santa Fe': {
-            lat: -30.7069,
-            lng: -60.9498,
-            zoom: 7
-        },
-        'Santiago del Estero': {
-            lat: -27.7824,
-            lng: -64.2661,
-            zoom: 7
-        },
-        'Tierra del Fuego': {
-            lat: -54.0000,
-            lng: -67.0000,
-            zoom: 7
-        },
-        'Tucumán': {
-            lat: -26.8083,
-            lng: -65.2176,
-            zoom: 8
-        },
-        'Ciudad Autónoma de Buenos Aires': {
-            lat: -34.6037,
-            lng: -58.3816,
-            zoom: 12
-        },
+        'Buenos Aires': { lat: -36.6769, lng: -60.5583, zoom: 7 },
+        'Catamarca': { lat: -27.3357, lng: -66.9477, zoom: 7 },
+        'Chaco': { lat: -26.9478, lng: -60.1658, zoom: 7 },
+        'Chubut': { lat: -43.2934, lng: -65.1078, zoom: 6 },
+        'Córdoba': { lat: -31.4135, lng: -64.1811, zoom: 7 },
+        'Corrientes': { lat: -27.4692, lng: -58.8306, zoom: 7 },
+        'Entre Ríos': { lat: -31.7748, lng: -60.4956, zoom: 7 },
+        'Formosa': { lat: -24.8948, lng: -59.8901, zoom: 7 },
+        'Jujuy': { lat: -23.1897, lng: -65.9997, zoom: 7 },
+        'La Pampa': { lat: -36.6148, lng: -64.2839, zoom: 7 },
+        'La Rioja': { lat: -29.4127, lng: -66.8552, zoom: 7 },
+        'Mendoza': { lat: -32.8908, lng: -68.8458, zoom: 7 },
+        'Misiones': { lat: -26.9478, lng: -54.6964, zoom: 7 },
+        'Neuquén': { lat: -38.9516, lng: -68.0591, zoom: 7 },
+        'Río Negro': { lat: -40.8135, lng: -63.0154, zoom: 7 },
+        'Salta': { lat: -24.7821, lng: -65.4117, zoom: 7 },
+        'San Juan': { lat: -30.8653, lng: -68.8894, zoom: 7 },
+        'San Luis': { lat: -33.2950, lng: -66.3356, zoom: 7 },
+        'Santa Cruz': { lat: -51.6230, lng: -69.2168, zoom: 6 },
+        'Santa Fe': { lat: -30.7069, lng: -60.9498, zoom: 7 },
+        'Santiago del Estero': { lat: -27.7824, lng: -64.2661, zoom: 7 },
+        'Tierra del Fuego': { lat: -54.0000, lng: -67.0000, zoom: 7 },
+        'Tucumán': { lat: -26.8083, lng: -65.2176, zoom: 8 },
+        'Ciudad Autónoma de Buenos Aires': { lat: -34.6037, lng: -58.3816, zoom: 12 },
     };
 
     var icono = L.divIcon({
@@ -395,17 +314,14 @@
             maxBoundsViscosity: 1.0
         }).setView([-38.416097, -63.616672], 4);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key={{ env("CARTO_KEY") }}', {
-            attribution: '© OpenStreetMap, © CartoDB',
-            subdomains: 'abcd',
-            maxZoom: 20
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            subdomains: 'abc',
+            maxZoom: 19
         }).addTo(mapaInstance);
 
-        // Agregar marcadores desde la BD
         destinosData.forEach(function(destino) {
-            var marker = L.marker([destino.lat, destino.lng], {
-                    icon: icono
-                })
+            var marker = L.marker([destino.lat, destino.lng], { icon: icono })
                 .addTo(mapaInstance)
                 .on('click', function() {
                     mostrarCard(destino);
@@ -434,22 +350,14 @@
         document.getElementById('card-categoria').textContent = destino.categoria;
         document.getElementById('card-link').href = '/destinos/' + destino.id;
         document.getElementById('card-destino').classList.add('visible');
+        document.getElementById('card-provincia-mapa').style.display = 'none';
 
-        // Volar (hacer zoom) hacia el destino
         if (mapaInstance && destino.lat && destino.lng) {
-            mapaInstance.flyTo([destino.lat, destino.lng], 12, {
-                duration: 1.5
-            });
+            mapaInstance.flyTo([destino.lat, destino.lng], 12, { duration: 1.5 });
         }
     }
 
-    function filtrarCategoria(categoria) {
-        // Actualizar menú activo
-        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
-        event.target.closest('a').classList.add('is-active-menu');
-
-        // Comparación normalizada (sin importar mayúsculas/minúsculas ni espacios extra),
-        // para que coincida con lo que se haya guardado realmente en la categoría del destino.
+    function aplicarFiltroCategoria(categoria) {
         var categoriaNormalizada = categoria.trim().toLowerCase();
 
         todosLosMarkers.forEach(function(marker) {
@@ -462,14 +370,32 @@
         });
     }
 
+    function filtrarCategoria(categoria) {
+        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
+        event.target.closest('a').classList.add('is-active-menu');
+        aplicarFiltroCategoria(categoria);
+    }
+
     function irAProvincia(nombre) {
-        window.location.href = '/provincia/' + encodeURIComponent(nombre);
+        aplicarFiltroCategoria('todos');
+        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
+        var btnTodos = document.querySelector('.menu-list a[onclick*="filtrarCategoria(\'todos\')"]');
+        if (btnTodos) btnTodos.classList.add('is-active-menu');
+
+        var coords = coordenadasProvincias[nombre];
+        if (coords && mapaInstance) {
+            mapaInstance.flyTo([coords.lat, coords.lng], coords.zoom, { duration: 1.5 });
+        }
+
+        document.getElementById('card-provincia-nombre').textContent = nombre;
+        document.getElementById('card-provincia-link').href = '/provincia/' + encodeURIComponent(nombre);
+        document.getElementById('card-provincia-mapa').style.display = 'block';
+
+        document.getElementById('card-destino').classList.remove('visible');
     }
 
     function centrarEnArgentina() {
-        mapaInstance.flyTo([-38.416097, -63.616672], 4, {
-            duration: 1.5
-        });
+        mapaInstance.flyTo([-38.416097, -63.616672], 4, { duration: 1.5 });
     }
 
     inicializarMapa();
@@ -493,12 +419,8 @@
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            // Centrar mapa en la ubicación del usuario
-            mapaInstance.flyTo([lat, lng], 10, {
-                duration: 1.5
-            });
+            mapaInstance.flyTo([lat, lng], 10, { duration: 1.5 });
 
-            // Agregar marcador de posición
             const iconoUsuario = L.divIcon({
                 html: '<div style="background:#e11d48; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(225,29,72,0.5); animation: pulse 1.5s infinite;"></div>',
                 className: '',
@@ -510,14 +432,11 @@
                 mapaInstance.removeLayer(window.marcadorUsuario);
             }
 
-            window.marcadorUsuario = L.marker([lat, lng], {
-                    icon: iconoUsuario
-                })
+            window.marcadorUsuario = L.marker([lat, lng], { icon: iconoUsuario })
                 .addTo(mapaInstance)
                 .bindPopup('<div style="font-family:sans-serif; font-size:13px;"><strong style="color:#e11d48;">📍 Tu ubicación</strong></div>')
                 .openPopup();
 
-            // Encontrar destinos cercanos (menos de 300km)
             const destinosCercanos = destinosData.filter(function(destino) {
                 const dist = calcularDistancia(lat, lng, destino.lat, destino.lng);
                 return dist < 300;
@@ -568,11 +487,9 @@
         const lat = centro.lat;
         const lng = centro.lng;
 
-        // Limpiar anteriores
         markersServicios.forEach(m => mapaInstance.removeLayer(m));
         markersServicios = [];
 
-        // Estilos activos
         const tipos = ['restaurant', 'gas_station', 'lodging'];
         tipos.forEach(t => {
             const btn = document.getElementById('btn-servicio-' + t);
@@ -589,7 +506,6 @@
             }
         });
 
-        // Configurar los parámetros de búsqueda de la nueva Places API
         const request = {
             fields: ['displayName', 'formattedAddress', 'location', 'rating'],
             locationRestriction: {

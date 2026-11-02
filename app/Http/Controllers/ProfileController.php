@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+
+//	Actualiza nombre, biografía, avatar, idioma del usuario logueado
 class ProfileController extends Controller
 {
     public function __construct(protected CloudinaryService $cloudinary) {}

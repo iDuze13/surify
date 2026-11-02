@@ -53,7 +53,7 @@ class DestinoController extends Controller
             'nombre'       => 'required|string|max:255',
             'provincia_id' => 'required|exists:provincias,id',
             'descripcion'  => 'nullable|string',
-            'categoria'    => 'nullable|string|max:255',
+            'categoria' => 'nullable|in:Patrimonio Natural,Aventura,Gastronomía,Familiar,Cultural,Nieve,Playa,Ciudad',
             'rango_precio' => 'required|string|max:255',
             'imagen_url'   => 'nullable|string|max:255',
             'latitud'      => 'nullable|numeric|between:-90,90',

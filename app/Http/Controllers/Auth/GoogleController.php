@@ -11,9 +11,7 @@ use Exception;
 
 class GoogleController extends Controller
 {
-    /**
-     * Redirige al usuario a la página de autenticación de Google.
-     */
+    //	Redirige a Google, y en el callback busca o crea el usuario por su google_id
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();

@@ -29,8 +29,11 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
+
+    //Valida los datos, crea el User, le asigna el rol "Turista" y lo loguea
     public function store(Request $request): RedirectResponse
     {
+        //nombre requerido, email único, password con reglas de Laravel, checkbox de términos aceptado
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],

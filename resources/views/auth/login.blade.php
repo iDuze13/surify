@@ -148,6 +148,10 @@
 
     <div class="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-10 bg-surface-container-lowest page-transition-container animate-slide-in-right" style="opacity:0;">
         <div class="w-full max-w-[420px] flex flex-col gap-4">
+            <a href="{{ url('/') }}" class="inline-flex items-center gap-1 self-start font-body-md text-[14px] text-on-surface-variant hover:text-primary transition-colors text-decoration-none">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Volver al inicio
+            </a>
             <div class="flex flex-col gap-sm">
                 <div class="flex items-center gap-2 mb-md">
                     <span class="material-symbols-outlined text-[32px] text-primary" style="font-variation-settings: 'FILL' 1;">explore</span>

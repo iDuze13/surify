@@ -176,7 +176,7 @@
                     </div>
                 </div>
             </a>
-            {{-- ✅ FIN tarjeta clickeable --}}
+            {{-- FIN tarjeta clickeable --}}
             @endforeach
             @else
             <div class="col-span-1 md:col-span-3 bg-white border border-slate-200 p-12 rounded-2xl text-center">
@@ -279,7 +279,7 @@
                         </div>
                         <span class="material-symbols-outlined text-slate-300 group-hover:text-[#28628f] ml-auto self-center transition-colors shrink-0">arrow_forward</span>
                     </a>
-                    {{-- ✅ FIN evento clickeable --}}
+                    {{--  FIN evento clickeable --}}
                     @endforeach
                     @else
                     {{-- Placeholder eventos (no clickeables, son estáticos) --}}
