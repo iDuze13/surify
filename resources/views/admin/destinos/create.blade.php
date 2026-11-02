@@ -16,7 +16,7 @@
     <p class="text-slate-500 mt-2 text-sm max-w-2xl">Completá los detalles para registrar un nuevo destino turístico en la plataforma.</p>
 </div>
 
-<form method="POST" action="{{ route('admin.destinos.store') }}" class="space-y-6">
+<form method="POST" action="{{ route('admin.destinos.store') }}" enctype="multipart/form-data" class="space-y-6">
     @csrf
 
     {{-- Información básica --}}
@@ -78,15 +78,15 @@
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Descripción</label>
                 <textarea name="descripcion" rows="5"
                     placeholder="Describí la experiencia que ofrece este destino..."
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f]">{{ old('descripcion') }}</textarea>
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f]">{{old('descripcion') }}</textarea>
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">URL de Imagen</label>
-                <input type="text" name="imagen_url" value="{{ old('imagen_url') }}"
-                    placeholder="https://... o ruta relativa al storage"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f]">
-                <p class="text-xs text-slate-400 mt-1">Por ahora ingresá la URL directamente. La subida de archivos se habilitará próximamente.</p>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Imagen del Destino</label>
+                <input type="file" name="imagen" accept="image/*"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#28628f] file:text-white file:font-bold file:text-xs @error('imagen') border-rose-400 @enderror">
+                <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx. 5MB.</p>
+                @error('imagen') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
     </div>
@@ -116,7 +116,7 @@
 
         <div class="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-3">
             <span class="material-symbols-outlined text-amber-500 text-[20px] shrink-0">tips_and_updates</span>
-            <p class="text-xs text-amber-700">Las coordenadas se guardan como texto por ahora. Cuando instalen PostGIS se migrará al tipo geometry.</p>
+            <p class="text-xs text-amber-700">Las coordenadas se guardan como punto geográfico (PostGIS). Cuando esté disponible la API de Maps, se podrá seleccionar directamente desde el mapa.</p>
         </div>
     </div>
 
@@ -154,7 +154,7 @@
 function toggleCategoria(btn, valor) {
     const input = document.getElementById('categoria-input');
     const activo = btn.classList.contains('activo');
-    
+
     document.querySelectorAll('.categoria-btn').forEach(b => {
         b.classList.remove('activo', 'bg-[#28628f]/10', 'border-[#28628f]', 'text-[#28628f]');
         b.classList.add('border-slate-200', 'text-slate-500');

@@ -164,19 +164,13 @@
                     <p class="text-sm font-semibold text-slate-700">Subí la imagen del evento</p>
                     <p class="text-xs text-slate-400 mt-1">JPG, PNG — Máx 10MB</p>
                 </div>
-                <input type="file" id="imagen-evento-input" name="imagen_file" accept="image/*"
+                <input type="file" id="imagen-evento-input" name="imagen" accept="image/*"
                        class="hidden" onchange="previewImagenEvento(this)">
 
                 <div id="imagen-preview" class="hidden">
                     <img id="imagen-preview-img" src="" class="w-full rounded-xl object-cover h-40" alt="Preview">
                 </div>
-
-                <div class="mt-4 space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">O ingresá una URL</label>
-                    <input type="text" name="imagen_url" value="{{ old('imagen_url') }}"
-                           placeholder="https://..."
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] transition-colors">
-                </div>
+                @error('imagen') <p class="text-rose-500 text-xs mt-2">{{ $message }}</p> @enderror
             </section>
 
             {{-- Publicar --}}

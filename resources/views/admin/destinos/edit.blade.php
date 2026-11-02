@@ -17,7 +17,7 @@
 </div>
 
 {{-- ✅ FORM PRINCIPAL: solo contiene los campos de edición y el botón Guardar --}}
-<form method="POST" action="{{ route('admin.destinos.update', $destino) }}" class="space-y-6">
+<form method="POST" action="{{ route('admin.destinos.update', $destino) }}" enctype="multipart/form-data" class="space-y-6">
     @csrf
     @method('PUT')
 
@@ -81,20 +81,21 @@
             <div class="md:col-span-2">
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Descripción</label>
                 <textarea name="descripcion" rows="5"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f]">{{ old('descripcion', $destino->descripcion) }}</textarea>
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f]">{{old('descripcion', $destino->descripcion) }}</textarea>
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">URL de Imagen</label>
-                <input type="text" name="imagen_url" value="{{ old('imagen_url', $destino->imagen_url) }}"
-                    placeholder="https://..."
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f]">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Imagen del Destino</label>
                 @if($destino->imagen_url)
-                <div class="mt-3 flex items-center gap-3">
-                    <img src="{{ $destino->imagen_url }}" class="w-16 h-16 rounded-xl object-cover border border-slate-200" alt="Preview">
-                    <p class="text-xs text-slate-400">Imagen actual</p>
+                <div class="mb-3 flex items-center gap-3">
+                    <img src="{{ $destino->imagen_url }}" class="w-16 h-16 rounded-xl object-cover border border-slate-200" alt="Imagen actual">
+                    <p class="text-xs text-slate-400">Imagen actual. Subí una nueva para reemplazarla.</p>
                 </div>
                 @endif
+                <input type="file" name="imagen" accept="image/*"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:ring-[#28628f] focus:border-[#28628f] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#28628f] file:text-white file:font-bold file:text-xs @error('imagen') border-rose-400 @enderror">
+                <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx. 5MB. Dejalo vacío para mantener la imagen actual.</p>
+                @error('imagen') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
     </div>

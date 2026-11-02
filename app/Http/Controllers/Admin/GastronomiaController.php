@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Gastronomia;
 use App\Models\Provincia;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 
 class GastronomiaController extends Controller
 {
+    public function __construct(protected CloudinaryService $cloudinary) {}
+
     public function index(Request $request)
     {
         $query = Provincia::with(['gastronomia' => function ($q) use ($request) {
@@ -36,15 +39,23 @@ class GastronomiaController extends Controller
             'nombre'       => 'required|string|max:255',
             'descripcion'  => 'required|string',
             'categoria'    => 'required|string|max:100',
-            'imagen_url'   => 'nullable|url|max:2048',
+            'imagen'       => 'nullable|image|max:5120',
         ]);
+
+        $imagenUrl = null;
+        if ($request->hasFile('imagen')) {
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/admin/gastronomia'
+            );
+        }
 
         Gastronomia::create([
             'provincia_id' => $request->provincia_id,
             'nombre'       => $request->nombre,
             'descripcion'  => $request->descripcion,
             'categoria'    => $request->categoria,
-            'imagen_url'   => $request->imagen_url,
+            'imagen_url'   => $imagenUrl,
         ]);
 
         return back()->with('success', 'Plato agregado correctamente.');
@@ -56,14 +67,31 @@ class GastronomiaController extends Controller
             'nombre'      => 'required|string|max:255',
             'descripcion' => 'required|string',
             'categoria'   => 'required|string|max:100',
-            'imagen_url'  => 'nullable|url|max:2048',
+            'imagen'      => 'nullable|image|max:5120',
         ]);
+
+        $imagenUrl = $gastronomia->imagen_url;
+        if ($request->hasFile('imagen')) {
+            $imagenAnterior = $gastronomia->imagen_url;
+
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/admin/gastronomia'
+            );
+
+            if ($imagenAnterior) {
+                $publicId = $this->extraerPublicId($imagenAnterior);
+                if ($publicId) {
+                    $this->cloudinary->eliminarImagen($publicId);
+                }
+            }
+        }
 
         $gastronomia->update([
             'nombre'      => $request->nombre,
             'descripcion' => $request->descripcion,
             'categoria'   => $request->categoria,
-            'imagen_url'  => $request->imagen_url,
+            'imagen_url'  => $imagenUrl,
         ]);
 
         return back()->with('success', 'Plato actualizado correctamente.');
@@ -74,5 +102,14 @@ class GastronomiaController extends Controller
         $gastronomia->delete();
 
         return back()->with('success', 'Plato eliminado correctamente.');
+    }
+
+    private function extraerPublicId(string $url): ?string
+    {
+        if (preg_match('#/upload/(?:v\d+/)?(.+)\.\w+$#', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

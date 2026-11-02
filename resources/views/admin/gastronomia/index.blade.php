@@ -130,7 +130,7 @@
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <form action="{{ route('admin.gastronomia.store') }}" method="POST" class="p-6 space-y-4">
+        <form action="{{ route('admin.gastronomia.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
             @csrf
             <div class="space-y-1">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Provincia *</label>
@@ -163,9 +163,10 @@
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] resize-none"></textarea>
             </div>
             <div class="space-y-1">
-                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">URL de la imagen (opcional)</label>
-                <input type="url" name="imagen_url" placeholder="https://ejemplo.com/foto-plato.jpg"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f]">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Imagen (opcional)</label>
+                <input type="file" name="imagen" accept="image/*"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#28628f] file:text-white file:font-bold file:text-xs">
+                <p class="text-xs text-slate-400">JPG o PNG, máx. 5MB.</p>
             </div>
             <div class="flex gap-3 pt-2">
                 <button type="submit"
@@ -191,7 +192,7 @@
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <form id="form-editar" action="" method="POST" class="p-6 space-y-4">
+        <form id="form-editar" action="" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
             @csrf @method('PUT')
             <div class="space-y-1">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Nombre *</label>
@@ -215,9 +216,11 @@
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] resize-none"></textarea>
             </div>
             <div class="space-y-1">
-                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">URL de la imagen (opcional)</label>
-                <input type="url" name="imagen_url" id="editar-imagen" placeholder="https://ejemplo.com/foto-plato.jpg"
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f]">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Imagen (opcional)</label>
+                <img id="editar-imagen-preview" src="" class="hidden w-20 h-20 rounded-xl object-cover border border-slate-200 mb-2" alt="Imagen actual">
+                <input type="file" name="imagen" accept="image/*"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#28628f] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#28628f] file:text-white file:font-bold file:text-xs">
+                <p class="text-xs text-slate-400">Dejalo vacío para mantener la imagen actual.</p>
             </div>
             <div class="flex gap-3 pt-2">
                 <button type="submit"
@@ -238,7 +241,15 @@
         document.getElementById('editar-nombre').value = btn.dataset.nombre;
         document.getElementById('editar-descripcion').value = btn.dataset.descripcion;
         document.getElementById('editar-categoria').value = btn.dataset.categoria;
-        document.getElementById('editar-imagen').value = btn.dataset.imagen || '';
+
+        const preview = document.getElementById('editar-imagen-preview');
+        if (btn.dataset.imagen) {
+            preview.src = btn.dataset.imagen;
+            preview.classList.remove('hidden');
+        } else {
+            preview.classList.add('hidden');
+        }
+
         document.getElementById('form-editar').action = `/admin/gastronomia/${btn.dataset.id}`;
         document.getElementById('modal-editar').classList.remove('hidden');
     }

@@ -131,10 +131,11 @@
             @endif
 
             <div class="space-y-1">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block">URL de imagen (recomendado)</label>
-                <input type="text" name="imagen_url" value="{{ old('imagen_url', str_starts_with($evento->imagen_url ?? '', 'http') ? $evento->imagen_url : '') }}"
-                    placeholder="https://images.unsplash.com/..."
-                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-[#28628f]">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Imagen nueva (opcional)</label>
+                <input type="file" name="imagen" accept="image/*"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-[#28628f] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-[#28628f] file:text-white file:font-bold file:text-xs">
+                <p class="text-xs text-slate-400 mt-1">JPG o PNG, máx. 10MB. Dejalo vacío para mantener la imagen actual.</p>
+                @error('imagen') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
 
