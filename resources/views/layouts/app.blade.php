@@ -97,6 +97,10 @@
         .dark .side-link.active { background: #1e3a52; color: #97ccfe; }
         .side-divider { height: 1px; background: #e2e8f0; margin: 8px 4px; }
         .dark .side-divider { background: #334155; }
+
+        /* ===== Notificaciones ===== */
+        #notif-dropdown { display: none; }
+        #notif-dropdown.open { display: block; }
     </style>
     <script>
         if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
@@ -322,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 @if($esAdmin)
                 <a href="{{ route('admin.roles.index') }}" class="side-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span> Roles</a>
                 <a href="{{ route('admin.usuarios.index') }}" class="side-link {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">group</span> Usuarios</a>
+                <a href="{{ route('admin.anuncios.create') }}" class="side-link {{ request()->routeIs('admin.anuncios.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">campaign</span> Anuncios</a>
                 @endif
 
                 @if($tieneAlguno(['crear_destino', 'modificar_destino', 'eliminar_destino', 'administrar_destinos_sugeridos']))
@@ -399,6 +404,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         </button>
 
                         @auth
+                        <div class="relative" id="notif-container">
+                            <button onclick="toggleNotifDropdown()" id="notif-btn" class="relative flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-[#28628f] text-slate-600 dark:text-slate-300 hover:text-[#28628f] transition-all bg-white dark:bg-slate-800">
+                                <span class="material-symbols-outlined text-[18px]">notifications</span>
+                                <span id="notif-badge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+                            </button>
+                            <div id="notif-dropdown" class="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+                                    <span class="text-sm font-bold text-slate-700 dark:text-slate-200">Notificaciones</span>
+                                    <button onclick="marcarTodasLeidas()" class="text-xs font-semibold text-[#28628f] hover:underline bg-none border-none cursor-pointer">Marcar todas leídas</button>
+                                </div>
+                                <div id="notif-list" class="max-h-80 overflow-y-auto"></div>
+                                <div id="notif-empty" class="hidden px-4 py-6 text-center text-sm text-slate-400">No tenés notificaciones</div>
+                            </div>
+                        </div>
+                        @endauth
+
+                        @auth
                         <div class="flex items-center gap-3">
                             @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('Admin') || count(auth()->user()->permisos()->pluck('nombre')->toArray()) > 0)
                             <form method="POST" action="{{ route('admin.cambiar_vista') }}">
@@ -430,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </header>
 
-            <main class="flex-grow w-full @yield('main_class', 'mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl')">
+            <main class="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
                 @if(session('status'))
                 <div class="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[#28628f] text-sm font-semibold flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">info</span>{{ session('status') }}
@@ -558,6 +580,79 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('keydown', function(e) { if(e.key==='Escape') { dropdown.classList.add('hidden'); input.blur(); } });
     })();
     </script>
+
+    {{-- SISTEMA DE NOTIFICACIONES (campanita) --}}
+    @auth
+    <script>
+    (function() {
+        const container = document.getElementById('notif-container');
+        if (!container) return;
+        const dropdown = document.getElementById('notif-dropdown');
+        const badge = document.getElementById('notif-badge');
+        const list = document.getElementById('notif-list');
+        const empty = document.getElementById('notif-empty');
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+        let abierto = false;
+
+        window.toggleNotifDropdown = function() {
+            abierto = !abierto;
+            dropdown.classList.toggle('open', abierto);
+            if (abierto) cargarNotificaciones();
+        };
+
+        document.addEventListener('click', function(e) {
+            if (!container.contains(e.target)) { dropdown.classList.remove('open'); abierto = false; }
+        });
+
+        function cargarNotificaciones() {
+            fetch('{{ route("notificaciones.index") }}').then(r => r.json()).then(data => {
+                actualizarBadge(data.no_leidas);
+                list.innerHTML = '';
+                if (data.notificaciones.length === 0) {
+                    empty.classList.remove('hidden');
+                    return;
+                }
+                empty.classList.add('hidden');
+                data.notificaciones.forEach(n => {
+                    const a = document.createElement('a');
+                    a.href = n.url;
+                    a.className = 'flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 text-decoration-none' + (n.leida ? '' : ' bg-blue-50/50 dark:bg-slate-700/40');
+                    a.onclick = function() { marcarLeida(n.id); };
+                    a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${n.icono}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${n.titulo}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.mensaje}</p><p class="text-[10px] text-slate-400 mt-1">${n.fecha}</p></div>`;
+                    list.appendChild(a);
+                });
+            }).catch(() => {});
+        }
+
+        function actualizarBadge(count) {
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        window.marcarLeida = function(id) {
+            fetch(`/notificaciones/${id}/leer`, {
+                method: 'POST',
+                keepalive: true,
+                headers: { 'X-CSRF-TOKEN': csrf }
+            }).catch(() => {});
+        };
+
+        window.marcarTodasLeidas = function() {
+            fetch('{{ route("notificaciones.leer_todas") }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf }
+            }).then(() => cargarNotificaciones()).catch(() => {});
+        };
+
+        cargarNotificaciones();
+        setInterval(cargarNotificaciones, 30000);
+    })();
+    </script>
+    @endauth
 
     {{-- SISTEMA DE TRADUCCIÓN CON MYMEMORY --}}
     <script>

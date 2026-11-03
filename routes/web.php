@@ -6,11 +6,13 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResenaController;
 use App\Http\Controllers\CombustibleController;
 use App\Http\Controllers\EventoVisitadoController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\Admin\RolController;
 use App\Http\Controllers\Admin\DestinoController as AdminDestinoController;
 use App\Http\Controllers\Admin\ResenaController as AdminResenaController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\EventoController as AdminEventoController;
+use App\Http\Controllers\Admin\AnuncioController as AdminAnuncioController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\GastronomiaController as AdminGastronomiaController;
@@ -30,6 +32,8 @@ Route::post('/admin/backup', [\App\Http\Controllers\Admin\BackupController::clas
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('roles', RolController::class);
     Route::resource('usuarios', UsuarioController::class)->only(['index', 'edit', 'update']);
+    Route::get('/anuncios', [AdminAnuncioController::class, 'create'])->name('anuncios.create');
+    Route::post('/anuncios', [AdminAnuncioController::class, 'store'])->name('anuncios.store');
 });
 
 Route::middleware(['auth', 'permiso:crear_evento,modificar_evento,eliminar_evento,administrar_eventos_sugeridos'])->prefix('admin')->name('admin.')->group(function () {
@@ -154,8 +158,8 @@ Route::get('/mapa', function () {
 Route::get('/provincia/{nombre}', [DestinoController::class, 'porProvincia'])->name('provincia.show');
 Route::get('/destinos/{id}', [DestinoController::class, 'show'])->name('destinos.show');
 
-Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
-Route::get('/eventos/{id}', [EventoController::class, 'show'])->name('eventos.show');
+Route::get('/eventos', [\App\Http\Controllers\EventoController::class, 'index'])->name('eventos.index');
+Route::get('/eventos/{id}', [\App\Http\Controllers\EventoController::class, 'show'])->name('eventos.show');
 
 Route::get('/buscar', [\App\Http\Controllers\BusquedaController::class, 'buscar'])->name('busqueda.buscar');
 
@@ -172,6 +176,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/eventos/sugerir', [\App\Http\Controllers\EventoSugerenciaController::class, 'store'])->name('eventos.sugerir');
 
     Route::post('/eventos/visitados/toggle', [EventoVisitadoController::class, 'toggle'])->name('eventos.visitados.toggle');
+
+    Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+    Route::post('/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
+    Route::post('/notificaciones/leer-todas', [NotificacionController::class, 'marcarTodasLeidas'])->name('notificaciones.leer_todas');
 
 });
 
