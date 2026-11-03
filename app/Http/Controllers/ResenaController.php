@@ -34,6 +34,8 @@ class ResenaController extends Controller
         $resena->evento_id = $validated['evento_id'] ?? null;
         $resena->calificacion = $validated['calificacion'];
         $resena->comentario = $validated['comentario'];
+        // RF2: toda reseña nueva queda PENDIENTE (null) hasta que un admin la apruebe
+        $resena->aprobada = null;
         $resena->save();
 
         if ($request->hasFile('imagenes')) {
@@ -45,7 +47,7 @@ class ResenaController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', '¡Gracias por compartir tu experiencia!');
+        return redirect()->back()->with('success', '¡Gracias por compartir tu experiencia! Tu reseña se publicará cuando un administrador la apruebe.');
     }
 
     public function update(Request $request, Resena $resena)
@@ -59,9 +61,12 @@ class ResenaController extends Controller
             'comentario'   => 'required|string|min:5|max:1000',
         ]);
 
+        // RF2: si se edita el contenido, vuelve a revisión
+        $validated['aprobada'] = null;
+
         $resena->update($validated);
 
-        return redirect()->back()->with('success', 'Reseña actualizada correctamente.');
+        return redirect()->back()->with('success', 'Reseña actualizada. Volverá a publicarse cuando un administrador la apruebe.');
     }
 
     public function destroy(Resena $resena)

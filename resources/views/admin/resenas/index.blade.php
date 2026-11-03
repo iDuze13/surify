@@ -64,7 +64,7 @@
                                 </h3>
                                 @if(is_null($resena->aprobada))
                                     <span class="text-[10px] font-bold px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100">PENDIENTE</span>
-                                Aminora @elseif($resena->aprobada)
+                                @elseif($resena->aprobada)
                                     <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">APROBADA</span>
                                 @else
                                     <span class="text-[10px] font-bold px-2 py-0.5 bg-rose-50 text-rose-500 rounded-full border border-rose-100">RECHAZADA</span>

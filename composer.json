@@ -19,6 +19,7 @@
         "laravel/tinker": "^3.0",
         "nesbot/carbon": "^3.11",
         "resend/resend-laravel": "^1.4",
+        "resend/resend-php": "^1.18",
         "spatie/laravel-backup": "^10.3"
     },
     "require-dev": {

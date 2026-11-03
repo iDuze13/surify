@@ -49,11 +49,11 @@ class Evento extends Model
     }
 
     /**
-     * Obtiene las reseñas asociadas a este evento.
+     * Obtiene las reseñas APROBADAS asociadas a este evento (RF2).
      */
     public function resenas(): HasMany
     {
-        return $this->hasMany(Resena::class);
+        return $this->hasMany(Resena::class)->where('aprobada', true);
     }
 
     /**

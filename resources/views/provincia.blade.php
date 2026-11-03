@@ -352,7 +352,7 @@
 
         <div class="lg:col-span-7 flex flex-col gap-4">
             @php
-            $resenas = \App\Models\Resena::whereHas('destino', function($q) use ($provincia) {
+            $resenas = \App\Models\Resena::where('aprobada', true)->whereHas('destino', function($q) use ($provincia) {
             $q->where('provincia_id', $provincia?->id);
             })->where('aprobada', true)->with('user')->latest()->take(5)->get();
             @endphp

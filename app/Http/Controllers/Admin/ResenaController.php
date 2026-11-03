@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Resena;
+use App\Notifications\ResenaModerada;
 use Illuminate\Http\Request;
 
 class ResenaController extends Controller
@@ -31,13 +32,27 @@ class ResenaController extends Controller
 
     public function aprobar(Resena $resena)
     {
+        $yaAprobada = $resena->aprobada === true;
+
         $resena->update(['aprobada' => true]);
+
+        if (!$yaAprobada) {
+            $this->avisarAlAutor($resena, true);
+        }
+
         return redirect()->back()->with('success', 'Reseña aprobada correctamente.');
     }
 
     public function rechazar(Resena $resena)
     {
+        $yaRechazada = $resena->aprobada === false;
+
         $resena->update(['aprobada' => false]);
+
+        if (!$yaRechazada) {
+            $this->avisarAlAutor($resena, false);
+        }
+
         return redirect()->back()->with('success', 'Reseña rechazada correctamente.');
     }
 
@@ -45,5 +60,18 @@ class ResenaController extends Controller
     {
         $resena->delete();
         return redirect()->back()->with('success', 'Reseña eliminada correctamente.');
+    }
+
+    /**
+     * Notifica al autor (campanita + correo). Si el envío falla (por ejemplo,
+     * por el servicio de correo), la moderación igual se guarda.
+     */
+    private function avisarAlAutor(Resena $resena, bool $aprobada): void
+    {
+        try {
+            $resena->user?->notify(new ResenaModerada($resena, $aprobada));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }

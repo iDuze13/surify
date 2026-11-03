@@ -43,11 +43,11 @@ class Destino extends Model
     }
 
     /**
-     * Obtiene las reseñas asociadas a este destino.
+     * Obtiene las reseñas APROBADAS asociadas a este destino (RF2).
      */
     public function resenas(): HasMany
     {
-        return $this->hasMany(Resena::class);
+        return $this->hasMany(Resena::class)->where('aprobada', true);
     }
 
     /**
