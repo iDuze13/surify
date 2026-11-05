@@ -15,48 +15,72 @@ class BackupDatabase extends Command
     {
         $this->info('Iniciando backup de la base de datos...');
 
-        $nombreArchivo = 'backup_' . now()->format('Y-m-d_H-i-s') . '.sql';
-        $rutaTemporal  = storage_path('app/backups/' . $nombreArchivo);
+        // Formato custom (-F c): se restaura con pg_restore
+        $nombreArchivo = 'backup_' . now('America/Argentina/Buenos_Aires')->format('Y-m-d_H-i-s') . '.dump';
+        $carpeta       = storage_path('app/backups');
+        $rutaTemporal  = $carpeta . '/' . $nombreArchivo;
 
-        // Crear carpeta si no existe
-        if (!file_exists(storage_path('app/backups'))) {
-            mkdir(storage_path('app/backups'), 0755, true);
+        if (!file_exists($carpeta)) {
+            mkdir($carpeta, 0755, true);
         }
 
-        // Generar el backup con pg_dump
-        $host     = env('DB_HOST');
-        $port     = env('DB_PORT', 5432);
-        $database = env('DB_DATABASE');
-        $username = env('DB_USERNAME');
-        $password = env('DB_PASSWORD');
-
-        putenv("PGPASSWORD={$password}");
-
+        // Armar el comando de pg_dump
         $pgDump = env('PG_DUMP_PATH', 'pg_dump');
-        $comando = "\"{$pgDump}\" -h {$host} -p {$port} -U {$username} -F c -b -v -f \"{$rutaTemporal}\" {$database}";
-        exec($comando, $output, $codigo);
+        $dbUrl  = env('DB_URL');
+
+        if ($dbUrl) {
+            // Railway: la conexión viene completa en DB_URL
+            $this->info('Usando conexión por DB_URL.');
+            $comando = "\"{$pgDump}\" --dbname=\"{$dbUrl}\" -F c -b -f \"{$rutaTemporal}\"";
+        } else {
+            // Local: datos sueltos del .env
+            $this->info('Usando conexión local (.env).');
+            putenv('PGPASSWORD=' . env('DB_PASSWORD'));
+            $comando = "\"{$pgDump}\""
+                     . ' -h ' . env('DB_HOST', '127.0.0.1')
+                     . ' -p ' . env('DB_PORT', 5432)
+                     . ' -U ' . env('DB_USERNAME')
+                     . " -F c -b -f \"{$rutaTemporal}\" "
+                     . env('DB_DATABASE');
+        }
+
+        // 2>&1 para capturar el mensaje de error de pg_dump si falla
+        exec($comando . ' 2>&1', $output, $codigo);
 
         if ($codigo !== 0) {
-            $this->error('Error al generar el backup con pg_dump.');
+            $this->error('Error al generar el backup con pg_dump:');
+            $this->error(implode("\n", $output));
+            if (file_exists($rutaTemporal)) {
+                unlink($rutaTemporal);
+            }
             return Command::FAILURE;
         }
 
-        // Subir a Cloudinary
-        $cloudinary = new Cloudinary(
-            Configuration::instance([
-                'cloud' => [
-                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                    'api_key'    => env('CLOUDINARY_API_KEY'),
-                    'api_secret' => env('CLOUDINARY_API_SECRET'),
-                ],
-            ])
-        );
+        $tamanoKb = round(filesize($rutaTemporal) / 1024, 1);
+        $this->info("Backup generado ({$tamanoKb} KB). Subiendo a Cloudinary...");
 
-        $resultado = $cloudinary->uploadApi()->upload($rutaTemporal, [
-            'folder'        => 'surify/backups',
-            'resource_type' => 'raw',
-            'public_id'     => $nombreArchivo,
-        ]);
+        // Subir a Cloudinary
+        try {
+            $cloudinary = new Cloudinary(
+                Configuration::instance([
+                    'cloud' => [
+                        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                        'api_key'    => env('CLOUDINARY_API_KEY'),
+                        'api_secret' => env('CLOUDINARY_API_SECRET'),
+                    ],
+                ])
+            );
+
+            $resultado = $cloudinary->uploadApi()->upload($rutaTemporal, [
+                'folder'        => 'surify/backups',
+                'resource_type' => 'raw',
+                'public_id'     => $nombreArchivo,
+            ]);
+        } catch (\Throwable $e) {
+            $this->error('Error al subir el backup a Cloudinary: ' . $e->getMessage());
+            unlink($rutaTemporal);
+            return Command::FAILURE;
+        } 
 
         // Eliminar archivo temporal
         unlink($rutaTemporal);
