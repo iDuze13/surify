@@ -4,6 +4,45 @@
 
 @section('content')
 
+{{-- ========== ANIMACIONES DE LA PÁGINA DE PROVINCIA ========== --}}
+<style>
+    /* Variantes del .reveal global (el observer del layout les agrega .visible) */
+    .reveal.from-left { transform: translateX(-32px); }
+    .reveal.zoom { transform: scale(.94); }
+    @media (min-width: 1024px) {
+        .reveal.from-right { transform: translateX(32px); }
+    }
+    .reveal.from-left.visible,
+    .reveal.from-right.visible,
+    .reveal.zoom.visible { transform: none; }
+
+    /* Barra de progreso de scroll */
+    #scroll-progress {
+        position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 9990;
+        background: #28628f; transform: scaleX(0); transform-origin: left; pointer-events: none;
+    }
+
+    /* Solo se animan si la persona NO pidió reducir movimiento */
+    @media (prefers-reduced-motion: no-preference) {
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+        @keyframes imgIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+        @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.12) translate(-1%, -1%); } }
+        @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes nudgeDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+        @keyframes pinBounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } 60% { transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+
+        .hero-in { animation: fadeUp .7s cubic-bezier(.2, .7, .2, 1) both; animation-delay: var(--d, 0s); }
+        .gal-in { animation: imgIn .8s cubic-bezier(.2, .7, .2, 1) both; animation-delay: var(--d, 0s); }
+        .kenburns { animation: kenburns 20s ease-in-out infinite alternate; }
+        .float-y { animation: floatY 3.5s ease-in-out infinite; }
+        .nudge-down { animation: nudgeDown 1.4s ease-in-out infinite; }
+        .pin-bounce { animation: pinBounce 2.2s ease-in-out infinite; }
+        .pop { animation: popIn .45s cubic-bezier(.2, .7, .2, 1) both; animation-delay: var(--pd, 0s); }
+    }
+</style>
+<div id="scroll-progress"></div>
+
 <div class="antialiased min-h-screen pt-4">
 
     {{-- ========== HERO ========== --}}
@@ -12,34 +51,55 @@
 
             {{-- Texto izquierda --}}
             <div class="lg:col-span-5 flex flex-col gap-4">
-                <div class="flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[#28628f]">location_on</span>
+                <div class="flex items-center gap-1 hero-in" style="--d:.05s">
+                    <span class="material-symbols-outlined text-[#28628f] pin-bounce">location_on</span>
                     <span class="text-xs font-bold uppercase tracking-widest text-[#28628f]">
                         {{ $provincia ? ($provincia->region ?? 'Argentina') : 'Argentina' }}
                     </span>
                 </div>
 
-                <h1 class="text-5xl md:text-6xl font-black text-[#28628f] tracking-tighter leading-none" style="font-family: 'Inter', sans-serif;">
+                <h1 class="text-5xl md:text-6xl font-black text-[#28628f] tracking-tighter leading-none hero-in" style="font-family: 'Inter', sans-serif; --d:.15s">
                     {{ $provincia ? $provincia->nombre : $nombre }}
                 </h1>
 
-                <p class="text-base text-slate-600 leading-relaxed">
+                <p class="text-base text-slate-600 leading-relaxed hero-in" style="--d:.25s">
                     {{ $provincia && $provincia->descripcion
                         ? $provincia->descripcion
                         : 'Descubrí los atractivos turísticos, paisajes imponentes, gastronomía regional y festivales tradicionales que esta provincia tiene para ofrecer.' }}
                 </p>
 
-                <div class="flex gap-3 pt-2">
+                <div class="flex gap-3 pt-2 hero-in" style="--d:.35s">
                     <a href="#destinos-section"
                         class="bg-[#28628f] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1a4669] transition-all shadow-sm flex items-center gap-1 text-decoration-none">
                         <span>Explorar Destinos</span>
-                        <span class="material-symbols-outlined text-sm">arrow_downward</span>
+                        <span class="material-symbols-outlined text-sm nudge-down">arrow_downward</span>
                     </a>
                     <a href="{{ route('mapa.nacional') }}"
                         class="border border-[#28628f] text-[#28628f] px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-all flex items-center gap-1 text-decoration-none">
                         <span class="material-symbols-outlined text-sm">map</span>
                         <span>Ver Mapa</span>
                     </a>
+                </div>
+
+                {{-- Contadores animados --}}
+                @php
+                $totalDestinos = $destinos->count();
+                $totalEventos = $provincia?->eventos?->count() ?? 0;
+                $totalPlatos = $gastronomia->count();
+                @endphp
+                <div class="flex flex-wrap gap-8 pt-4 hero-in" style="--d:.5s">
+                    <div>
+                        <p class="text-3xl font-black text-slate-800 leading-none" data-count="{{ $totalDestinos }}">{{ $totalDestinos }}</p>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Destinos</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black text-slate-800 leading-none" data-count="{{ $totalEventos }}">{{ $totalEventos }}</p>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Eventos</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-black text-slate-800 leading-none" data-count="{{ $totalPlatos }}">{{ $totalPlatos }}</p>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">Platos típicos</p>
+                    </div>
                 </div>
             </div>
 
@@ -57,16 +117,16 @@
                 $img3 = $imagenesProvincia->get(2)?->url
                 ?? 'https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&w=600&q=80';
                 @endphp
-                <div class="col-span-2 row-span-1 rounded-2xl overflow-hidden relative group shadow-sm">
-                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                <div class="col-span-2 row-span-1 rounded-2xl overflow-hidden relative group shadow-sm gal-in" style="--d:.1s">
+                    <img class="w-full h-full object-cover kenburns"
                         src="{{ $img1 }}" alt="Banner {{ $nombre }}">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
                 </div>
-                <div class="col-span-1 row-span-1 rounded-2xl overflow-hidden group shadow-sm bg-slate-100">
+                <div class="col-span-1 row-span-1 rounded-2xl overflow-hidden group shadow-sm bg-slate-100 gal-in" style="--d:.25s">
                     <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         src="{{ $img2 }}" alt="Detalle 1">
                 </div>
-                <div class="col-span-1 row-span-1 rounded-2xl overflow-hidden group shadow-sm bg-slate-100">
+                <div class="col-span-1 row-span-1 rounded-2xl overflow-hidden group shadow-sm bg-slate-100 gal-in" style="--d:.4s">
                     <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         src="{{ $img3 }}" alt="Detalle 2">
                 </div>
@@ -78,24 +138,24 @@
     <section class="bg-white border-y border-slate-200 py-6 my-4 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 md:px-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div class="max-w-xl">
+                <div class="max-w-xl reveal from-left">
                     <h2 class="text-xl font-black text-slate-800 tracking-tight mb-1">Cultura, Naturaleza e Historia</h2>
                     <p class="text-sm text-slate-500 leading-relaxed">Una experiencia integral para el explorador moderno, con datos en tiempo real.</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <div class="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm">
+                    <div class="reveal zoom flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm" style="transition-delay: 0ms">
                         <span class="material-symbols-outlined text-[#28628f] text-[18px]">restaurant</span>
                         <span class="text-xs font-bold text-slate-700">Gastronomía Regional</span>
                     </div>
-                    <div class="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm">
+                    <div class="reveal zoom flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm" style="transition-delay: 100ms">
                         <span class="material-symbols-outlined text-[#28628f] text-[18px]">partly_cloudy_day</span>
                         <span class="text-xs font-bold text-slate-700">Clima en Tiempo Real</span>
                     </div>
-                    <div class="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm">
+                    <div class="reveal zoom flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm" style="transition-delay: 200ms">
                         <span class="material-symbols-outlined text-[#28628f] text-[18px]">celebration</span>
                         <span class="text-xs font-bold text-slate-700">Festivales Oficiales</span>
                     </div>
-                    <div class="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm">
+                    <div class="reveal zoom flex items-center gap-1.5 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full shadow-sm" style="transition-delay: 300ms">
                         <span class="material-symbols-outlined text-[#28628f] text-[18px]">kayaking</span>
                         <span class="text-xs font-bold text-slate-700">Aventura</span>
                     </div>
@@ -106,7 +166,7 @@
 
     {{-- ========== DESTINOS ========== --}}
     <section id="destinos-section" class="py-12 max-w-7xl mx-auto px-4 md:px-8">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-8 reveal">
             <h2 class="text-3xl font-black text-slate-800 tracking-tight" style="font-family: 'Inter', sans-serif;">Destinos Imperdibles</h2>
             <a class="text-[#28628f] font-bold text-sm hover:underline flex items-center gap-1 text-decoration-none" href="{{ route('mapa.nacional') }}">
                 <span class="material-symbols-outlined text-sm">map</span>
@@ -115,7 +175,7 @@
         </div>
 
         <!-- Filtros de Precio -->
-        <div class="flex flex-wrap items-center gap-2 mb-8 bg-slate-50 border border-slate-200 p-3 rounded-2xl">
+        <div class="flex flex-wrap items-center gap-2 mb-8 bg-slate-50 border border-slate-200 p-3 rounded-2xl reveal">
             <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1">
                 <span class="material-symbols-outlined text-[16px] text-[#28628f]">payments</span> Filtrar por Rango de Precio:
             </span>
@@ -136,50 +196,53 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @if(isset($destinos) && $destinos->count() > 0)
             @foreach($destinos as $destino)
-            {{-- ✅ Tarjeta entera clickeable --}}
-            <a href="{{ route('destinos.show', ['id' => $destino->id]) }}"
-                class="destino-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] transition-all border border-slate-200 flex flex-col group text-decoration-none"
-                data-precio="{{ $destino->rango_precio }}">
-                <div class="h-60 bg-slate-100 overflow-hidden relative">
-                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        src="{{ $destino->imagen_url ? (str_starts_with($destino->imagen_url, 'http') ? $destino->imagen_url : asset('storage/' . $destino->imagen_url)) : 'https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=600&q=80' }}"
-                        alt="{{ $destino->nombre }}">
-                    <div class="absolute top-4 left-4 flex gap-1.5 flex-wrap">
-                        <span class="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full font-bold text-[10px] text-slate-700 uppercase border border-slate-200 tracking-wider">
-                            {{ $destino->categoria ?? 'Turismo' }}
-                        </span>
-                        <span class="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full font-bold text-[10px] text-slate-700 uppercase border border-slate-200 tracking-wider">
-                            Precio: {{ $destino->rango_precio }}
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6 flex flex-col flex-grow">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-lg font-bold text-slate-800 group-hover:text-[#28628f] transition-colors leading-tight">{{ $destino->nombre }}</h3>
-                        <div class="flex items-center gap-0.5 text-amber-500 shrink-0 ml-2">
-                            <span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                            <span class="text-sm font-bold text-slate-700">
-                                {{ $destino->resenas->count() > 0 ? number_format($destino->resenas->avg('calificacion'), 1) : '4.5' }}
+            {{-- El wrapper lleva el reveal escalonado y el filtro; la tarjeta conserva su hover --}}
+            <div class="destino-card reveal" style="transition-delay: {{ ($loop->index % 3) * 120 }}ms" data-precio="{{ $destino->rango_precio }}">
+                {{-- ✅ Tarjeta entera clickeable --}}
+                <a href="{{ route('destinos.show', ['id' => $destino->id]) }}"
+                    class="h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] hover:-translate-y-1 transition-all border border-slate-200 flex flex-col group text-decoration-none">
+                    <div class="h-60 bg-slate-100 overflow-hidden relative">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy" decoding="async"
+                            src="{{ $destino->imagen_url ? (str_starts_with($destino->imagen_url, 'http') ? $destino->imagen_url : asset('storage/' . $destino->imagen_url)) : 'https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&w=600&q=80' }}"
+                            alt="{{ $destino->nombre }}">
+                        <div class="absolute top-4 left-4 flex gap-1.5 flex-wrap">
+                            <span class="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full font-bold text-[10px] text-slate-700 uppercase border border-slate-200 tracking-wider">
+                                {{ $destino->categoria ?? 'Turismo' }}
+                            </span>
+                            <span class="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full font-bold text-[10px] text-slate-700 uppercase border border-slate-200 tracking-wider">
+                                Precio: {{ $destino->rango_precio }}
                             </span>
                         </div>
                     </div>
-                    <p class="text-slate-500 text-sm mb-4 line-clamp-3 leading-relaxed">{{ $destino->descripcion }}</p>
-                    <div class="mt-auto pt-3 border-t border-slate-100 flex justify-between items-center">
-                        <span class="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">location_on</span>
-                            {{ $destino->ubicacion ? 'Mapeado' : 'Ver ubicación' }}
-                        </span>
-                        <span class="text-[#28628f] font-bold text-xs inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                            <span>Ver Detalles</span>
-                            <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
-                        </span>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-slate-800 group-hover:text-[#28628f] transition-colors leading-tight">{{ $destino->nombre }}</h3>
+                            <div class="flex items-center gap-0.5 text-amber-500 shrink-0 ml-2">
+                                <span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span class="text-sm font-bold text-slate-700">
+                                    {{ $destino->resenas->count() > 0 ? number_format($destino->resenas->avg('calificacion'), 1) : '4.5' }}
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-slate-500 text-sm mb-4 line-clamp-3 leading-relaxed">{{ $destino->descripcion }}</p>
+                        <div class="mt-auto pt-3 border-t border-slate-100 flex justify-between items-center">
+                            <span class="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                {{ $destino->ubicacion ? 'Mapeado' : 'Ver ubicación' }}
+                            </span>
+                            <span class="text-[#28628f] font-bold text-xs inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                <span>Ver Detalles</span>
+                                <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+                            </span>
+                        </div>
                     </div>
-                </div>
-            </a>
-            {{-- FIN tarjeta clickeable --}}
+                </a>
+                {{-- FIN tarjeta clickeable --}}
+            </div>
             @endforeach
             @else
-            <div class="col-span-1 md:col-span-3 bg-white border border-slate-200 p-12 rounded-2xl text-center">
+            <div class="col-span-1 md:col-span-3 bg-white border border-slate-200 p-12 rounded-2xl text-center reveal">
                 <span class="material-symbols-outlined text-5xl text-slate-300 block mb-3">folder_open</span>
                 <p class="text-slate-400 font-medium">Todavía no hay destinos cargados para esta provincia.</p>
                 <p class="text-slate-300 text-sm mt-1">Pronto estarán disponibles.</p>
@@ -196,18 +259,18 @@
     @if($clima)
     <section class="bg-white border-y border-slate-200 py-6 my-4 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 md:px-8">
-            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2 reveal">
                 <span class="material-symbols-outlined text-[#28628f]">partly_cloudy_day</span>
                 Clima en {{ $nombre }} ahora
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gradient-to-br from-[#28628f] to-[#1a4669] rounded-2xl p-6 text-white flex items-center gap-6">
+                <div class="reveal zoom bg-gradient-to-br from-[#28628f] to-[#1a4669] rounded-2xl p-6 text-white flex items-center gap-6">
                     <div class="text-center">
                         <img src="https://openweathermap.org/img/wn/{{ $clima['weather'][0]['icon'] }}@2x.png"
-                            alt="{{ $clima['weather'][0]['description'] }}" class="w-20 h-20">
+                            alt="{{ $clima['weather'][0]['description'] }}" class="w-20 h-20 float-y">
                     </div>
                     <div>
-                        <p class="text-6xl font-black leading-none">{{ round($clima['main']['temp']) }}°</p>
+                        <p class="text-6xl font-black leading-none" data-count="{{ round($clima['main']['temp']) }}" data-suffix="°">{{ round($clima['main']['temp']) }}°</p>
                         <p class="text-white/80 capitalize text-sm mt-1">{{ $clima['weather'][0]['description'] }}</p>
                         <p class="text-white/60 text-xs mt-2">Sensación térmica: {{ round($clima['main']['feels_like']) }}°C</p>
                     </div>
@@ -227,11 +290,11 @@
                     </div>
                 </div>
                 @if($pronostico)
-                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                <div class="reveal bg-slate-50 rounded-2xl p-4 border border-slate-200" style="transition-delay: 120ms">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Próximas horas</p>
                     <div class="grid grid-cols-4 gap-2">
                         @foreach(array_slice($pronostico['list'], 0, 4) as $item)
-                        <div class="text-center bg-white rounded-xl p-2 border border-slate-100">
+                        <div class="reveal zoom text-center bg-white rounded-xl p-2 border border-slate-100" style="transition-delay: {{ 200 + ($loop->index * 100) }}ms">
                             <p class="text-xs text-slate-400 font-semibold">
                                 {{ \Carbon\Carbon::parse($item['dt_txt'])->format('H:i') }}
                             </p>
@@ -255,7 +318,7 @@
 
             {{-- Eventos --}}
             <div class="lg:col-span-5 flex flex-col gap-5">
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2" style="font-family: 'Inter', sans-serif;">
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2 reveal from-left" style="font-family: 'Inter', sans-serif;">
                     <span class="material-symbols-outlined text-[#28628f]">celebration</span>
                     Próximos Eventos Regionales
                 </h2>
@@ -263,38 +326,42 @@
                 <div class="flex flex-col gap-3">
                     @if(isset($provincia) && $provincia->eventos && $provincia->eventos->count() > 0)
                     @foreach($provincia->eventos as $evento)
-                    {{-- ✅ Evento clickeable --}}
-                    <a href="{{ route('eventos.show', $evento->id) }}"
-                        class="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-[#28628f] hover:shadow-sm transition-all group text-decoration-none">
-                        <div class="flex flex-col items-center justify-center bg-[#28628f] text-white w-14 h-14 rounded-xl font-bold shrink-0 shadow-sm">
-                            <span class="text-[10px] uppercase font-semibold leading-none mb-0.5">{{ \Carbon\Carbon::parse($evento->fecha_inicio)->format('M') }}</span>
-                            <span class="text-lg font-black leading-none">{{ \Carbon\Carbon::parse($evento->fecha_inicio)->format('d') }}</span>
-                        </div>
-                        <div class="truncate">
-                            <h4 class="font-bold text-base text-slate-800 group-hover:text-[#28628f] transition-colors truncate">{{ $evento->nombre }}</h4>
-                            <p class="text-slate-400 text-xs mt-0.5 font-medium flex items-center gap-0.5">
-                                <span class="material-symbols-outlined text-xs">location_on</span>
-                                {{ $evento->ubicacion ?? 'Centro' }}
-                            </p>
-                        </div>
-                        <span class="material-symbols-outlined text-slate-300 group-hover:text-[#28628f] ml-auto self-center transition-colors shrink-0">arrow_forward</span>
-                    </a>
-                    {{--  FIN evento clickeable --}}
+                    <div class="reveal from-left" style="transition-delay: {{ $loop->index * 100 }}ms">
+                        {{-- ✅ Evento clickeable --}}
+                        <a href="{{ route('eventos.show', $evento->id) }}"
+                            class="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-[#28628f] hover:shadow-sm transition-all group text-decoration-none">
+                            <div class="flex flex-col items-center justify-center bg-[#28628f] text-white w-14 h-14 rounded-xl font-bold shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                                <span class="text-[10px] uppercase font-semibold leading-none mb-0.5">{{ \Carbon\Carbon::parse($evento->fecha_inicio)->format('M') }}</span>
+                                <span class="text-lg font-black leading-none">{{ \Carbon\Carbon::parse($evento->fecha_inicio)->format('d') }}</span>
+                            </div>
+                            <div class="truncate">
+                                <h4 class="font-bold text-base text-slate-800 group-hover:text-[#28628f] transition-colors truncate">{{ $evento->nombre }}</h4>
+                                <p class="text-slate-400 text-xs mt-0.5 font-medium flex items-center gap-0.5">
+                                    <span class="material-symbols-outlined text-xs">location_on</span>
+                                    {{ $evento->ubicacion ?? 'Centro' }}
+                                </p>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-300 group-hover:text-[#28628f] group-hover:translate-x-1 ml-auto self-center transition-all shrink-0">arrow_forward</span>
+                        </a>
+                        {{--  FIN evento clickeable --}}
+                    </div>
                     @endforeach
                     @else
                     {{-- Placeholder eventos (no clickeables, son estáticos) --}}
                     @foreach([['SEP','07','Fiesta Nacional del Inmigrante','Oberá'],['NOV','14','Música Nacional del Litoral','Posadas'],['DIC','05','Fiesta de la Yerba Mate','Apóstoles']] as $ev)
-                    <div class="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <div class="flex flex-col items-center justify-center bg-[#28628f] text-white w-14 h-14 rounded-xl font-bold shrink-0 shadow-sm">
-                            <span class="text-[10px] uppercase font-semibold leading-none mb-0.5">{{ $ev[0] }}</span>
-                            <span class="text-lg font-black leading-none">{{ $ev[1] }}</span>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-base text-slate-800">{{ $ev[2] }}</h4>
-                            <p class="text-slate-400 text-xs mt-0.5 font-medium flex items-center gap-0.5">
-                                <span class="material-symbols-outlined text-xs">location_on</span>
-                                {{ $ev[3] }}, {{ $nombre }}
-                            </p>
+                    <div class="reveal from-left" style="transition-delay: {{ $loop->index * 100 }}ms">
+                        <div class="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div class="flex flex-col items-center justify-center bg-[#28628f] text-white w-14 h-14 rounded-xl font-bold shrink-0 shadow-sm">
+                                <span class="text-[10px] uppercase font-semibold leading-none mb-0.5">{{ $ev[0] }}</span>
+                                <span class="text-lg font-black leading-none">{{ $ev[1] }}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-base text-slate-800">{{ $ev[2] }}</h4>
+                                <p class="text-slate-400 text-xs mt-0.5 font-medium flex items-center gap-0.5">
+                                    <span class="material-symbols-outlined text-xs">location_on</span>
+                                    {{ $ev[3] }}, {{ $nombre }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                     @endforeach
@@ -304,7 +371,7 @@
 
             {{-- Gastronomía --}}
             <div class="lg:col-span-7 flex flex-col gap-5">
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2" style="font-family: 'Inter', sans-serif;">
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2 reveal" style="font-family: 'Inter', sans-serif;">
                     <span class="material-symbols-outlined text-[#28628f]">restaurant</span>
                     Sabores Locales
                 </h2>
@@ -312,21 +379,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @if($gastronomia->count() > 0)
                     @foreach($gastronomia as $plato)
-                    <div onclick="abrirModalPlato('{{ addslashes($plato->nombre) }}', '{{ addslashes($plato->descripcion) }}', '{{ addslashes($plato->categoria) }}', '{{ $plato->imagen_url ?: '' }}')"
-                        class="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:border-[#28628f] hover:shadow-md transition-all">
-                        <div class="h-36 bg-slate-200 overflow-hidden">
-                            <img src="{{ $plato->imagen_url ?: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80' }}"
-                                class="w-full h-full object-cover" alt="{{ $plato->nombre }}">
-                        </div>
-                        <div class="p-4 flex-grow">
-                            <span class="inline-block px-2 py-0.5 bg-[#28628f]/10 rounded-md font-bold text-[9px] text-[#28628f] uppercase tracking-wider mb-1">{{ $plato->categoria }}</span>
-                            <h3 class="font-bold text-slate-800 text-base mb-1">{{ $plato->nombre }}</h3>
-                            <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">{{ $plato->descripcion }}</p>
+                    <div class="reveal zoom" style="transition-delay: {{ ($loop->index % 2) * 120 }}ms">
+                        <div onclick="abrirModalPlato('{{ addslashes($plato->nombre) }}', '{{ addslashes($plato->descripcion) }}', '{{ addslashes($plato->categoria) }}', '{{ $plato->imagen_url ?: '' }}')"
+                            class="group h-full bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col cursor-pointer hover:border-[#28628f] hover:shadow-md hover:-translate-y-1 transition-all">
+                            <div class="h-36 bg-slate-200 overflow-hidden">
+                                <img src="{{ $plato->imagen_url ?: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80' }}"
+                                    loading="lazy" decoding="async"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $plato->nombre }}">
+                            </div>
+                            <div class="p-4 flex-grow">
+                                <span class="inline-block px-2 py-0.5 bg-[#28628f]/10 rounded-md font-bold text-[9px] text-[#28628f] uppercase tracking-wider mb-1">{{ $plato->categoria }}</span>
+                                <h3 class="font-bold text-slate-800 text-base mb-1">{{ $plato->nombre }}</h3>
+                                <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">{{ $plato->descripcion }}</p>
+                            </div>
                         </div>
                     </div>
                     @endforeach
                     @else
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                    <div class="reveal bg-slate-50 border border-slate-200 rounded-2xl p-5">
                         <div class="w-10 h-10 rounded-xl bg-[#28628f]/10 flex items-center justify-center mb-3">
                             <span class="material-symbols-outlined text-[#28628f]">restaurant</span>
                         </div>
@@ -343,7 +413,7 @@
 
 {{-- ========== RESEÑAS ========== --}}
 <section class="py-12 max-w-7xl mx-auto px-4 md:px-8">
-    <h2 class="text-3xl font-black text-slate-800 tracking-tight mb-8 flex items-center gap-2" style="font-family: 'Inter', sans-serif;">
+    <h2 class="text-3xl font-black text-slate-800 tracking-tight mb-8 flex items-center gap-2 reveal" style="font-family: 'Inter', sans-serif;">
         <span class="material-symbols-outlined text-[#28628f]">rate_review</span>
         Opiniones de Viajeros
     </h2>
@@ -359,7 +429,7 @@
 
             @if($resenas->count() > 0)
             @foreach($resenas as $resena)
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="reveal from-left bg-white rounded-2xl border border-slate-200 p-6 shadow-sm" style="transition-delay: {{ $loop->index * 100 }}ms">
                 <div class="flex items-start gap-4">
                     <div class="w-10 h-10 rounded-full bg-[#28628f] text-white flex items-center justify-center font-bold text-sm shrink-0">
                         @if($resena->anonima)
@@ -401,7 +471,7 @@
             </div>
             @endforeach
             @else
-            <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+            <div class="reveal bg-white rounded-2xl border border-slate-200 p-10 text-center">
                 <span class="material-symbols-outlined text-4xl text-slate-300 block mb-3">chat_bubble_outline</span>
                 <p class="text-slate-400 font-medium">Todavía no hay reseñas para esta provincia.</p>
                 <p class="text-slate-300 text-sm mt-1">¡Sé el primero en comentar!</p>
@@ -410,8 +480,8 @@
         </div>
 
         <div class="lg:col-span-5">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-24 text-center">
-                <span class="material-symbols-outlined text-5xl text-[#28628f] block mb-3">rate_review</span>
+            <div class="reveal from-right bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-24 text-center">
+                <span class="material-symbols-outlined text-5xl text-[#28628f] block mb-3 float-y">rate_review</span>
                 <h3 class="text-lg font-bold text-slate-800 mb-2">¿Ya visitaste esta provincia?</h3>
                 <p class="text-slate-500 text-sm mb-6">Compartí tu experiencia y ayudá a otros viajeros a descubrir lo mejor de Argentina.</p>
                 @auth
@@ -607,14 +677,21 @@
             }
         });
 
+        // Ahora el filtro actúa sobre el wrapper (.destino-card) y re-anima las tarjetas que quedan
         const cards = document.querySelectorAll('.destino-card');
         let count = 0;
         cards.forEach(card => {
             if (rango === 'todos' || card.dataset.precio === rango) {
-                card.style.display = 'flex';
+                card.style.display = '';
+                card.classList.add('visible');
+                card.style.setProperty('--pd', ((count % 3) * 0.08) + 's');
+                card.classList.remove('pop');
+                void card.offsetWidth; // reinicia la animación
+                card.classList.add('pop');
                 count++;
             } else {
                 card.style.display = 'none';
+                card.classList.remove('pop');
             }
         });
 
@@ -623,5 +700,64 @@
             sinResultados.classList.toggle('hidden', count > 0);
         }
     }
+</script>
+
+{{-- Contadores animados + barra de progreso de scroll --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Saca la clase .pop cuando termina la animación del filtro
+        document.querySelectorAll('.destino-card').forEach(function(c) {
+            c.addEventListener('animationend', function() { c.classList.remove('pop'); });
+        });
+
+        // Contadores (data-count): arrancan cuando aparecen en pantalla
+        function animarContador(el) {
+            const fin = parseFloat(el.dataset.count);
+            if (isNaN(fin)) return;
+            const sufijo = el.dataset.suffix || '';
+            const duracion = 1200;
+            const t0 = performance.now();
+            function paso(t) {
+                const p = Math.min((t - t0) / duracion, 1);
+                const suave = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(fin * suave) + sufijo;
+                if (p < 1) requestAnimationFrame(paso);
+            }
+            requestAnimationFrame(paso);
+        }
+
+        const contadores = document.querySelectorAll('[data-count]');
+        if (!reducirMovimiento && 'IntersectionObserver' in window) {
+            const obs = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        animarContador(entry.target);
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.4 });
+            contadores.forEach(function(el) { obs.observe(el); });
+        }
+
+        // Barra de progreso de scroll
+        const barra = document.getElementById('scroll-progress');
+        if (barra) {
+            let pendiente = false;
+            function actualizarBarra() {
+                const total = document.documentElement.scrollHeight - window.innerHeight;
+                barra.style.transform = 'scaleX(' + (total > 0 ? window.scrollY / total : 0) + ')';
+                pendiente = false;
+            }
+            window.addEventListener('scroll', function() {
+                if (!pendiente) {
+                    requestAnimationFrame(actualizarBarra);
+                    pendiente = true;
+                }
+            }, { passive: true });
+            actualizarBarra();
+        }
+    });
 </script>
 @endsection
