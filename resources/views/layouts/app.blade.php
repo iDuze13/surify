@@ -361,6 +361,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 @endauth
             </nav>
+
+            @auth
+            @php
+                $authUser = auth()->user();
+                $puedeCambiarVista = $authUser->hasRole('admin')
+                    || $authUser->hasRole('Admin')
+                    || $authUser->hasRole('AdministradorFestivales')
+                    || count($authUser->permisos()->pluck('nombre')->toArray()) > 0;
+            @endphp
+            @if($puedeCambiarVista)
+            <div class="p-3 border-t border-slate-200 dark:border-slate-700 shrink-0">
+                <form method="POST" action="{{ route('admin.cambiar_vista') }}">
+                    @csrf
+                    @if(session('modo_usuario'))
+                    <input type="hidden" name="modo" value="admin">
+                    <button type="submit" class="w-full inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-2 rounded-lg transition-all border-none cursor-pointer shadow-sm">
+                        <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                        Vista Admin
+                    </button>
+                    @else
+                    <input type="hidden" name="modo" value="usuario">
+                    <button type="submit" class="w-full inline-flex items-center justify-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 text-xs font-bold px-2.5 py-2 rounded-lg transition-all border-none cursor-pointer">
+                        <span class="material-symbols-outlined text-[14px]">visibility</span>
+                        Ver como usuario
+                    </button>
+                    @endif
+                </form>
+            </div>
+            @endif
+            @endauth
         </aside>
 
         {{-- ========== COLUMNA PRINCIPAL ========== --}}
@@ -422,15 +452,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         @auth
                         <div class="flex items-center gap-3">
-                            @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('Admin') || count(auth()->user()->permisos()->pluck('nombre')->toArray()) > 0)
-                            <form method="POST" action="{{ route('admin.cambiar_vista') }}">
-                                @csrf
-                                <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#28628f] text-slate-500 hover:text-[#28628f] transition-all bg-white cursor-pointer flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">{{ session('modo_usuario') ? 'admin_panel_settings' : 'visibility' }}</span>
-                                    {{ session('modo_usuario') ? 'Vista Admin' : 'Ver como usuario' }}
-                                </button>
-                            </form>
-                            @endif
                             <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 hover:opacity-80 transition-all text-decoration-none">
                                 @if(auth()->user()->avatar)
                                 <img src="{{ auth()->user()->avatar }}" alt="Avatar" class="w-8 h-8 rounded-full border border-[#28628f]">

@@ -6,11 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Evento;
 use App\Models\Provincia;
 use App\Models\Destino;
-use App\Models\User;
-use App\Notifications\NuevoEventoFavorito;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 
 class EventoController extends Controller
 {
@@ -88,7 +85,7 @@ class EventoController extends Controller
             );
         }
 
-        $evento = Evento::create([
+        Evento::create([
             'nombre'       => $request->nombre,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin'    => $request->fecha_fin ?: null,
@@ -100,17 +97,6 @@ class EventoController extends Controller
             'descripcion'  => $request->descripcion,
             'activo'       => $request->has('activo'),
         ]);
-
-        // Avisamos a los usuarios que tienen este destino en favoritos
-        if ($evento->destino_id) {
-            $usuarios = User::whereHas('favoritos', function ($q) use ($evento) {
-                $q->where('destino_id', $evento->destino_id);
-            })->get();
-
-            if ($usuarios->isNotEmpty()) {
-                Notification::send($usuarios, new NuevoEventoFavorito($evento));
-            }
-        }
 
         return redirect()->route('admin.eventos.index')
             ->with('success', 'Evento creado correctamente.');

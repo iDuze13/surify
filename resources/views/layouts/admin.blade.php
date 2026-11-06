@@ -131,7 +131,7 @@
 
             <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
                 @auth
-                    @if(session('modo_vista') !== 'turista')
+                    @if(!session('modo_usuario'))
 
                         <a href="{{ route('dashboard') }}" class="side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                             <span class="material-symbols-outlined text-[18px]">dashboard</span> Dashboard
@@ -161,7 +161,7 @@
                         </a>
                         @endif
 
-                        @if(auth()->user()->can('administrar_reseñas') || auth()->user()->can('eliminar_comentario'))
+                        @if(auth()->user()->can('administrar_resenas') || auth()->user()->can('administrar_reseñas') || auth()->user()->can('eliminar_comentario'))
                         <a href="{{ route('admin.resenas.index') }}" class="side-link {{ request()->routeIs('admin.resenas.*') ? 'active' : '' }}">
                             <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Reseñas
                         </a>
@@ -173,32 +173,52 @@
                         </a>
                         @endif
 
+                    @else
+
+                        {{-- Modo usuario: links públicos para no dejar el sidebar vacío --}}
+                        <a href="{{ route('home') }}" class="side-link">
+                            <span class="material-symbols-outlined text-[18px]">home</span> Inicio
+                        </a>
+                        <a href="{{ route('mapa.nacional') }}" class="side-link">
+                            <span class="material-symbols-outlined text-[18px]">map</span> Mapa
+                        </a>
+                        <a href="{{ route('eventos.index') }}" class="side-link">
+                            <span class="material-symbols-outlined text-[18px]">event</span> Eventos
+                        </a>
+                        <a href="{{ route('combustible.index') }}" class="side-link">
+                            <span class="material-symbols-outlined text-[18px]">local_gas_station</span> Combustible
+                        </a>
+
                     @endif
                 @endauth
             </nav>
 
             @auth
-            @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('AdministradorFestivales'))
+            @php
+                $authUser = auth()->user();
+                $puedeCambiarVista = $authUser->hasRole('admin')
+                    || $authUser->hasRole('Admin')
+                    || $authUser->hasRole('AdministradorFestivales')
+                    || count($authUser->permisos()->pluck('nombre')->toArray()) > 0;
+            @endphp
+            @if($puedeCambiarVista)
             <div class="p-3 border-t border-slate-200 dark:border-slate-700 shrink-0">
-                @if(session('modo_vista') === 'turista')
                 <form method="POST" action="{{ route('admin.cambiar_vista') }}">
                     @csrf
+                    @if(session('modo_usuario'))
                     <input type="hidden" name="modo" value="admin">
                     <button type="submit" class="w-full inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-2 rounded-lg transition-all border-none cursor-pointer shadow-sm">
-                        <span class="material-symbols-outlined text-[14px]">visibility_off</span>
-                        Modo Admin
+                        <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                        Vista Admin
                     </button>
-                </form>
-                @else
-                <form method="POST" action="{{ route('admin.cambiar_vista') }}">
-                    @csrf
-                    <input type="hidden" name="modo" value="turista">
+                    @else
+                    <input type="hidden" name="modo" value="usuario">
                     <button type="submit" class="w-full inline-flex items-center justify-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 text-xs font-bold px-2.5 py-2 rounded-lg transition-all border-none cursor-pointer">
                         <span class="material-symbols-outlined text-[14px]">visibility</span>
                         Ver como usuario
                     </button>
+                    @endif
                 </form>
-                @endif
             </div>
             @endif
             @endauth
