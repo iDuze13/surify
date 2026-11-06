@@ -13,7 +13,7 @@ class EventoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Evento::with(['destino', 'provincia'])->orderBy('fecha_inicio', 'asc');
+        $query = Evento::with(['destino', 'provincia'])->where('activo', true)->orderBy('fecha_inicio', 'asc');
 
         if ($request->filled('provincia_id')) {
             $query->where('provincia_id', $request->provincia_id);
@@ -36,9 +36,10 @@ class EventoController extends Controller
      */
     public function show(int $id)
     {
-        $evento = Evento::with(['provincia', 'destino', 'resenas.user'])->findOrFail($id);
+        $evento = Evento::with(['provincia', 'destino', 'resenas.user'])->where('activo', true)->findOrFail($id);
 
         $eventosRelacionados = Evento::with('provincia')
+            ->where('activo', true)
             ->where('id', '!=', $id)
             ->where('provincia_id', $evento->provincia_id)
             ->limit(3)

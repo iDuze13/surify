@@ -242,4 +242,172 @@
     </div>
 </div>
 
+@auth
+<div id="modal-sugerir-evento" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onclick="document.getElementById('modal-sugerir-evento').classList.add('hidden')"></div>
+
+    <div class="relative flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#1e293b] shadow-2xl">
+
+            {{-- Encabezado --}}
+            <div class="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-700 px-6 py-5">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">Sugerir festival o evento</h2>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        Ayudanos a completar el calendario. El equipo de Surify revisará tu sugerencia antes de publicarla.
+                    </p>
+                </div>
+                <button type="button"
+                    onclick="document.getElementById('modal-sugerir-evento').classList.add('hidden')"
+                    class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('eventos.sugerir') }}" enctype="multipart/form-data"
+                class="space-y-4 px-6 py-5"
+                onsubmit="
+                      const b = document.getElementById('btn-enviar-sugerencia');
+                      b.disabled = true;
+                      document.getElementById('btn-sugerencia-icono').classList.add('hidden');
+                      document.getElementById('btn-sugerencia-spinner').classList.remove('hidden');
+                      document.getElementById('btn-sugerencia-texto').textContent = 'Enviando...';
+                  ">
+                @csrf
+
+                @if ($errors->sugerencia->any())
+                <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+                    <ul class="list-disc space-y-1 pl-5">
+                        @foreach ($errors->sugerencia->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                @php
+                $inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#28628f]';
+                $labelClass = 'mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400';
+                $listaProvincias = $provincias ?? \App\Models\Provincia::orderBy('nombre')->get();
+                @endphp
+
+                <div>
+                    <label class="{{ $labelClass }}">Nombre del evento *</label>
+                    <input type="text" name="nombre" value="{{ old('nombre') }}" required maxlength="255"
+                        placeholder="Ej: Fiesta Nacional del Pomelo" class="{{ $inputClass }}">
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="{{ $labelClass }}">Tipo *</label>
+                        <select name="tipo" required class="{{ $inputClass }}">
+                            <option value="">Seleccioná...</option>
+                            @foreach (['Festival', 'Fiesta popular', 'Música', 'Gastronomía', 'Cultura', 'Deporte', 'Religioso', 'Otro'] as $tipo)
+                            <option value="{{ $tipo }}" @selected(old('tipo')===$tipo)>{{ $tipo }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">Provincia *</label>
+                        <select name="provincia_id" required class="{{ $inputClass }}">
+                            <option value="">Seleccioná...</option>
+                            @foreach ($listaProvincias as $prov)
+                            <option value="{{ $prov->id }}" @selected(old('provincia_id')==$prov->id)>{{ $prov->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="{{ $labelClass }}">Lugar</label>
+                    <input type="text" name="ubicacion" value="{{ old('ubicacion') }}" maxlength="255"
+                        placeholder="Ej: Predio Ferial, Laguna Blanca" class="{{ $inputClass }}">
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div>
+                        <label class="{{ $labelClass }}">Fecha de inicio *</label>
+                        <input type="date" name="fecha_inicio" value="{{ old('fecha_inicio') }}" required class="{{ $inputClass }}">
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">Fecha de fin</label>
+                        <input type="date" name="fecha_fin" value="{{ old('fecha_fin') }}" class="{{ $inputClass }}">
+                    </div>
+                    <div>
+                        <label class="{{ $labelClass }}">Precio</label>
+                        <input type="text" name="rango_precio" value="{{ old('rango_precio') }}" maxlength="100"
+                            placeholder="Ej: Gratis" class="{{ $inputClass }}">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="{{ $labelClass }}">Descripción *</label>
+                    <textarea name="descripcion" rows="4" required maxlength="2000"
+                        placeholder="Contanos de qué se trata, qué actividades tiene, por qué vale la pena ir..."
+                        class="{{ $inputClass }}">{{ old('descripcion') }}</textarea>
+                </div>
+
+                <div>
+                    <label class="{{ $labelClass }}">Imagen (opcional, máx. 5 MB)</label>
+                    <input type="file" name="imagen" accept="image/*"
+                        class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:rounded-lg file:border-0 file:bg-[#28628f] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-[#1a4669]">
+                </div>
+
+                {{-- Pie --}}
+                <div class="flex justify-end gap-3 border-t border-slate-200 dark:border-slate-700 pt-4">
+                    <button type="button"
+                        onclick="document.getElementById('modal-sugerir-evento').classList.add('hidden')"
+                        class="rounded-xl px-5 py-2.5 font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btn-enviar-sugerencia"
+                        class="flex items-center gap-2 rounded-xl bg-[#28628f] px-5 py-2.5 font-bold text-white shadow-sm transition-all hover:bg-[#1a4669] disabled:cursor-not-allowed disabled:opacity-70">
+                        <span id="btn-sugerencia-icono" class="material-symbols-outlined text-[18px]">send</span>
+                        <svg id="btn-sugerencia-spinner" class="hidden h-[18px] w-[18px] animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        <span id="btn-sugerencia-texto">Enviar sugerencia</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') document.getElementById('modal-sugerir-evento')?.classList.add('hidden');
+    });
+</script>
+
+{{-- Si hubo errores de validación, reabrir el modal con los datos cargados --}}
+@if ($errors->sugerencia->any())
+<script>
+    document.getElementById('modal-sugerir-evento').classList.remove('hidden');
+</script>
+@endif
+
+{{-- Cartel de confirmación después de enviar --}}
+@if (session('sugerencia_enviada'))
+<script>
+    window.addEventListener('load', () => {
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Sugerencia enviada!',
+                text: 'Gracias por ayudarnos a mejorar Surify. Vamos a revisarla y te avisaremos cuando esté publicada.',
+                confirmButtonText: 'Genial',
+                confirmButtonColor: '#28628f',
+            });
+        } else {
+            alert('¡Sugerencia enviada! Gracias por ayudarnos a mejorar Surify.');
+        }
+    });
+</script>
+@endif
+@endauth
+
 @endsection

@@ -3,43 +3,61 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evento;
-use App\Models\Provincia;
+use App\Notifications\SugerenciaEventoRecibida;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class EventoSugerenciaController extends Controller
 {
+    public function __construct(protected CloudinaryService $cloudinary) {}
+
     public function store(Request $request)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'tipo' => 'required|string',
+        $validator = Validator::make($request->all(), [
+            'nombre'       => 'required|string|max:255',
+            'tipo'         => 'required|string|max:100',
+            'provincia_id' => 'required|exists:provincias,id',
+            'ubicacion'    => 'nullable|string|max:255',
             'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
-            'rango_precio' => 'nullable|string',
-            'provincia_id' => 'nullable|exists:provincias,id',
-            'imagenes.*' => 'nullable|image|max:2048',
+            'fecha_fin'    => 'nullable|date|after_or_equal:fecha_inicio',
+            'rango_precio' => 'nullable|string|max:100',
+            'descripcion'  => 'required|string|max:2000',
+            'imagen'       => 'nullable|image|max:5120',
         ]);
 
-        $imagen_url = null;
-        if ($request->hasFile('imagenes') && $request->file('imagenes')[0]->isValid()) {
-            $path = $request->file('imagenes')[0]->store('eventos', 'public');
-            $imagen_url = \Storage::url($path);
+        // Si hay errores, volvemos siempre a /eventos (con el modal abierto y los datos cargados)
+        if ($validator->fails()) {
+            return redirect()->route('eventos.index')
+                ->withErrors($validator, 'sugerencia')
+                ->withInput();
         }
 
-        Evento::create([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'tipo' => $request->tipo,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_fin' => $request->fecha_fin,
-            'rango_precio' => $request->rango_precio,
+        $imagenUrl = null;
+        if ($request->hasFile('imagen')) {
+            $imagenUrl = $this->cloudinary->subirImagen(
+                $request->file('imagen')->getRealPath(),
+                'surify/sugerencias/eventos'
+            );
+        }
+
+        $evento = Evento::create([
+            'nombre'       => $request->nombre,
+            'tipo'         => $request->tipo,
             'provincia_id' => $request->provincia_id,
-            'imagen_url' => $imagen_url,
-            'activo' => false,
+            'ubicacion'    => $request->ubicacion,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin'    => $request->fecha_fin ?: null,
+            'rango_precio' => $request->rango_precio,
+            'descripcion'  => $request->descripcion,
+            'imagen_url'   => $imagenUrl,
+            'activo'       => false,           // queda pendiente hasta que un admin lo apruebe
             'sugerido_por' => auth()->id(),
         ]);
 
-        return back()->with('success', '¡Gracias! Tu sugerencia de festival fue enviada y será revisada por el equipo.');
+        // Aviso en la campanita: "¡Gracias por tu sugerencia!"
+        auth()->user()->notify(new SugerenciaEventoRecibida($evento));
+
+        return redirect()->route('eventos.index')->with('sugerencia_enviada', true);
     }
 }

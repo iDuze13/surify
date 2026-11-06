@@ -53,6 +53,7 @@ class BusquedaController extends Controller
 
         // Eventos / festivales
         Evento::query()
+            ->where('activo', true)
             ->with('provincia')
             ->where('nombre', 'ILIKE', "%{$q}%")
             ->limit(5)

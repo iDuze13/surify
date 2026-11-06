@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.3",
         "ext-zip": "*",
+        "bacon/bacon-qr-code": "^3.1",
         "cloudinary/cloudinary_php": "^3.1",
         "deeplcom/deepl-php": "^1.20",
         "guzzlehttp/guzzle": "^7.15",
@@ -18,6 +19,7 @@
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "nesbot/carbon": "^3.11",
+        "pragmarx/google2fa-laravel": "^3.0",
         "resend/resend-laravel": "^1.4",
         "resend/resend-php": "^1.18",
         "spatie/laravel-backup": "^10.3"

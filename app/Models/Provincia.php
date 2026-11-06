@@ -30,7 +30,7 @@ class Provincia extends Model
      */
     public function eventos(): HasMany
     {
-        return $this->hasMany(Evento::class);
+        return $this->hasMany(Evento::class)->where('activo', true);
     }
 
     /**

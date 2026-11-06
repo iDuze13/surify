@@ -158,8 +158,8 @@ Route::get('/mapa', function () {
 Route::get('/provincia/{nombre}', [DestinoController::class, 'porProvincia'])->name('provincia.show');
 Route::get('/destinos/{id}', [DestinoController::class, 'show'])->name('destinos.show');
 
-Route::get('/eventos', [\App\Http\Controllers\EventoController::class, 'index'])->name('eventos.index');
-Route::get('/eventos/{id}', [\App\Http\Controllers\EventoController::class, 'show'])->name('eventos.show');
+Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
+Route::get('/eventos/{id}', [EventoController::class, 'show'])->name('eventos.show');
 
 Route::get('/buscar', [\App\Http\Controllers\BusquedaController::class, 'buscar'])->name('busqueda.buscar');
 
@@ -188,7 +188,7 @@ Route::get('/dashboard', function () {
     $provincias = \App\Models\Provincia::withCount('destinos')->with('imagenes')->get();
     $countDestinos = \App\Models\Destino::count();
     $countUsuarios = \App\Models\User::count();
-    $countEventos = \App\Models\Evento::count();
+    $countEventos = \App\Models\Evento::where('activo', true)->count();
     $countRoles = \App\Models\Role::count();
     $countPermisos = \App\Models\Permiso::count();
 
