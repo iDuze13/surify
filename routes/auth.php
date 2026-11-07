@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -63,4 +65,24 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // ==================== AUTENTICACIÓN DE DOS FACTORES ====================
+    // Desafío después del login (el middleware EnsureTwoFactorPassed redirige acá)
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])
+        ->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store'])
+        ->name('two-factor.challenge.store');
+
+    // Configuración desde el perfil
+    Route::get('two-factor', [TwoFactorController::class, 'show'])
+        ->name('two-factor.setup');
+    Route::post('two-factor/confirm', [TwoFactorController::class, 'confirm'])
+        ->middleware('throttle:10,1')
+        ->name('two-factor.confirm');
+    Route::post('two-factor/recovery-codes', [TwoFactorController::class, 'regenerate'])
+        ->middleware('throttle:10,1')
+        ->name('two-factor.recovery');
+    Route::delete('two-factor', [TwoFactorController::class, 'disable'])
+        ->middleware('throttle:10,1')
+        ->name('two-factor.disable');
 });

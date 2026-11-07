@@ -8,12 +8,19 @@
     .hero-gradient {
         background: linear-gradient(to bottom, rgba(247, 249, 252, 0.2), rgba(247, 249, 252, 1));
     }
+
     .glass-card {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
     }
-    .scroll-hide::-webkit-scrollbar { display: none; }
-    html { scroll-behavior: smooth; }
+
+    .scroll-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
 </style>
 
 {{-- Hero Section --}}
@@ -99,13 +106,13 @@ $countResenas = auth()->user()->resenas()->count();
             $provinciasNorte = ['Jujuy', 'Salta', 'Formosa', 'Chaco', 'Santiago del Estero'];
             $provinciasPatagonia = ['Santa Cruz', 'Chubut', 'Tierra del Fuego', 'Neuquén', 'Río Negro'];
             $insignias = [
-                ['emoji' => '🐣', 'nombre' => 'Aventurero Inicial', 'descripcion' => 'Te uniste a Surify', 'ganada' => true],
-                ['icono' => 'north', 'nombre' => 'Viajero del Norte', 'descripcion' => 'Visitaste el norte argentino', 'ganada' => $visitadosInsignias->contains(fn($v) => in_array($v->destino?->provincia?->nombre, $provinciasNorte))],
-                ['icono' => 'landscape', 'nombre' => 'Explorador Patagónico', 'descripcion' => 'Visitaste la Patagonia', 'ganada' => $visitadosInsignias->contains(fn($v) => in_array($v->destino?->provincia?->nombre, $provinciasPatagonia))],
-                ['icono' => 'forum', 'nombre' => 'Comentador Activo', 'descripcion' => 'Publicaste 3 o más reseñas', 'ganada' => $resenasCount >= 3],
-                ['icono' => 'hiking', 'nombre' => 'Montañista Pro', 'descripcion' => 'Visitaste un destino de montaña', 'ganada' => $visitadosInsignias->contains(fn($v) => $v->destino?->categoria === 'montaña')],
-                ['icono' => 'restaurant', 'nombre' => 'Catador de Asados', 'descripcion' => 'Visitaste un destino gastronómico', 'ganada' => $visitadosInsignias->contains(fn($v) => $v->destino?->categoria === 'gastronomia')],
-                ['icono' => 'map', 'nombre' => 'Explorador Nacional', 'descripcion' => 'Visitaste 3 o más provincias', 'ganada' => $provinciasVisitadas >= 3],
+            ['emoji' => '🐣', 'nombre' => 'Aventurero Inicial', 'descripcion' => 'Te uniste a Surify', 'ganada' => true],
+            ['icono' => 'north', 'nombre' => 'Viajero del Norte', 'descripcion' => 'Visitaste el norte argentino', 'ganada' => $visitadosInsignias->contains(fn($v) => in_array($v->destino?->provincia?->nombre, $provinciasNorte))],
+            ['icono' => 'landscape', 'nombre' => 'Explorador Patagónico', 'descripcion' => 'Visitaste la Patagonia', 'ganada' => $visitadosInsignias->contains(fn($v) => in_array($v->destino?->provincia?->nombre, $provinciasPatagonia))],
+            ['icono' => 'forum', 'nombre' => 'Comentador Activo', 'descripcion' => 'Publicaste 3 o más reseñas', 'ganada' => $resenasCount >= 3],
+            ['icono' => 'hiking', 'nombre' => 'Montañista Pro', 'descripcion' => 'Visitaste un destino de montaña', 'ganada' => $visitadosInsignias->contains(fn($v) => $v->destino?->categoria === 'montaña')],
+            ['icono' => 'restaurant', 'nombre' => 'Catador de Asados', 'descripcion' => 'Visitaste un destino gastronómico', 'ganada' => $visitadosInsignias->contains(fn($v) => $v->destino?->categoria === 'gastronomia')],
+            ['icono' => 'map', 'nombre' => 'Explorador Nacional', 'descripcion' => 'Visitaste 3 o más provincias', 'ganada' => $provinciasVisitadas >= 3],
             ];
             @endphp
             <div class="flex gap-4 overflow-x-auto pb-2 scroll-hide">
@@ -262,7 +269,7 @@ $countResenas = auth()->user()->resenas()->count();
             {{-- ✅ .values() para reindexar desde 0 --}}
             @php
             $festividades = auth()->user()->favoritos()->with('evento.provincia')->get()->filter(function ($f) {
-                return $f->evento;
+            return $f->evento;
             })->values();
             @endphp
             @if($festividades->count() > 0)
@@ -320,8 +327,8 @@ $countResenas = auth()->user()->resenas()->count();
                 </div>
             </div>
             @php
-                // ✅ .values() para reindexar desde 0
-                $favoritos = auth()->user()->favoritos()->with('destino.provincia')->get()->filter(fn($f) => $f->destino)->values();
+            // ✅ .values() para reindexar desde 0
+            $favoritos = auth()->user()->favoritos()->with('destino.provincia')->get()->filter(fn($f) => $f->destino)->values();
             @endphp
             @if($favoritos->count() > 0)
             <div id="favoritos-container" class="grid grid-cols-2 gap-3">
@@ -366,29 +373,29 @@ $countResenas = auth()->user()->resenas()->count();
             $actividad = collect();
 
             auth()->user()->favoritos()->with('destino', 'evento')->get()->each(function($fav) use (&$actividad) {
-                $nombre = $fav->destino ? $fav->destino->nombre : ($fav->evento ? $fav->evento->nombre : null);
-                if ($nombre) {
-                    $actividad->push(['tipo' => 'favorito', 'texto' => 'Guardaste como favorito', 'nombre' => $nombre, 'fecha' => $fav->created_at, 'icono' => 'favorite', 'color' => 'rose']);
-                }
+            $nombre = $fav->destino ? $fav->destino->nombre : ($fav->evento ? $fav->evento->nombre : null);
+            if ($nombre) {
+            $actividad->push(['tipo' => 'favorito', 'texto' => 'Guardaste como favorito', 'nombre' => $nombre, 'fecha' => $fav->created_at, 'icono' => 'favorite', 'color' => 'rose']);
+            }
             });
 
             auth()->user()->destinosVisitados()->with('destino')->get()->each(function($vis) use (&$actividad) {
-                if ($vis->destino) {
-                    $actividad->push(['tipo' => 'visitado', 'texto' => 'Marcaste como visitado', 'nombre' => $vis->destino->nombre, 'fecha' => $vis->created_at, 'icono' => 'check_circle', 'color' => 'emerald']);
-                }
+            if ($vis->destino) {
+            $actividad->push(['tipo' => 'visitado', 'texto' => 'Marcaste como visitado', 'nombre' => $vis->destino->nombre, 'fecha' => $vis->created_at, 'icono' => 'check_circle', 'color' => 'emerald']);
+            }
             });
 
             auth()->user()->eventosVisitados()->with('evento')->get()->each(function($vis) use (&$actividad) {
-                if ($vis->evento) {
-                    $actividad->push(['tipo' => 'evento_visitado', 'texto' => 'Marcaste como visitado el evento', 'nombre' => $vis->evento->nombre, 'fecha' => $vis->created_at, 'icono' => 'verified', 'color' => 'emerald']);
-                }
+            if ($vis->evento) {
+            $actividad->push(['tipo' => 'evento_visitado', 'texto' => 'Marcaste como visitado el evento', 'nombre' => $vis->evento->nombre, 'fecha' => $vis->created_at, 'icono' => 'verified', 'color' => 'emerald']);
+            }
             });
 
             auth()->user()->resenas()->with('destino', 'evento')->get()->each(function($r) use (&$actividad) {
-                $nombre = $r->destino ? $r->destino->nombre : ($r->evento ? $r->evento->nombre : null);
-                if ($nombre) {
-                    $actividad->push(['tipo' => 'resena', 'texto' => 'Escribiste una reseña en', 'nombre' => $nombre, 'fecha' => $r->created_at, 'icono' => 'rate_review', 'color' => 'amber']);
-                }
+            $nombre = $r->destino ? $r->destino->nombre : ($r->evento ? $r->evento->nombre : null);
+            if ($nombre) {
+            $actividad->push(['tipo' => 'resena', 'texto' => 'Escribiste una reseña en', 'nombre' => $nombre, 'fecha' => $r->created_at, 'icono' => 'rate_review', 'color' => 'amber']);
+            }
             });
 
             $actividad = $actividad->sortByDesc('fecha')->take(8)->values();
@@ -521,13 +528,17 @@ $countResenas = auth()->user()->resenas()->count();
                         </div>
                         <span class="material-symbols-outlined text-slate-400">chevron_right</span>
                     </button>
-                    <button class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors text-left">
+                    <a href="{{ route('two-factor.setup') }}" class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors text-left text-decoration-none">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-slate-500">verified_user</span>
                             <p class="text-sm text-slate-700">Autenticación de Dos Factores</p>
                         </div>
+                        @if(auth()->user()->hasTwoFactorEnabled())
+                        <span class="text-emerald-500 text-xs font-semibold">Activado</span>
+                        @else
                         <span class="text-red-400 text-xs font-semibold">Desactivado</span>
-                    </button>
+                        @endif
+                    </a>
                 </div>
             </section>
 
@@ -620,10 +631,12 @@ $countResenas = auth()->user()->resenas()->count();
         document.getElementById('settings-btn-icon').style.transform = 'rotate(180deg)';
         document.getElementById('modal-configuracion').classList.remove('hidden');
     }
+
     function cerrarConfig() {
         document.getElementById('settings-btn-icon').style.transform = 'rotate(0deg)';
         document.getElementById('modal-configuracion').classList.add('hidden');
     }
+
     function elegirPortada(url) {
         document.getElementById('hero-bg').src = url;
         localStorage.setItem('surify-portada-{{ auth()->id() }}', url);
@@ -631,8 +644,10 @@ $countResenas = auth()->user()->resenas()->count();
     }
 
     // ── Visitados destinos ──
-    var visitadosActual = 0, visitadosPorPagina = 4;
+    var visitadosActual = 0,
+        visitadosPorPagina = 4;
     var totalVisitados = document.querySelectorAll('.visitado-item').length;
+
     function mostrarVisitados() {
         document.querySelectorAll('.visitado-item').forEach(item => {
             var i = parseInt(item.dataset.index);
@@ -641,12 +656,26 @@ $countResenas = auth()->user()->resenas()->count();
         var c = document.getElementById('visitados-counter');
         if (c) c.textContent = 'Mostrando ' + (visitadosActual + 1) + '-' + Math.min(visitadosActual + visitadosPorPagina, totalVisitados) + ' de ' + totalVisitados;
     }
-    function nextVisitados() { if (visitadosActual + visitadosPorPagina < totalVisitados) { visitadosActual += visitadosPorPagina; mostrarVisitados(); } }
-    function prevVisitados() { if (visitadosActual > 0) { visitadosActual -= visitadosPorPagina; mostrarVisitados(); } }
+
+    function nextVisitados() {
+        if (visitadosActual + visitadosPorPagina < totalVisitados) {
+            visitadosActual += visitadosPorPagina;
+            mostrarVisitados();
+        }
+    }
+
+    function prevVisitados() {
+        if (visitadosActual > 0) {
+            visitadosActual -= visitadosPorPagina;
+            mostrarVisitados();
+        }
+    }
 
     // ── Favoritos destinos ──
-    var favoritosActual = 0, favoritosPorPagina = 4;
+    var favoritosActual = 0,
+        favoritosPorPagina = 4;
     var totalFavoritos = document.querySelectorAll('.favorito-item').length;
+
     function mostrarFavoritos() {
         document.querySelectorAll('.favorito-item').forEach(item => {
             var i = parseInt(item.dataset.index);
@@ -655,12 +684,26 @@ $countResenas = auth()->user()->resenas()->count();
         var c = document.getElementById('favoritos-counter');
         if (c) c.textContent = 'Mostrando ' + (favoritosActual + 1) + '-' + Math.min(favoritosActual + favoritosPorPagina, totalFavoritos) + ' de ' + totalFavoritos;
     }
-    function nextFavoritos() { if (favoritosActual + favoritosPorPagina < totalFavoritos) { favoritosActual += favoritosPorPagina; mostrarFavoritos(); } }
-    function prevFavoritos() { if (favoritosActual > 0) { favoritosActual -= favoritosPorPagina; mostrarFavoritos(); } }
+
+    function nextFavoritos() {
+        if (favoritosActual + favoritosPorPagina < totalFavoritos) {
+            favoritosActual += favoritosPorPagina;
+            mostrarFavoritos();
+        }
+    }
+
+    function prevFavoritos() {
+        if (favoritosActual > 0) {
+            favoritosActual -= favoritosPorPagina;
+            mostrarFavoritos();
+        }
+    }
 
     // ── Festividades visitadas ──
-    var festVisitadasActual = 0, festVisitadasPorPagina = 4;
+    var festVisitadasActual = 0,
+        festVisitadasPorPagina = 4;
     var totalFestVisitadas = document.querySelectorAll('.fest-visitada-item').length;
+
     function mostrarFestVisitadas() {
         document.querySelectorAll('.fest-visitada-item').forEach(item => {
             var i = parseInt(item.dataset.index);
@@ -669,12 +712,26 @@ $countResenas = auth()->user()->resenas()->count();
         var c = document.getElementById('fest-visitadas-counter');
         if (c) c.textContent = 'Mostrando ' + (festVisitadasActual + 1) + '-' + Math.min(festVisitadasActual + festVisitadasPorPagina, totalFestVisitadas) + ' de ' + totalFestVisitadas;
     }
-    function nextFestVisitadas() { if (festVisitadasActual + festVisitadasPorPagina < totalFestVisitadas) { festVisitadasActual += festVisitadasPorPagina; mostrarFestVisitadas(); } }
-    function prevFestVisitadas() { if (festVisitadasActual > 0) { festVisitadasActual -= festVisitadasPorPagina; mostrarFestVisitadas(); } }
+
+    function nextFestVisitadas() {
+        if (festVisitadasActual + festVisitadasPorPagina < totalFestVisitadas) {
+            festVisitadasActual += festVisitadasPorPagina;
+            mostrarFestVisitadas();
+        }
+    }
+
+    function prevFestVisitadas() {
+        if (festVisitadasActual > 0) {
+            festVisitadasActual -= festVisitadasPorPagina;
+            mostrarFestVisitadas();
+        }
+    }
 
     // ── Festividades favoritas ──
-    var festFavoritasActual = 0, festFavoritasPorPagina = 4;
+    var festFavoritasActual = 0,
+        festFavoritasPorPagina = 4;
     var totalFestFavoritas = document.querySelectorAll('.festividad-item').length;
+
     function mostrarFestFavoritas() {
         document.querySelectorAll('.festividad-item').forEach(item => {
             var i = parseInt(item.dataset.index);
@@ -683,8 +740,20 @@ $countResenas = auth()->user()->resenas()->count();
         var c = document.getElementById('festividades-counter');
         if (c) c.textContent = 'Mostrando ' + (festFavoritasActual + 1) + '-' + Math.min(festFavoritasActual + festFavoritasPorPagina, totalFestFavoritas) + ' de ' + totalFestFavoritas;
     }
-    function nextFestFavoritas() { if (festFavoritasActual + festFavoritasPorPagina < totalFestFavoritas) { festFavoritasActual += festFavoritasPorPagina; mostrarFestFavoritas(); } }
-    function prevFestFavoritas() { if (festFavoritasActual > 0) { festFavoritasActual -= festFavoritasPorPagina; mostrarFestFavoritas(); } }
+
+    function nextFestFavoritas() {
+        if (festFavoritasActual + festFavoritasPorPagina < totalFestFavoritas) {
+            festFavoritasActual += festFavoritasPorPagina;
+            mostrarFestFavoritas();
+        }
+    }
+
+    function prevFestFavoritas() {
+        if (festFavoritasActual > 0) {
+            festFavoritasActual -= festFavoritasPorPagina;
+            mostrarFestFavoritas();
+        }
+    }
 
     function aplicarTema(themeName) {
         if (themeName === 'dark') {

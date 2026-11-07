@@ -23,26 +23,22 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
-    $request->session()->regenerate();
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    $user = auth()->user();
+        $user = $request->user();
 
-    if ($user->hasRole('Admin')) {
-        return redirect()->route('dashboard');
+        // Si tiene 2FA activo, todavía falta el segundo paso antes de entrar al sitio.
+        if ($user->hasTwoFactorEnabled()) {
+            $request->session()->forget('two_factor_passed_for');
+
+            return redirect()->route('two-factor.challenge');
+        }
+
+        // Misma lógica de antes (Admin → dashboard, etc.), ahora centralizada en el modelo.
+        return redirect()->route($user->rutaInicial());
     }
-
-    if ($user->hasPermiso('crear_evento') && $user->hasPermiso('modificar_evento')) {
-        return redirect()->route('admin.eventos.index');
-    }
-
-    if ($user->hasPermiso('crear_destino') && $user->hasPermiso('modificar_destino')) {
-        return redirect()->route('admin.destinos.index');
-    }
-
-    return redirect()->route('home');
-}
 
     /**
      * Destroy an authenticated session.

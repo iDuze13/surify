@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetIdioma::class,
             \App\Http\Middleware\PreventBackHistory::class,
+            \App\Http\Middleware\EnsureTwoFactorPassed::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
