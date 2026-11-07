@@ -572,14 +572,26 @@ $countResenas = auth()->user()->resenas()->count();
             <section>
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1">Soporte</h4>
                 <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-                    @foreach([['help_center','Centro de Ayuda','open_in_new'],['description','Términos de Servicio','chevron_right'],['policy','Política de Privacidad','chevron_right']] as [$ico,$label,$end])
-                    <button class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-slate-500">{{ $ico }}</span>
-                            <span class="text-sm text-slate-700">{{ $label }}</span>
-                        </div>
-                        <span class="material-symbols-outlined text-slate-400">{{ $end }}</span>
+                    @foreach([
+                    ['help_center', 'Centro de Ayuda', 'open_in_new', null],
+                    ['description', 'Términos de Servicio', 'open_in_new', route('terminos')],
+                    ['policy', 'Política de Privacidad', 'chevron_right', null],
+                    ] as [$ico, $label, $end, $url])
+                    @if($url)
+                    <a href="{{ $url }}" target="_blank" rel="noopener" class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors text-decoration-none">
+                        @else
+                        <button type="button" class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors">
+                            @endif
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-slate-500">{{ $ico }}</span>
+                                <span class="text-sm text-slate-700">{{ $label }}</span>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-400">{{ $end }}</span>
+                            @if($url)
+                    </a>
+                    @else
                     </button>
+                    @endif
                     @endforeach
                 </div>
             </section>
