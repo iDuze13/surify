@@ -24,7 +24,7 @@
 </style>
 
 {{-- Hero Section --}}
-<section class="relative h-[400px] w-full overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
+<section class="relative isolate h-[400px] w-full overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
     <img id="hero-bg" src="" class="w-full h-full object-cover" alt="Hero">
     <button onclick="document.getElementById('modal-portada').classList.remove('hidden')"
         class="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1 transition-all">
@@ -68,7 +68,8 @@
 {{-- Stats --}}
 @php
 $countVisitados = auth()->user()->destinosVisitados()->count();
-$countResenas = auth()->user()->resenas()->count();
+// Solo reseñas aprobadas (las pendientes o rechazadas no están publicadas)
+$countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
 @endphp
 <div class="max-w-2xl mx-auto -mt-6 relative z-10 mb-8 px-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 grid grid-cols-3 gap-4 text-center">
@@ -94,48 +95,136 @@ $countResenas = auth()->user()->resenas()->count();
     <div class="lg:col-span-8 space-y-6">
 
         {{-- Insignias --}}
+        @php
+        $insignias = app(\App\Services\InsigniaService::class)->paraUsuario(auth()->user());
+        $insigniasGanadas = collect($insignias)->where('ganada', true)->count();
+        @endphp
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
-                <span class="material-symbols-outlined text-yellow-500" style="font-variation-settings: 'FILL' 1;">military_tech</span>
-                Mis Insignias
-            </h2>
-            @php
-            $visitadosInsignias = auth()->user()->destinosVisitados()->with('destino.provincia')->get();
-            $resenasCount = auth()->user()->resenas()->count();
-            $provinciasVisitadas = $visitadosInsignias->pluck('destino.provincia.nombre')->unique()->filter()->count();
-            $provinciasNorte = ['Jujuy', 'Salta', 'Formosa', 'Chaco', 'Santiago del Estero'];
-            $provinciasPatagonia = ['Santa Cruz', 'Chubut', 'Tierra del Fuego', 'Neuquén', 'Río Negro'];
-            $insignias = [
-            ['emoji' => '🐣', 'nombre' => 'Aventurero Inicial', 'descripcion' => 'Te uniste a Surify', 'ganada' => true],
-            ['icono' => 'north', 'nombre' => 'Viajero del Norte', 'descripcion' => 'Visitaste el norte argentino', 'ganada' => $visitadosInsignias->contains(fn($v) => in_array($v->destino?->provincia?->nombre, $provinciasNorte))],
-            ['icono' => 'landscape', 'nombre' => 'Explorador Patagónico', 'descripcion' => 'Visitaste la Patagonia', 'ganada' => $visitadosInsignias->contains(fn($v) => in_array($v->destino?->provincia?->nombre, $provinciasPatagonia))],
-            ['icono' => 'forum', 'nombre' => 'Comentador Activo', 'descripcion' => 'Publicaste 3 o más reseñas', 'ganada' => $resenasCount >= 3],
-            ['icono' => 'hiking', 'nombre' => 'Montañista Pro', 'descripcion' => 'Visitaste un destino de montaña', 'ganada' => $visitadosInsignias->contains(fn($v) => $v->destino?->categoria === 'montaña')],
-            ['icono' => 'restaurant', 'nombre' => 'Catador de Asados', 'descripcion' => 'Visitaste un destino gastronómico', 'ganada' => $visitadosInsignias->contains(fn($v) => $v->destino?->categoria === 'gastronomia')],
-            ['icono' => 'map', 'nombre' => 'Explorador Nacional', 'descripcion' => 'Visitaste 3 o más provincias', 'ganada' => $provinciasVisitadas >= 3],
-            ];
-            @endphp
-            <div class="flex gap-4 overflow-x-auto pb-2 scroll-hide">
-                @foreach($insignias as $insignia)
-                <div class="flex-shrink-0 flex flex-col items-center gap-2 {{ $insignia['ganada'] ? '' : 'opacity-40 grayscale' }}" title="{{ $insignia['descripcion'] }}">
-                    <div class="w-20 h-20 rounded-full flex items-center justify-center border-2 shadow-sm
-                        {{ $insignia['ganada'] ? 'bg-gradient-to-br from-[#28628f] to-[#1a4669] border-[#28628f]/30' : 'bg-slate-200 border-dashed border-slate-400' }}">
-                        @if(isset($insignia['emoji']))
-                        <span class="text-3xl">{{ $insignia['emoji'] }}</span>
+            <div class="flex items-center justify-between gap-4 mb-1">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-yellow-500" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+                    Mis Insignias
+                    <span class="text-sm font-semibold text-slate-400">{{ $insigniasGanadas }}/{{ count($insignias) }}</span>
+                </h2>
+                <div class="flex gap-2">
+                    <button type="button" title="Anteriores"
+                        onclick="const c = document.getElementById('carrusel-insignias'); c.scrollBy({ left: -c.clientWidth, behavior: 'smooth' });"
+                        class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
+                        <span class="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <button type="button" title="Siguientes"
+                        onclick="const c = document.getElementById('carrusel-insignias'); c.scrollBy({ left: c.clientWidth, behavior: 'smooth' });"
+                        class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">Tocá una insignia para ver cómo conseguirla.</p>
+
+            <div id="carrusel-insignias" class="flex gap-4 overflow-x-auto pb-2 scroll-hide snap-x snap-mandatory">
+                @foreach($insignias as $ins)
+                <button type="button"
+                    onclick="document.getElementById('modal-insignia-{{ $ins['clave'] }}').classList.remove('hidden')"
+                    class="snap-start group flex-shrink-0 flex flex-col items-center gap-2 rounded-xl p-1 transition-transform duration-200 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#28628f] {{ $ins['ganada'] ? '' : 'opacity-50 grayscale' }}">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center border-2 shadow-sm transition-shadow duration-200 group-hover:shadow-lg
+                        {{ $ins['ganada'] ? 'bg-gradient-to-br from-[#28628f] to-[#1a4669] border-[#28628f]/30' : 'bg-slate-200 border-dashed border-slate-400' }}">
+                        @if($ins['emoji'])
+                        <span class="text-3xl">{{ $ins['emoji'] }}</span>
                         @else
-                        <span class="material-symbols-outlined text-3xl {{ $insignia['ganada'] ? 'text-white' : 'text-slate-500' }}"
-                            style="font-variation-settings: 'FILL' {{ $insignia['ganada'] ? '1' : '0' }};">{{ $insignia['icono'] }}</span>
+                        <span class="material-symbols-outlined text-3xl {{ $ins['ganada'] ? 'text-white' : 'text-slate-500' }}"
+                            style="font-variation-settings: 'FILL' {{ $ins['ganada'] ? '1' : '0' }};">{{ $ins['icono'] }}</span>
                         @endif
                     </div>
-                    <span class="text-xs font-semibold text-center max-w-[80px] {{ $insignia['ganada'] ? 'text-slate-700' : 'text-slate-400' }}">{{ $insignia['nombre'] }}</span>
-                    @if($insignia['ganada'])
-                    <span class="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">✓ Ganada</span>
+                    <span class="text-xs font-semibold text-center max-w-[80px] {{ $ins['ganada'] ? 'text-slate-700' : 'text-slate-400' }}">{{ $ins['nombre'] }}</span>
+                    @if($ins['ganada'])
+                    <span class="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
+                        ✓ {{ $ins['fecha'] ? $ins['fecha']->format('d/m/Y') : 'Ganada' }}
+                    </span>
+                    @elseif($ins['meta'] > 1)
+                    <span class="text-[9px] font-semibold text-slate-400">{{ $ins['progreso'] }}/{{ $ins['meta'] }}</span>
                     @else
                     <span class="text-[9px] text-slate-400">Bloqueada</span>
                     @endif
-                </div>
+                </button>
                 @endforeach
             </div>
+
+            {{-- Un modal por insignia --}}
+            @foreach($insignias as $ins)
+            <div id="modal-insignia-{{ $ins['clave'] }}" class="modal-insignia hidden fixed inset-0 z-50">
+                <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    onclick="this.parentElement.classList.add('hidden')"></div>
+
+                <div class="pointer-events-none relative flex min-h-full items-center justify-center p-4">
+                    <div class="pointer-events-auto relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+                        <button type="button"
+                            onclick="this.closest('.modal-insignia').classList.add('hidden')"
+                            class="absolute right-3 top-3 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+
+                        {{-- Ícono grande --}}
+                        <div class="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full border-2 shadow-md
+                            {{ $ins['ganada'] ? 'bg-gradient-to-br from-[#28628f] to-[#1a4669] border-[#28628f]/30' : 'bg-slate-200 border-dashed border-slate-400 grayscale' }}">
+                            @if($ins['emoji'])
+                            <span class="text-5xl">{{ $ins['emoji'] }}</span>
+                            @else
+                            <span class="material-symbols-outlined text-5xl {{ $ins['ganada'] ? 'text-white' : 'text-slate-500' }}"
+                                style="font-variation-settings: 'FILL' {{ $ins['ganada'] ? '1' : '0' }};">{{ $ins['icono'] }}</span>
+                            @endif
+                        </div>
+
+                        <h3 class="text-xl font-bold text-slate-800">{{ $ins['nombre'] }}</h3>
+                        @if($ins['ganada'])
+                        <span class="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
+                            <span class="material-symbols-outlined text-[14px]">verified</span> Ganada
+                        </span>
+                        @else
+                        <span class="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+                            <span class="material-symbols-outlined text-[14px]">lock</span> Bloqueada
+                        </span>
+                        @endif
+
+                        {{-- Cómo conseguirla --}}
+                        <div class="mt-5 rounded-xl bg-slate-50 p-4 text-left">
+                            <p class="mb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">Cómo conseguirla</p>
+                            <p class="text-sm text-slate-700">{{ $ins['como'] }}</p>
+                        </div>
+
+                        @if($ins['ganada'])
+                        {{-- Fecha de obtención --}}
+                        <div class="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-left">
+                            <p class="mb-1 text-[11px] font-bold uppercase tracking-wider text-emerald-500">Obtenida</p>
+                            <p class="text-sm font-semibold text-emerald-700">
+                                {{ $ins['fecha'] ? $ins['fecha']->locale('es')->isoFormat('D [de] MMMM [de] YYYY') : 'Fecha no disponible' }}
+                            </p>
+                            @if($ins['detalle'])
+                            <p class="mt-1 text-xs text-emerald-600">{{ $ins['detalle'] }}</p>
+                            @endif
+                        </div>
+                        @else
+                        {{-- Progreso --}}
+                        @php $pct = $ins['meta'] > 0 ? round($ins['progreso'] / $ins['meta'] * 100) : 0; @endphp
+                        <div class="mt-3 rounded-xl bg-slate-50 p-4 text-left">
+                            <div class="mb-2 flex items-center justify-between">
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tu progreso</p>
+                                <p class="text-xs font-bold text-[#28628f]">{{ $ins['progreso'] }} de {{ $ins['meta'] }}</p>
+                            </div>
+                            <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                                <div class="h-full rounded-full bg-[#28628f] transition-all" style="width: {{ $pct }}%"></div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+
+            <script>
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') document.querySelectorAll('.modal-insignia').forEach(m => m.classList.add('hidden'));
+                });
+            </script>
         </section>
 
         {{-- Lugares visitados --}}
@@ -472,21 +561,6 @@ $countResenas = auth()->user()->resenas()->count();
             </section>
 
             <section>
-                <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1">Conexiones Sociales</h4>
-                <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-                    @foreach([['photo_camera','Instagram'],['terminal','X / Twitter'],['public','Facebook']] as [$ico,$red])
-                    <div class="flex items-center justify-between p-4 hover:bg-slate-100 transition-colors">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-slate-500">{{ $ico }}</span>
-                            <span class="text-sm text-slate-700">{{ $red }}</span>
-                        </div>
-                        <button class="text-[#28628f] text-xs font-semibold hover:underline">Vincular</button>
-                    </div>
-                    @endforeach
-                </div>
-            </section>
-
-            <section>
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1">Números de Emergencia Argentina</h4>
                 <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
                     @foreach([
@@ -551,9 +625,9 @@ $countResenas = auth()->user()->resenas()->count();
                             <span class="text-sm text-slate-700">Tema</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            <button class="py-2 px-3 rounded-lg border border-slate-300 text-slate-500 text-xs hover:border-[#28628f] transition-all theme-btn">Oscuro</button>
-                            <button class="py-2 px-3 rounded-lg border border-[#28628f] bg-[#28628f]/10 text-[#28628f] text-xs font-bold transition-all theme-btn">Claro</button>
-                            <button class="py-2 px-3 rounded-lg border border-slate-300 text-slate-500 text-xs hover:border-[#28628f] transition-all theme-btn">Sistema</button>
+                            <button type="button" data-theme="dark" class="py-2 px-3 rounded-lg border border-slate-300 text-slate-500 text-xs hover:border-[#28628f] transition-all theme-btn">Oscuro</button>
+                            <button type="button" data-theme="light" class="py-2 px-3 rounded-lg border border-slate-300 text-slate-500 text-xs hover:border-[#28628f] transition-all theme-btn">Claro</button>
+                            <button type="button" data-theme="system" class="py-2 px-3 rounded-lg border border-slate-300 text-slate-500 text-xs hover:border-[#28628f] transition-all theme-btn">Sistema</button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between p-4 hover:bg-slate-100 transition-colors">

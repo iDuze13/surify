@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Destino;
 use App\Models\Evento;
 use App\Models\Provincia;
-use App\Models\Destino;
+use App\Models\User;
+use App\Notifications\NuevoEventoFavorito;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class EventoController extends Controller
 {
@@ -85,7 +88,7 @@ class EventoController extends Controller
             );
         }
 
-        Evento::create([
+        $evento = Evento::create([
             'nombre'       => $request->nombre,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin'    => $request->fecha_fin ?: null,
@@ -97,6 +100,24 @@ class EventoController extends Controller
             'descripcion'  => $request->descripcion,
             'activo'       => $request->has('activo'),
         ]);
+
+        // Avisamos a los usuarios que tienen este destino en favoritos
+        // (solo si el evento queda publicado: no avisamos de algo que todavía no se ve)
+        if ($evento->destino_id && $evento->activo) {
+            $usuarios = User::whereHas('favoritos', function ($q) use ($evento) {
+                $q->where('destino_id', $evento->destino_id);
+            })->get();
+
+            if ($usuarios->isNotEmpty()) {
+                try {
+                    Notification::send($usuarios, new NuevoEventoFavorito($evento));
+                } catch (\Throwable $e) {
+                    // Si falla el envío (por ejemplo, el mail), el evento ya quedó creado:
+                    // registramos el error en el log y seguimos.
+                    report($e);
+                }
+            }
+        }
 
         return redirect()->route('admin.eventos.index')
             ->with('success', 'Evento creado correctamente.');
