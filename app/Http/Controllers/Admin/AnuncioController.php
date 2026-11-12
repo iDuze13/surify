@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\AnuncioAdmin;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
+use App\Services\NotificacionService;
 
 class AnuncioController extends Controller
 {
@@ -25,14 +25,18 @@ class AnuncioController extends Controller
 
         $usuarios = User::all();
 
-        if ($usuarios->isNotEmpty()) {
-            Notification::send($usuarios, new AnuncioAdmin(
-                $request->titulo,
-                $request->mensaje,
-                $request->url ?: null
-            ));
+        // De a uno: si falla el mail de alguien, el resto lo recibe igual
+        $enviados = NotificacionService::enviar($usuarios, new AnuncioAdmin(
+            $request->titulo,
+            $request->mensaje,
+            $request->url ?: null
+        ));
+
+        $mensaje = 'Anuncio enviado a ' . $enviados . ' de ' . $usuarios->count() . ' usuarios.';
+        if ($enviados < $usuarios->count()) {
+            $mensaje .= ' A algunos no les llegó el mail (revisá el log); la notificación en la campanita sí les quedó.';
         }
 
-        return back()->with('success', 'Anuncio enviado a ' . $usuarios->count() . ' usuarios.');
+        return back()->with('success', $mensaje);
     }
 }

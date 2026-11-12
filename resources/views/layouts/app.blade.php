@@ -98,6 +98,23 @@
         .side-divider { height: 1px; background: #e2e8f0; margin: 8px 4px; }
         .dark .side-divider { background: #334155; }
 
+        /* ===== Buscador en celular: se abre como una barra debajo del header ===== */
+        @media (max-width: 767px) {
+            #search-container.abierto-movil {
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 100%;
+                max-width: none;
+                padding: 8px 12px;
+                background: #ffffff;
+                border-bottom: 1px solid #e2e8f0;
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+            }
+            .dark #search-container.abierto-movil { background: #0f172a; border-color: #334155; }
+        }
+
         /* ===== Notificaciones ===== */
         #notif-dropdown { display: none; }
         #notif-dropdown.open { display: block; }
@@ -415,7 +432,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3 shrink-0 ml-auto">
+                    <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+
+                        {{-- Lupa: solo en celular, abre el buscador --}}
+                        <button type="button" onclick="toggleBusquedaMovil()" id="search-btn-movil" title="Buscar"
+                            class="md:hidden flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-[#28628f] text-slate-600 dark:text-slate-300 hover:text-[#28628f] transition-all bg-white dark:bg-slate-800">
+                            <span class="material-symbols-outlined text-[18px]">search</span>
+                        </button>
 
                         <div class="relative" id="lang-selector-container">
                             <button onclick="toggleLangDropdown()" id="lang-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#28628f] text-slate-600 hover:text-[#28628f] transition-all bg-white text-xs font-bold">
@@ -462,7 +485,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             </a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#28628f] text-slate-500 hover:text-[#28628f] transition-all bg-white cursor-pointer">Cerrar Sesión</button>
+                                <button type="submit" title="Cerrar Sesión" class="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto text-xs font-semibold sm:px-3 sm:py-1.5 rounded-lg border border-slate-200 hover:border-[#28628f] text-slate-500 hover:text-[#28628f] transition-all bg-white cursor-pointer">
+                                    <span class="material-symbols-outlined text-[18px] sm:hidden">logout</span>
+                                    <span class="hidden sm:inline">Cerrar Sesión</span>
+                                </button>
                             </form>
                         </div>
                         @else
@@ -496,14 +522,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <div class="fixed bottom-6 right-6 z-50 flex items-center bg-white border border-slate-200 p-3 rounded-full shadow-xl gap-3 max-w-xs transition-all duration-300 hover:border-[#28628f]">
-        <button id="global-music-btn" class="w-10 h-10 rounded-full bg-[#28628f] text-white flex items-center justify-center hover:bg-[#1a4669] transition-transform active:scale-95 shadow-sm">
+    {{-- Reproductor del himno: solo el botón de play/pausa --}}
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="global-music-btn" title="Himno Surify" aria-label="Reproducir el Himno Surify"
+            class="w-12 h-12 rounded-full bg-[#28628f] text-white flex items-center justify-center hover:bg-[#1a4669] transition-transform active:scale-95 shadow-xl border-2 border-white">
             <span id="global-music-icon" class="material-symbols-outlined">play_arrow</span>
         </button>
-        <div class="flex flex-col pr-4 select-none">
-            <span class="text-xs font-bold text-slate-800 leading-tight truncate max-w-[120px]">Himno Surify</span>
-            <span id="global-music-status" class="text-[10px] text-slate-400 font-semibold tracking-wide">Pausado</span>
-        </div>
+        {{-- El texto de estado sigue existiendo (lo usa el script) pero no se ve --}}
+        <div class="hidden"><span id="global-music-status">Pausado</span></div>
         <audio id="global-surify-song" loop>
             <source src="{{ asset('audio/cancion_surify.mpeg') }}" type="audio/mpeg">
         </audio>
@@ -598,7 +624,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         });
         document.addEventListener('click', function(e) { if(!document.getElementById('search-container').contains(e.target)) dropdown.classList.add('hidden'); });
-        input.addEventListener('keydown', function(e) { if(e.key==='Escape') { dropdown.classList.add('hidden'); input.blur(); } });
+        input.addEventListener('keydown', function(e) { if(e.key==='Escape') { dropdown.classList.add('hidden'); input.blur(); toggleBusquedaMovil(false); } });
+
+        // Celular: la lupa abre/cierra la barra de búsqueda debajo del header
+        window.toggleBusquedaMovil = function(abrir) {
+            const cont = document.getElementById('search-container');
+            const abierto = typeof abrir === 'boolean' ? abrir : !cont.classList.contains('abierto-movil');
+            cont.classList.toggle('abierto-movil', abierto);
+            if (abierto) { input.focus(); }
+            else { dropdown.classList.add('hidden'); }
+        };
     })();
     </script>
 
@@ -625,6 +660,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!container.contains(e.target)) { dropdown.classList.remove('open'); abierto = false; }
         });
 
+        // Los textos pueden venir de usuarios (ej: el nombre de un evento sugerido): se escapan
+        function esc(texto) {
+            const d = document.createElement('div');
+            d.textContent = texto ?? '';
+            return d.innerHTML;
+        }
+
         function cargarNotificaciones() {
             fetch('{{ route("notificaciones.index") }}').then(r => r.json()).then(data => {
                 actualizarBadge(data.no_leidas);
@@ -639,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     a.href = n.url;
                     a.className = 'flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 text-decoration-none' + (n.leida ? '' : ' bg-blue-50/50 dark:bg-slate-700/40');
                     a.onclick = function() { marcarLeida(n.id); };
-                    a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${n.icono}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${n.titulo}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.mensaje}</p><p class="text-[10px] text-slate-400 mt-1">${n.fecha}</p></div>`;
+                    a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${esc(n.icono)}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${esc(n.titulo)}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${esc(n.mensaje)}</p><p class="text-[10px] text-slate-400 mt-1">${esc(n.fecha)}</p></div>`;
                     list.appendChild(a);
                 });
             }).catch(() => {});

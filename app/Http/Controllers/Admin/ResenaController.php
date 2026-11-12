@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Resena;
+use App\Notifications\ResenaModerada;
+use App\Services\NotificacionService;
 use Illuminate\Http\Request;
 
 class ResenaController extends Controller
@@ -31,14 +33,29 @@ class ResenaController extends Controller
 
     public function aprobar(Resena $resena)
     {
-        $resena->update(['aprobada' => true]);
+        $this->moderar($resena, true);
         return redirect()->back()->with('success', 'Reseña aprobada correctamente.');
     }
 
     public function rechazar(Resena $resena)
     {
-        $resena->update(['aprobada' => false]);
+        $this->moderar($resena, false);
         return redirect()->back()->with('success', 'Reseña rechazada correctamente.');
+    }
+
+    /**
+     * Cambia el estado de la reseña y le avisa al autor,
+     * solo si el estado cambió (para no mandar avisos repetidos).
+     */
+    private function moderar(Resena $resena, bool $aprobada): void
+    {
+        $cambio = $resena->aprobada !== $aprobada;
+
+        $resena->update(['aprobada' => $aprobada]);
+
+        if ($cambio && $resena->user) {
+            NotificacionService::enviar($resena->user, new ResenaModerada($resena->load(['destino', 'evento']), $aprobada));
+        }
     }
 
     public function destroy(Resena $resena)

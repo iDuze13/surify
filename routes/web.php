@@ -46,6 +46,7 @@ Route::middleware(['auth', 'permiso:crear_evento,modificar_evento,eliminar_event
     Route::post('/eventos', [AdminEventoController::class, 'store'])->name('eventos.store');
     Route::get('/eventos/{evento}/edit', [AdminEventoController::class, 'edit'])->name('eventos.edit');
     Route::put('/eventos/{evento}', [AdminEventoController::class, 'update'])->name('eventos.update');
+    Route::patch('/eventos/{evento}/aprobar', [AdminEventoController::class, 'aprobar'])->name('eventos.aprobar');
     Route::delete('/eventos/{evento}', [AdminEventoController::class, 'destroy'])->name('eventos.destroy');
 });
 

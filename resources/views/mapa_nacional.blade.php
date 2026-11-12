@@ -51,9 +51,158 @@
         pointer-events: none;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: 12px;
         padding: 24px;
         box-sizing: border-box;
+    }
+
+    /* ===== Distribución de los paneles sobre el mapa =====
+       Arriba: explorador (izq.) y botones de zoom (der.).
+       Abajo: tarjetas de provincia/destino y el botón del explorador (celular).
+       El explorador se achica solo para dejarle lugar a las tarjetas,
+       así nunca se pisan. */
+    .mapa-fila-superior {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    #mobile-sidebar-container {
+        display: flex;
+        align-items: flex-start;
+        height: 100%;
+        min-height: 0;
+    }
+
+    .panel-explorador {
+        border-radius: 16px;
+        padding: 16px;
+        width: 230px;
+        max-height: min(450px, 100%);
+        box-sizing: border-box;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .mapa-tarjetas {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .mapa-tarjetas>.light-panel {
+        width: 230px;
+    }
+
+    /* Botón "Explorar" (solo celular): arriba a la izquierda, a la altura del zoom */
+    #btn-toggle-sidebar {
+        display: none;
+        flex-shrink: 0;
+        height: 40px;
+        border-radius: 10px;
+        padding: 0 14px;
+        font-weight: 700;
+        font-size: 13px;
+        color: #28628f !important;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .cabecera-explorador {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .cabecera-explorador .menu-label {
+        margin-bottom: 0;
+    }
+
+    /* X para cerrar el explorador (solo celular) */
+    .cerrar-explorador {
+        display: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: none;
+        background: #f1f5f9;
+        color: #475569;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+
+    /* Créditos del mapa: chiquitos y pegados al borde de abajo, en la franja
+       libre que queda debajo del reproductor de música */
+    .surify-map-dashboard .leaflet-control-attribution {
+        font-size: 9px;
+        line-height: 1.4;
+        padding: 0 5px;
+        background: rgba(255, 255, 255, 0.6) !important;
+        border-top-left-radius: 6px;
+    }
+
+    /* Tablet y celular: el botón de accesibilidad y el reproductor quedan
+       encima del mapa, así que los paneles se corren hacia arriba */
+    @media (max-width: 1023px) {
+        .ui-overlay {
+            padding-bottom: 84px;
+        }
+    }
+
+    /* Celular: explorador oculto hasta que se toca el botón, tarjetas a todo el ancho */
+    @media (max-width: 767px) {
+        .ui-overlay {
+            padding: 12px 12px 84px;
+        }
+
+        #mobile-sidebar-container {
+            display: none;
+        }
+
+        #mobile-sidebar-container.abierto {
+            display: flex;
+        }
+
+        .panel-explorador {
+            width: min(260px, calc(100vw - 88px));
+            max-height: 100%;
+        }
+
+        .mapa-tarjetas {
+            align-items: stretch;
+        }
+
+        .mapa-tarjetas>.light-panel {
+            width: auto;
+        }
+
+        #card-img {
+            height: 110px !important;
+        }
+
+        #btn-toggle-sidebar {
+            display: flex;
+        }
+
+        /* Con el explorador abierto, el botón se esconde y aparece la X */
+        .ui-overlay.explorador-abierto #btn-toggle-sidebar {
+            display: none;
+        }
+
+        .cerrar-explorador {
+            display: flex;
+        }
     }
 
     .interactuable {
@@ -180,11 +329,21 @@
     <div id="mapa-container"></div>
 
     <div class="ui-overlay">
-        <div style="display: flex; justify-content: space-between; width: 100%;">
+        <div class="mapa-fila-superior">
 
-            <div class="interactuable" id="mobile-sidebar-container">
-                <aside class="light-panel" style="border-radius: 16px; padding: 16px; width: 230px; max-height: 450px; overflow-y: auto;">
-                    <p class="menu-label">Explorador</p>
+            <!-- Solo celular: abre el explorador -->
+            <button id="btn-toggle-sidebar" type="button" class="interactuable light-panel" onclick="toggleExplorador(true)">
+                <i class="fa-solid fa-list"></i> Explorar
+            </button>
+
+            <div id="mobile-sidebar-container">
+                <aside class="interactuable light-panel panel-explorador">
+                    <div class="cabecera-explorador">
+                        <p class="menu-label">Explorador</p>
+                        <button type="button" class="cerrar-explorador" onclick="toggleExplorador(false)" title="Cerrar explorador">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                     <ul class="menu-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
                         <li><a class="is-active-menu" onclick="filtrarCategoria('todos')" style="cursor:pointer;"><i class="fa-solid fa-compass" style="margin-right:10px; font-size: 14px;"></i> Todos</a></li>
                         <li><a onclick="filtrarCategoria('Patrimonio Natural')" style="cursor:pointer;"><i class="fa-solid fa-tree" style="margin-right:10px; font-size: 14px;"></i> Naturaleza</a></li>
@@ -220,7 +379,7 @@
                 </aside>
             </div>
 
-            <div class="interactuable custom-zoom-controls" style="display: flex; flex-direction: column; padding-right: 4px;">
+            <div class="interactuable custom-zoom-controls" style="display: flex; flex-direction: column; padding-right: 4px; margin-left: auto;">
                 <button onclick="mapaInstance.zoomIn()" title="Acercar"><i class="fa-solid fa-plus"></i></button>
                 <button onclick="mapaInstance.zoomOut()" title="Alejar"><i class="fa-solid fa-minus"></i></button>
                 <button onclick="centrarEnArgentina()" title="Recentrar"><i class="fa-solid fa-location-crosshairs"></i></button>
@@ -228,14 +387,14 @@
             </div>
         </div>
 
-        <div style="position: absolute; bottom: 24px; left: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; z-index: 5;">
-            <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px; width: 230px;">
+        <div class="mapa-tarjetas">
+            <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px;">
                     <span style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:14px; color:#0f172a;">
                         <i class="fa-solid fa-map-pin" style="color:#28628f;"></i>
                         <span id="card-provincia-nombre"></span>
                     </span>
-                    <button onclick="document.getElementById('card-provincia-mapa').style.display='none';" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px;">
+                    <button onclick="document.getElementById('card-provincia-mapa').style.display='none';" title="Cerrar" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px;">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
@@ -244,9 +403,13 @@
                 </a>
             </div>
 
-            <div id="card-destino" class="interactuable light-panel" style="border-radius: 16px; overflow: hidden; width: 230px;">
+            <div id="card-destino" class="interactuable light-panel" style="border-radius: 16px; overflow: hidden;">
                 <div style="position: relative;">
                     <img id="card-img" src="" alt="" style="width: 100%; height: 135px; object-fit: cover; display: block;">
+                    <button onclick="document.getElementById('card-destino').classList.remove('visible');" title="Cerrar"
+                        style="position: absolute; top: 10px; left: 10px; width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                     <span style="position: absolute; top: 10px; right: 10px; background: #28628f; color: white; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 800;">
                         <i class="fa-solid fa-star" style="color: #fbbf24; margin-right: 2px;"></i>
                         <span id="card-categoria"></span>
@@ -255,16 +418,11 @@
                 <div class="card-info">
                     <p id="card-provincia"></p>
                     <h2 id="card-nombre"></h2>
-                    <p id="card-desc" style="color: #64748b; font-size: 11px; text-transform: none; font-weight: 400; margin-bottom: 10px;"></p>
+                    <p id="card-desc" style="color: #64748b; font-size: 11px; text-transform: none; font-weight: 400; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"></p>
                     <a id="card-link" href="#" class="btn-ver" style="display:block; text-align:center; text-decoration:none;">Ver detalles</a>
                 </div>
             </div>
         </div>
-
-        <!-- Botón flotante solo para celulares -->
-        <button id="btn-toggle-sidebar" class="flex md:hidden interactuable light-panel" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); border-radius: 99px; padding: 10px 20px; font-weight: 800; font-size: 13px; color: #28628f !important; align-items: center; gap: 8px; cursor: pointer; border: 2px solid #28628f; z-index: 50;">
-            <i class="fa-solid fa-eye-slash"></i> Ocultar Explorador
-        </button>
     </div>
 </div>
 
@@ -434,9 +592,12 @@
 
         // OpenStreetMap ya no recomienda los subdominios a/b/c: se usa la URL directa
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
             maxZoom: 19
         }).addTo(mapaInstance);
+
+        // Sin el "Leaflet |" adelante: queda solo el crédito obligatorio de OpenStreetMap
+        mapaInstance.attributionControl.setPrefix(false);
 
         destinosData.forEach(function(destino) {
             var marker = L.marker([destino.lat, destino.lng], {
@@ -471,6 +632,7 @@
         document.getElementById('card-link').href = '/destinos/' + destino.id;
         document.getElementById('card-destino').classList.add('visible');
         document.getElementById('card-provincia-mapa').style.display = 'none';
+        toggleExplorador(false);
 
         if (mapaInstance && destino.lat && destino.lng) {
             mapaInstance.flyTo([destino.lat, destino.lng], 12, {
@@ -543,6 +705,7 @@
         document.getElementById('card-provincia-mapa').style.display = 'block';
 
         document.getElementById('card-destino').classList.remove('visible');
+        toggleExplorador(false);
     }
 
     function centrarEnArgentina() {
@@ -749,24 +912,16 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_KEY') }}&libraries=places"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const btnToggle = document.getElementById('btn-toggle-sidebar');
-        const sidebar = document.getElementById('mobile-sidebar-container');
-        let sidebarVisible = true;
-
-        if (btnToggle && sidebar) {
-            btnToggle.addEventListener('click', function() {
-                sidebarVisible = !sidebarVisible;
-                if (sidebarVisible) {
-                    sidebar.style.display = 'block';
-                    btnToggle.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Ocultar Explorador';
-                } else {
-                    sidebar.style.display = 'none';
-                    btnToggle.innerHTML = '<i class="fa-solid fa-list"></i> Ver Explorador';
-                }
-            });
-        }
-    });
+    // Celular: abre/cierra el explorador. Sin argumento alterna; con true/false lo fuerza.
+    // En compu y tablet el explorador siempre se ve (lo maneja el CSS).
+    function toggleExplorador(abrir) {
+        var panel = document.getElementById('mobile-sidebar-container');
+        var overlay = document.querySelector('.ui-overlay');
+        if (!panel || !overlay) return;
+        var abierto = typeof abrir === 'boolean' ? abrir : !panel.classList.contains('abierto');
+        panel.classList.toggle('abierto', abierto);
+        overlay.classList.toggle('explorador-abierto', abierto);
+    }
 </script>
 
 @endsection

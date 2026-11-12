@@ -14,13 +14,44 @@ $avisoAdmin  = $avisoAdmin ?? false;
 @section('content')
 
 <style>
+    /* La portada se funde con el fondo de la página (claro u oscuro según el modo) */
     .hero-gradient {
-        background: linear-gradient(to bottom, rgba(247, 249, 252, 0.2), rgba(247, 249, 252, 1));
+        background: linear-gradient(to bottom,
+                rgba(0, 0, 0, 0.15) 0%,
+                transparent 30%,
+                color-mix(in srgb, var(--bg-body) 55%, transparent) 70%,
+                var(--bg-body) 100%);
+    }
+
+    /* Placa detrás del nombre: se lee bien con cualquier portada y en los dos modos */
+    .perfil-identidad {
+        background: color-mix(in srgb, var(--bg-body) 72%, transparent);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid color-mix(in srgb, var(--text-body) 10%, transparent);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .perfil-nombre {
+        color: var(--text-body);
+    }
+
+    .perfil-miembro {
+        color: #28628f;
+    }
+
+    .dark .perfil-miembro,
+    .dark .perfil-stat {
+        color: #97ccfe;
     }
 
     .glass-card {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
+    }
+
+    .dark .glass-card {
+        background: rgba(30, 41, 59, 0.75);
     }
 
     .scroll-hide::-webkit-scrollbar {
@@ -33,13 +64,14 @@ $avisoAdmin  = $avisoAdmin ?? false;
 </style>
 
 {{-- Hero Section --}}
-<section class="relative isolate h-[400px] w-full overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
+<section class="relative isolate h-[360px] sm:h-[400px] overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
     <img id="hero-bg" src="" class="w-full h-full object-cover" alt="Hero">
     @if($esPropio)
     <button onclick="document.getElementById('modal-portada').classList.remove('hidden')"
-        class="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1 transition-all">
-        <span class="material-symbols-outlined text-[16px]">wallpaper</span>
-        Cambiar portada
+        title="Cambiar portada"
+        class="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white text-xs font-semibold p-2 sm:px-3 sm:py-2 rounded-full flex items-center gap-1 transition-all">
+        <span class="material-symbols-outlined text-[20px] sm:text-[16px]">wallpaper</span>
+        <span class="hidden sm:inline">Cambiar portada</span>
     </button>
     <button onclick="abrirConfig()"
         class="absolute top-4 left-4 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all group">
@@ -47,12 +79,12 @@ $avisoAdmin  = $avisoAdmin ?? false;
     </button>
     @endif
     <div class="absolute inset-0 hero-gradient"></div>
-    <div class="absolute inset-0 flex flex-col items-center justify-center mt-8">
+    <div class="absolute inset-0 flex flex-col items-center justify-center mt-6 sm:mt-8 px-4">
         <div class="relative {{ $esPropio ? 'group cursor-pointer' : '' }}" @if($esPropio) onclick="document.getElementById('avatar-input').click()" @endif>
             @if($usuario->avatar)
-            <img src="{{ $usuario->avatar }}" class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-2xl" alt="Avatar">
+            <img src="{{ $usuario->avatar }}" class="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-2xl" alt="Avatar">
             @else
-            <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-[#28628f] text-white flex items-center justify-center text-4xl font-black border-4 border-white shadow-2xl">
+            <div class="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-[#28628f] text-white flex items-center justify-center text-4xl font-black border-4 border-white shadow-2xl">
                 {{ strtoupper(substr($usuario->name, 0, 1)) }}
             </div>
             @endif
@@ -72,21 +104,23 @@ $avisoAdmin  = $avisoAdmin ?? false;
                 onchange="document.getElementById('avatar-form').submit()">
         </form>
         @endif
-        <h1 class="text-3xl font-black text-slate-800 mt-3" style="font-family: 'Inter', sans-serif;">{{ $usuario->name }}</h1>
-        @if($esPropio)
-        {{-- El email solo lo ve el dueño --}}
-        <p class="text-sm text-slate-500">{{ $usuario->email }}</p>
-        @endif
-        <p class="text-xs text-[#28628f] font-bold uppercase tracking-widest mt-1">
-            Miembro desde {{ $usuario->created_at->translatedFormat('F Y') }}
-        </p>
+        <div class="perfil-identidad mt-3 max-w-full rounded-2xl px-5 py-2.5 text-center">
+            <h1 class="perfil-nombre text-2xl sm:text-3xl font-black leading-tight break-words" style="font-family: 'Inter', sans-serif;">{{ $usuario->name }}</h1>
+            @if($esPropio)
+            {{-- El email solo lo ve el dueño --}}
+            <p class="text-sm text-slate-500 break-all">{{ $usuario->email }}</p>
+            @endif
+            <p class="perfil-miembro text-[11px] sm:text-xs font-bold uppercase tracking-widest mt-1">
+                Miembro desde {{ $usuario->created_at->translatedFormat('F Y') }}
+            </p>
+        </div>
     </div>
 </section>
 
 {{-- Avisos de vista --}}
 @if($vistaPrevia)
-<div class="max-w-2xl mx-auto mt-4 mb-2 px-4">
-    <div class="flex items-center gap-3 rounded-xl border border-[#28628f]/20 bg-[#28628f]/5 px-4 py-3 text-sm text-[#28628f]">
+<div class="max-w-2xl mx-auto mt-4 mb-2 sm:px-4">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-[#28628f]/20 bg-[#28628f]/5 px-4 py-3 text-sm text-[#28628f]">
         <span class="material-symbols-outlined">visibility</span>
         Así ven tu perfil los demás.
         <a href="{{ route('profile.edit') }}" class="ml-auto font-bold hover:underline text-decoration-none">Volver a mi perfil</a>
@@ -94,7 +128,7 @@ $avisoAdmin  = $avisoAdmin ?? false;
 </div>
 @endif
 @if($avisoAdmin)
-<div class="max-w-2xl mx-auto mt-4 mb-2 px-4">
+<div class="max-w-2xl mx-auto mt-4 mb-2 sm:px-4">
     <div class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
         <span class="material-symbols-outlined">lock</span>
         Este perfil es privado. Lo ves completo porque sos administrador.
@@ -105,7 +139,7 @@ $avisoAdmin  = $avisoAdmin ?? false;
 @if($privado)
 
 {{-- Perfil privado: solo nombre y foto --}}
-<div class="max-w-2xl mx-auto mt-8 mb-8 px-4">
+<div class="max-w-2xl mx-auto mt-8 mb-8 sm:px-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
         <span class="material-symbols-outlined text-5xl text-slate-300 block mb-3">lock</span>
         <h2 class="text-xl font-bold text-slate-700">Este perfil es privado</h2>
@@ -124,18 +158,18 @@ $countResenas = $usuario->resenas()
     ->when(!$esPropio, fn ($q) => $q->where(fn ($w) => $w->where('anonima', false)->orWhereNull('anonima')))
     ->count();
 @endphp
-<div class="max-w-2xl mx-auto -mt-6 relative z-10 mb-8 px-4">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 grid grid-cols-3 gap-4 text-center">
+<div class="max-w-2xl mx-auto -mt-6 relative z-10 mb-8 sm:px-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-4 sm:p-6 grid grid-cols-3 gap-2 sm:gap-4 text-center">
         <div>
-            <div class="text-2xl font-bold text-[#28628f]">{{ $countVisitados }}</div>
+            <div class="perfil-stat text-2xl font-bold text-[#28628f]">{{ $countVisitados }}</div>
             <div class="text-xs text-slate-500 mt-1">Lugares visitados</div>
         </div>
         <div class="border-x border-slate-200">
-            <div class="text-2xl font-bold text-[#28628f]">{{ $countResenas }}</div>
+            <div class="perfil-stat text-2xl font-bold text-[#28628f]">{{ $countResenas }}</div>
             <div class="text-xs text-slate-500 mt-1">Reseñas publicadas</div>
         </div>
         <div>
-            <div class="text-2xl font-bold text-[#28628f]">0</div>
+            <div class="perfil-stat text-2xl font-bold text-[#28628f]">0</div>
             <div class="text-xs text-slate-500 mt-1">Fotos subidas</div>
         </div>
     </div>
@@ -152,14 +186,14 @@ $countResenas = $usuario->resenas()
         $insignias = app(\App\Services\InsigniaService::class)->paraUsuario($usuario);
         $insigniasGanadas = collect($insignias)->where('ganada', true)->count();
         @endphp
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
             <div class="flex items-center justify-between gap-4 mb-1">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex flex-wrap items-center gap-x-2">
                     <span class="material-symbols-outlined text-yellow-500" style="font-variation-settings: 'FILL' 1;">military_tech</span>
                     {{ $esPropio ? 'Mis Insignias' : 'Insignias' }}
                     <span class="text-sm font-semibold text-slate-400">{{ $insigniasGanadas }}/{{ count($insignias) }}</span>
                 </h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 shrink-0">
                     <button type="button" title="Anteriores"
                         onclick="const c = document.getElementById('carrusel-insignias'); c.scrollBy({ left: -c.clientWidth, behavior: 'smooth' });"
                         class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
@@ -281,10 +315,10 @@ $countResenas = $usuario->resenas()
         </section>
 
         {{-- Lugares visitados --}}
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-slate-800">{{ $esPropio ? 'Mis lugares visitados' : 'Lugares visitados' }}</h2>
-                <div class="flex gap-2">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800 min-w-0">{{ $esPropio ? 'Mis lugares visitados' : 'Lugares visitados' }}</h2>
+                <div class="flex gap-2 shrink-0">
                     <button onclick="prevVisitados()" class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
                     </button>
@@ -332,13 +366,13 @@ $countResenas = $usuario->resenas()
         </section>
 
         {{-- Festividades visitadas --}}
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="material-symbols-outlined text-emerald-500" style="font-variation-settings: 'FILL' 1;">celebration</span>
                     Festividades visitadas
                 </h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 shrink-0">
                     <button onclick="prevFestVisitadas()" class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
                     </button>
@@ -393,13 +427,13 @@ $countResenas = $usuario->resenas()
         </section>
 
         {{-- Festividades favoritas --}}
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="material-symbols-outlined text-rose-500" style="font-variation-settings: 'FILL' 1;">favorite</span>
                     Festividades favoritas
                 </h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 shrink-0">
                     <button onclick="prevFestFavoritas()" class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
                     </button>
@@ -456,10 +490,10 @@ $countResenas = $usuario->resenas()
         </section>
 
         {{-- Favoritos destinos --}}
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-slate-800">{{ $esPropio ? 'Mis favoritos' : 'Favoritos' }}</h2>
-                <div class="flex gap-2">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800 min-w-0">{{ $esPropio ? 'Mis favoritos' : 'Favoritos' }}</h2>
+                <div class="flex gap-2 shrink-0">
                     <button onclick="prevFavoritos()" class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
                     </button>
