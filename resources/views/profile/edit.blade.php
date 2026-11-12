@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Mi Perfil - Surify')
+@php
+// Esta vista sirve para el perfil propio (/profile) y para el de otros usuarios (/usuarios/{id})
+$usuario     = $usuario ?? auth()->user();
+$esPropio    = $esPropio ?? true;
+$privado     = $privado ?? false;
+$vistaPrevia = $vistaPrevia ?? false;
+$avisoAdmin  = $avisoAdmin ?? false;
+@endphp
+
+@section('title', ($esPropio ? 'Mi Perfil' : $usuario->name) . ' - Surify')
 
 @section('content')
 
@@ -26,6 +35,7 @@
 {{-- Hero Section --}}
 <section class="relative isolate h-[400px] w-full overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
     <img id="hero-bg" src="" class="w-full h-full object-cover" alt="Hero">
+    @if($esPropio)
     <button onclick="document.getElementById('modal-portada').classList.remove('hidden')"
         class="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white text-xs font-semibold px-3 py-2 rounded-full flex items-center gap-1 transition-all">
         <span class="material-symbols-outlined text-[16px]">wallpaper</span>
@@ -35,41 +45,84 @@
         class="absolute top-4 left-4 z-20 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all group">
         <span id="settings-btn-icon" class="material-symbols-outlined text-[20px] transition-transform duration-500">settings</span>
     </button>
+    @endif
     <div class="absolute inset-0 hero-gradient"></div>
     <div class="absolute inset-0 flex flex-col items-center justify-center mt-8">
-        <div class="relative group cursor-pointer" onclick="document.getElementById('avatar-input').click()">
-            @if(auth()->user()->avatar)
-            <img src="{{ auth()->user()->avatar }}" class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-2xl" alt="Avatar">
+        <div class="relative {{ $esPropio ? 'group cursor-pointer' : '' }}" @if($esPropio) onclick="document.getElementById('avatar-input').click()" @endif>
+            @if($usuario->avatar)
+            <img src="{{ $usuario->avatar }}" class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white object-cover shadow-2xl" alt="Avatar">
             @else
             <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-[#28628f] text-white flex items-center justify-center text-4xl font-black border-4 border-white shadow-2xl">
-                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                {{ strtoupper(substr($usuario->name, 0, 1)) }}
             </div>
             @endif
+            @if($esPropio)
             <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span class="material-symbols-outlined text-white text-3xl">photo_camera</span>
             </div>
+            @endif
             <div class="absolute bottom-2 right-2 bg-[#28628f] text-white rounded-full p-1 border-4 border-white">
                 <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
             </div>
         </div>
+        @if($esPropio)
         <form method="POST" action="{{ route('profile.avatar') }}" enctype="multipart/form-data" id="avatar-form">
             @csrf
             <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden"
                 onchange="document.getElementById('avatar-form').submit()">
         </form>
-        <h1 class="text-3xl font-black text-slate-800 mt-3" style="font-family: 'Inter', sans-serif;">{{ auth()->user()->name }}</h1>
-        <p class="text-sm text-slate-500">{{ auth()->user()->email }}</p>
+        @endif
+        <h1 class="text-3xl font-black text-slate-800 mt-3" style="font-family: 'Inter', sans-serif;">{{ $usuario->name }}</h1>
+        @if($esPropio)
+        {{-- El email solo lo ve el dueño --}}
+        <p class="text-sm text-slate-500">{{ $usuario->email }}</p>
+        @endif
         <p class="text-xs text-[#28628f] font-bold uppercase tracking-widest mt-1">
-            Miembro desde {{ auth()->user()->created_at->translatedFormat('F Y') }}
+            Miembro desde {{ $usuario->created_at->translatedFormat('F Y') }}
         </p>
     </div>
 </section>
 
+{{-- Avisos de vista --}}
+@if($vistaPrevia)
+<div class="max-w-2xl mx-auto mt-4 mb-2 px-4">
+    <div class="flex items-center gap-3 rounded-xl border border-[#28628f]/20 bg-[#28628f]/5 px-4 py-3 text-sm text-[#28628f]">
+        <span class="material-symbols-outlined">visibility</span>
+        Así ven tu perfil los demás.
+        <a href="{{ route('profile.edit') }}" class="ml-auto font-bold hover:underline text-decoration-none">Volver a mi perfil</a>
+    </div>
+</div>
+@endif
+@if($avisoAdmin)
+<div class="max-w-2xl mx-auto mt-4 mb-2 px-4">
+    <div class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <span class="material-symbols-outlined">lock</span>
+        Este perfil es privado. Lo ves completo porque sos administrador.
+    </div>
+</div>
+@endif
+
+@if($privado)
+
+{{-- Perfil privado: solo nombre y foto --}}
+<div class="max-w-2xl mx-auto mt-8 mb-8 px-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+        <span class="material-symbols-outlined text-5xl text-slate-300 block mb-3">lock</span>
+        <h2 class="text-xl font-bold text-slate-700">Este perfil es privado</h2>
+        <p class="text-sm text-slate-400 mt-1">{{ $usuario->name }} eligió no mostrar su actividad.</p>
+    </div>
+</div>
+
+@else
+
 {{-- Stats --}}
 @php
-$countVisitados = auth()->user()->destinosVisitados()->count();
-// Solo reseñas aprobadas (las pendientes o rechazadas no están publicadas)
-$countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
+$countVisitados = $usuario->destinosVisitados()->count();
+// Solo reseñas aprobadas; a los demás tampoco se les cuentan las anónimas
+$countResenas = $usuario->resenas()
+    ->where('aprobada', true)
+    ->when(!$esPropio, fn ($q) => $q->where(fn ($w) => $w->where('anonima', false)->orWhereNull('anonima')))
+    ->count();
 @endphp
 <div class="max-w-2xl mx-auto -mt-6 relative z-10 mb-8 px-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 grid grid-cols-3 gap-4 text-center">
@@ -92,18 +145,18 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
     {{-- Columna izquierda --}}
-    <div class="lg:col-span-8 space-y-6">
+    <div class="{{ $esPropio ? 'lg:col-span-8' : 'lg:col-span-12' }} space-y-6">
 
         {{-- Insignias --}}
         @php
-        $insignias = app(\App\Services\InsigniaService::class)->paraUsuario(auth()->user());
+        $insignias = app(\App\Services\InsigniaService::class)->paraUsuario($usuario);
         $insigniasGanadas = collect($insignias)->where('ganada', true)->count();
         @endphp
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between gap-4 mb-1">
                 <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                     <span class="material-symbols-outlined text-yellow-500" style="font-variation-settings: 'FILL' 1;">military_tech</span>
-                    Mis Insignias
+                    {{ $esPropio ? 'Mis Insignias' : 'Insignias' }}
                     <span class="text-sm font-semibold text-slate-400">{{ $insigniasGanadas }}/{{ count($insignias) }}</span>
                 </h2>
                 <div class="flex gap-2">
@@ -207,7 +260,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
                         @php $pct = $ins['meta'] > 0 ? round($ins['progreso'] / $ins['meta'] * 100) : 0; @endphp
                         <div class="mt-3 rounded-xl bg-slate-50 p-4 text-left">
                             <div class="mb-2 flex items-center justify-between">
-                                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tu progreso</p>
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">{{ $esPropio ? 'Tu progreso' : 'Progreso' }}</p>
                                 <p class="text-xs font-bold text-[#28628f]">{{ $ins['progreso'] }} de {{ $ins['meta'] }}</p>
                             </div>
                             <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
@@ -230,7 +283,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
         {{-- Lugares visitados --}}
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-slate-800">Mis lugares visitados</h2>
+                <h2 class="text-xl font-bold text-slate-800">{{ $esPropio ? 'Mis lugares visitados' : 'Lugares visitados' }}</h2>
                 <div class="flex gap-2">
                     <button onclick="prevVisitados()" class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
@@ -241,7 +294,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
                 </div>
             </div>
             @php
-            $visitados = auth()->user()->destinosVisitados()->with('destino.provincia')->get()->filter(fn($v) => $v->destino)->values();
+            $visitados = $usuario->destinosVisitados()->with('destino.provincia')->get()->filter(fn($v) => $v->destino)->values();
             @endphp
             @if($visitados->count() > 0)
             <div id="visitados-container" class="grid grid-cols-2 gap-3">
@@ -273,7 +326,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             @else
             <div class="text-center py-8 text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">
                 <span class="material-symbols-outlined text-3xl mb-2 block">explore</span>
-                Aún no marcaste ningún destino como visitado
+                {{ $esPropio ? 'Aún no marcaste ningún destino como visitado' : 'Todavía no marcó ningún destino como visitado' }}
             </div>
             @endif
         </section>
@@ -296,7 +349,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             </div>
             @php
             // ✅ .values() para reindexar desde 0
-            $festVisitadas = auth()->user()->eventosVisitados()->with('evento.provincia')->get()->filter(fn($v) => $v->evento)->values();
+            $festVisitadas = $usuario->eventosVisitados()->with('evento.provincia')->get()->filter(fn($v) => $v->evento && ($esPropio || $v->evento->activo))->values();
             @endphp
             @if($festVisitadas->count() > 0)
             <div id="fest-visitadas-container" class="grid grid-cols-2 gap-3">
@@ -334,7 +387,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             @else
             <div class="text-center py-8 text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">
                 <span class="material-symbols-outlined text-3xl mb-2 block">celebration</span>
-                Aún no marcaste ninguna festividad como visitada
+                {{ $esPropio ? 'Aún no marcaste ninguna festividad como visitada' : 'Todavía no marcó ninguna festividad como visitada' }}
             </div>
             @endif
         </section>
@@ -357,8 +410,8 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             </div>
             {{-- ✅ .values() para reindexar desde 0 --}}
             @php
-            $festividades = auth()->user()->favoritos()->with('evento.provincia')->get()->filter(function ($f) {
-            return $f->evento;
+            $festividades = $usuario->favoritos()->with('evento.provincia')->get()->filter(function ($f) use ($esPropio) {
+            return $f->evento && ($esPropio || $f->evento->activo);
             })->values();
             @endphp
             @if($festividades->count() > 0)
@@ -397,7 +450,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             @else
             <div class="text-center py-8 text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">
                 <span class="material-symbols-outlined text-3xl mb-2 block">favorite</span>
-                Aún no guardaste ninguna festividad como favorita
+                {{ $esPropio ? 'Aún no guardaste ninguna festividad como favorita' : 'Todavía no guardó festividades favoritas' }}
             </div>
             @endif
         </section>
@@ -405,7 +458,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
         {{-- Favoritos destinos --}}
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-slate-800">Mis favoritos</h2>
+                <h2 class="text-xl font-bold text-slate-800">{{ $esPropio ? 'Mis favoritos' : 'Favoritos' }}</h2>
                 <div class="flex gap-2">
                     <button onclick="prevFavoritos()" class="p-2 rounded-full border border-slate-200 hover:bg-slate-100 transition-colors">
                         <span class="material-symbols-outlined text-sm">chevron_left</span>
@@ -417,7 +470,7 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             </div>
             @php
             // ✅ .values() para reindexar desde 0
-            $favoritos = auth()->user()->favoritos()->with('destino.provincia')->get()->filter(fn($f) => $f->destino)->values();
+            $favoritos = $usuario->favoritos()->with('destino.provincia')->get()->filter(fn($f) => $f->destino)->values();
             @endphp
             @if($favoritos->count() > 0)
             <div id="favoritos-container" class="grid grid-cols-2 gap-3">
@@ -446,14 +499,15 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             @else
             <div class="text-center py-8 text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">
                 <span class="material-symbols-outlined text-3xl mb-2 block">bookmark</span>
-                Aún no guardaste ningún favorito
+                {{ $esPropio ? 'Aún no guardaste ningún favorito' : 'Todavía no guardó favoritos' }}
             </div>
             @endif
         </section>
 
     </div>
 
-    {{-- Columna derecha - Actividad --}}
+    {{-- Columna derecha - Actividad (solo la ve el dueño del perfil) --}}
+    @if($esPropio)
     <aside class="lg:col-span-4">
         <div class="glass-card rounded-2xl border border-slate-200 shadow-md p-6 sticky top-24">
             <h2 class="text-lg font-bold text-slate-800 mb-6">Mi actividad reciente</h2>
@@ -517,7 +571,12 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             @endif
         </div>
     </aside>
+    @endif
 </div>
+
+@endif {{-- fin perfil privado --}}
+
+@if($esPropio)
 
 {{-- Modal configuración --}}
 <div id="modal-configuracion" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
@@ -592,16 +651,31 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
             <section>
                 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1">Privacidad & Seguridad</h4>
                 <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-                    <button class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors text-left">
+                    {{-- Visibilidad del perfil: se guarda al tocar el interruptor --}}
+                    <form method="POST" action="{{ route('profile.visibilidad') }}"
+                        class="flex items-center justify-between gap-3 p-4 hover:bg-slate-100 transition-colors">
+                        @csrf
+                        @method('PATCH')
                         <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-slate-500">visibility</span>
+                            <span class="material-symbols-outlined text-slate-500">{{ auth()->user()->perfil_publico ? 'visibility' : 'visibility_off' }}</span>
                             <div>
-                                <p class="text-sm text-slate-700">Visibilidad del Perfil</p>
-                                <p class="text-xs text-slate-400">Público</p>
+                                <p class="text-sm text-slate-700">Perfil público</p>
+                                <p class="text-xs text-slate-400">
+                                    {{ auth()->user()->perfil_publico
+                                        ? 'Los demás ven tus insignias, lugares, reseñas y favoritos.'
+                                        : 'Los demás solo ven tu nombre y tu foto.' }}
+                                </p>
+                                <a href="{{ route('usuarios.show', ['user' => auth()->id(), 'vista' => 'publica']) }}" target="_blank"
+                                    class="text-xs font-semibold text-[#28628f] hover:underline">Ver mi perfil público</a>
                             </div>
                         </div>
-                        <span class="material-symbols-outlined text-slate-400">chevron_right</span>
-                    </button>
+                        <input type="hidden" name="perfil_publico" value="0">
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" name="perfil_publico" value="1" class="sr-only peer"
+                                @checked(auth()->user()->perfil_publico) onchange="this.form.submit()">
+                            <div class="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#28628f]"></div>
+                        </label>
+                    </form>
                     <a href="{{ route('two-factor.setup') }}" class="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors text-left text-decoration-none">
                         <div class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-slate-500">verified_user</span>
@@ -707,10 +781,11 @@ $countResenas = auth()->user()->resenas()->where('aprobada', true)->count();
         </div>
     </div>
 </div>
+@endif {{-- fin modales del dueño --}}
 
 <script>
     var PORTADA_DEFAULT = 'https://señalcalafate.com/download/multimedia.normal.b4444966a274ae56.Z2xhY2lhcl9ub3JtYWwud2VicA==.webp';
-    var portadaGuardada = localStorage.getItem('surify-portada-{{ auth()->id() }}');
+    var portadaGuardada = localStorage.getItem('surify-portada-{{ $usuario->id }}');
     document.getElementById('hero-bg').src = portadaGuardada || PORTADA_DEFAULT;
 
     function abrirConfig() {

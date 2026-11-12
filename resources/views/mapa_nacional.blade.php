@@ -23,9 +23,13 @@
     .surify-map-dashboard {
         position: relative;
         width: 100%;
-        height: calc(100vh - 4rem);
+        height: calc(100vh - 4rem); /* valor inicial: el JS lo ajusta al alto real del header */
         overflow: hidden;
         background-color: #f8f9fa;
+        /* Encierra los z-index del mapa (Leaflet usa 400-1000) para que
+           nada del mapa se ponga por encima del header ni de los menús */
+        isolation: isolate;
+        z-index: 0;
     }
 
     #mapa-container {
@@ -164,6 +168,12 @@
     #card-destino.visible {
         display: block;
     }
+
+    /* Evita las líneas blancas entre los tiles del mapa */
+    .leaflet-tile-container img.leaflet-tile {
+        mix-blend-mode: plus-lighter;
+        outline: 1px solid transparent;
+    }
 </style>
 
 <div class="surify-map-dashboard">
@@ -252,7 +262,7 @@
         </div>
 
         <!-- Botón flotante solo para celulares -->
-        <button id="btn-toggle-sidebar" class="md:hidden interactuable light-panel" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); border-radius: 99px; padding: 10px 20px; font-weight: 800; font-size: 13px; color: #28628f !important; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 2px solid #28628f; z-index: 50;">
+        <button id="btn-toggle-sidebar" class="flex md:hidden interactuable light-panel" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); border-radius: 99px; padding: 10px 20px; font-weight: 800; font-size: 13px; color: #28628f !important; align-items: center; gap: 8px; cursor: pointer; border: 2px solid #28628f; z-index: 50;">
             <i class="fa-solid fa-eye-slash"></i> Ocultar Explorador
         </button>
     </div>
@@ -264,30 +274,126 @@
     var destinosData = @json($destinos);
 
     var coordenadasProvincias = {
-        'Buenos Aires': { lat: -36.6769, lng: -60.5583, zoom: 7 },
-        'Catamarca': { lat: -27.3357, lng: -66.9477, zoom: 7 },
-        'Chaco': { lat: -26.9478, lng: -60.1658, zoom: 7 },
-        'Chubut': { lat: -43.2934, lng: -65.1078, zoom: 6 },
-        'Córdoba': { lat: -31.4135, lng: -64.1811, zoom: 7 },
-        'Corrientes': { lat: -27.4692, lng: -58.8306, zoom: 7 },
-        'Entre Ríos': { lat: -31.7748, lng: -60.4956, zoom: 7 },
-        'Formosa': { lat: -24.8948, lng: -59.8901, zoom: 7 },
-        'Jujuy': { lat: -23.1897, lng: -65.9997, zoom: 7 },
-        'La Pampa': { lat: -36.6148, lng: -64.2839, zoom: 7 },
-        'La Rioja': { lat: -29.4127, lng: -66.8552, zoom: 7 },
-        'Mendoza': { lat: -32.8908, lng: -68.8458, zoom: 7 },
-        'Misiones': { lat: -26.9478, lng: -54.6964, zoom: 7 },
-        'Neuquén': { lat: -38.9516, lng: -68.0591, zoom: 7 },
-        'Río Negro': { lat: -40.8135, lng: -63.0154, zoom: 7 },
-        'Salta': { lat: -24.7821, lng: -65.4117, zoom: 7 },
-        'San Juan': { lat: -30.8653, lng: -68.8894, zoom: 7 },
-        'San Luis': { lat: -33.2950, lng: -66.3356, zoom: 7 },
-        'Santa Cruz': { lat: -51.6230, lng: -69.2168, zoom: 6 },
-        'Santa Fe': { lat: -30.7069, lng: -60.9498, zoom: 7 },
-        'Santiago del Estero': { lat: -27.7824, lng: -64.2661, zoom: 7 },
-        'Tierra del Fuego': { lat: -54.0000, lng: -67.0000, zoom: 7 },
-        'Tucumán': { lat: -26.8083, lng: -65.2176, zoom: 8 },
-        'Ciudad Autónoma de Buenos Aires': { lat: -34.6037, lng: -58.3816, zoom: 12 },
+        'Buenos Aires': {
+            lat: -36.6769,
+            lng: -60.5583,
+            zoom: 7
+        },
+        'Catamarca': {
+            lat: -27.3357,
+            lng: -66.9477,
+            zoom: 7
+        },
+        'Chaco': {
+            lat: -26.9478,
+            lng: -60.1658,
+            zoom: 7
+        },
+        'Chubut': {
+            lat: -43.2934,
+            lng: -65.1078,
+            zoom: 6
+        },
+        'Córdoba': {
+            lat: -31.4135,
+            lng: -64.1811,
+            zoom: 7
+        },
+        'Corrientes': {
+            lat: -27.4692,
+            lng: -58.8306,
+            zoom: 7
+        },
+        'Entre Ríos': {
+            lat: -31.7748,
+            lng: -60.4956,
+            zoom: 7
+        },
+        'Formosa': {
+            lat: -24.8948,
+            lng: -59.8901,
+            zoom: 7
+        },
+        'Jujuy': {
+            lat: -23.1897,
+            lng: -65.9997,
+            zoom: 7
+        },
+        'La Pampa': {
+            lat: -36.6148,
+            lng: -64.2839,
+            zoom: 7
+        },
+        'La Rioja': {
+            lat: -29.4127,
+            lng: -66.8552,
+            zoom: 7
+        },
+        'Mendoza': {
+            lat: -32.8908,
+            lng: -68.8458,
+            zoom: 7
+        },
+        'Misiones': {
+            lat: -26.9478,
+            lng: -54.6964,
+            zoom: 7
+        },
+        'Neuquén': {
+            lat: -38.9516,
+            lng: -68.0591,
+            zoom: 7
+        },
+        'Río Negro': {
+            lat: -40.8135,
+            lng: -63.0154,
+            zoom: 7
+        },
+        'Salta': {
+            lat: -24.7821,
+            lng: -65.4117,
+            zoom: 7
+        },
+        'San Juan': {
+            lat: -30.8653,
+            lng: -68.8894,
+            zoom: 7
+        },
+        'San Luis': {
+            lat: -33.2950,
+            lng: -66.3356,
+            zoom: 7
+        },
+        'Santa Cruz': {
+            lat: -51.6230,
+            lng: -69.2168,
+            zoom: 6
+        },
+        'Santa Fe': {
+            lat: -30.7069,
+            lng: -60.9498,
+            zoom: 7
+        },
+        'Santiago del Estero': {
+            lat: -27.7824,
+            lng: -64.2661,
+            zoom: 7
+        },
+        'Tierra del Fuego': {
+            lat: -54.0000,
+            lng: -67.0000,
+            zoom: 7
+        },
+        'Tucumán': {
+            lat: -26.8083,
+            lng: -65.2176,
+            zoom: 8
+        },
+        'Ciudad Autónoma de Buenos Aires': {
+            lat: -34.6037,
+            lng: -58.3816,
+            zoom: 12
+        },
     };
 
     var icono = L.divIcon({
@@ -297,7 +403,19 @@
         iconAnchor: [7, 7],
     });
 
+    // Ajusta el alto del mapa al espacio que queda debajo del header,
+    // así la página no scrollea y el mapa no se mete abajo del header
+    function ajustarAltoMapa() {
+        var dashboard = document.querySelector('.surify-map-dashboard');
+        if (!dashboard) return;
+        var top = dashboard.getBoundingClientRect().top + window.scrollY;
+        dashboard.style.height = Math.max(window.innerHeight - top, 400) + 'px';
+        if (mapaInstance) mapaInstance.invalidateSize();
+    }
+    window.addEventListener('resize', ajustarAltoMapa);
+
     function inicializarMapa() {
+        ajustarAltoMapa();
         var contenedor = document.getElementById('mapa-container');
         if (!contenedor || mapaInstance !== null) return;
 
@@ -314,14 +432,16 @@
             maxBoundsViscosity: 1.0
         }).setView([-38.416097, -63.616672], 4);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            subdomains: 'abc',
+        // OpenStreetMap ya no recomienda los subdominios a/b/c: se usa la URL directa
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
             maxZoom: 19
         }).addTo(mapaInstance);
 
         destinosData.forEach(function(destino) {
-            var marker = L.marker([destino.lat, destino.lng], { icon: icono })
+            var marker = L.marker([destino.lat, destino.lng], {
+                    icon: icono
+                })
                 .addTo(mapaInstance)
                 .on('click', function() {
                     mostrarCard(destino);
@@ -353,38 +473,69 @@
         document.getElementById('card-provincia-mapa').style.display = 'none';
 
         if (mapaInstance && destino.lat && destino.lng) {
-            mapaInstance.flyTo([destino.lat, destino.lng], 12, { duration: 1.5 });
+            mapaInstance.flyTo([destino.lat, destino.lng], 12, {
+                duration: 1.5
+            });
         }
     }
 
-    function aplicarFiltroCategoria(categoria) {
-        var categoriaNormalizada = categoria.trim().toLowerCase();
+    // Categorías elegidas. Vacío = "Todos"
+    var categoriasActivas = new Set();
 
+    // "Gastronomía" y "gastronomia" cuentan como la misma categoría
+    function normalizarCategoria(texto) {
+        return (texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    }
+
+    function aplicarFiltroCategoria() {
         todosLosMarkers.forEach(function(marker) {
-            var categoriaDestino = (marker._destinoCategoria || '').trim().toLowerCase();
-            if (categoria === 'todos' || categoriaDestino === categoriaNormalizada) {
+            var cat = normalizarCategoria(marker._destinoCategoria);
+            var mostrar = categoriasActivas.size === 0 || categoriasActivas.has(cat);
+
+            if (mostrar) {
                 if (!mapaInstance.hasLayer(marker)) mapaInstance.addLayer(marker);
             } else {
                 if (mapaInstance.hasLayer(marker)) mapaInstance.removeLayer(marker);
             }
         });
+        actualizarBotonesCategoria();
     }
 
+    // Marca como activos los botones de las categorías elegidas (o "Todos" si no hay ninguna)
+    function actualizarBotonesCategoria() {
+        document.querySelectorAll('.menu-list a[onclick*="filtrarCategoria("]').forEach(function(a) {
+            var m = a.getAttribute('onclick').match(/filtrarCategoria\('([^']+)'\)/);
+            if (!m) return;
+            var cat = normalizarCategoria(m[1]);
+            var activo = cat === 'todos' ? categoriasActivas.size === 0 : categoriasActivas.has(cat);
+            a.classList.toggle('is-active-menu', activo);
+        });
+    }
+
+    // Clic en una categoría: la agrega o la saca. "Todos" limpia la selección.
     function filtrarCategoria(categoria) {
-        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
-        event.target.closest('a').classList.add('is-active-menu');
-        aplicarFiltroCategoria(categoria);
+        var cat = normalizarCategoria(categoria);
+
+        if (cat === 'todos') {
+            categoriasActivas.clear();
+        } else if (categoriasActivas.has(cat)) {
+            categoriasActivas.delete(cat);
+        } else {
+            categoriasActivas.add(cat);
+        }
+
+        aplicarFiltroCategoria();
     }
 
     function irAProvincia(nombre) {
-        aplicarFiltroCategoria('todos');
-        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
-        var btnTodos = document.querySelector('.menu-list a[onclick*="filtrarCategoria(\'todos\')"]');
-        if (btnTodos) btnTodos.classList.add('is-active-menu');
+        categoriasActivas.clear();
+        aplicarFiltroCategoria();
 
         var coords = coordenadasProvincias[nombre];
         if (coords && mapaInstance) {
-            mapaInstance.flyTo([coords.lat, coords.lng], coords.zoom, { duration: 1.5 });
+            mapaInstance.flyTo([coords.lat, coords.lng], coords.zoom, {
+                duration: 1.5
+            });
         }
 
         document.getElementById('card-provincia-nombre').textContent = nombre;
@@ -395,7 +546,9 @@
     }
 
     function centrarEnArgentina() {
-        mapaInstance.flyTo([-38.416097, -63.616672], 4, { duration: 1.5 });
+        mapaInstance.flyTo([-38.416097, -63.616672], 4, {
+            duration: 1.5
+        });
     }
 
     inicializarMapa();
@@ -419,7 +572,9 @@
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            mapaInstance.flyTo([lat, lng], 10, { duration: 1.5 });
+            mapaInstance.flyTo([lat, lng], 10, {
+                duration: 1.5
+            });
 
             const iconoUsuario = L.divIcon({
                 html: '<div style="background:#e11d48; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(225,29,72,0.5); animation: pulse 1.5s infinite;"></div>',
@@ -432,7 +587,9 @@
                 mapaInstance.removeLayer(window.marcadorUsuario);
             }
 
-            window.marcadorUsuario = L.marker([lat, lng], { icon: iconoUsuario })
+            window.marcadorUsuario = L.marker([lat, lng], {
+                    icon: iconoUsuario
+                })
                 .addTo(mapaInstance)
                 .bindPopup('<div style="font-family:sans-serif; font-size:13px;"><strong style="color:#e11d48;">📍 Tu ubicación</strong></div>')
                 .openPopup();
@@ -509,7 +666,10 @@
         const request = {
             fields: ['displayName', 'formattedAddress', 'location', 'rating'],
             locationRestriction: {
-                center: { lat: lat, lng: lng },
+                center: {
+                    lat: lat,
+                    lng: lng
+                },
                 radius: 5000,
             },
             includedPrimaryTypes: [tipo === 'restaurant' ? 'restaurant' : (tipo === 'gas_station' ? 'gas_station' : 'lodging')],
@@ -517,8 +677,12 @@
         };
 
         try {
-            const { Place } = await google.maps.importLibrary("places");
-            const { places } = await Place.searchNearby(request);
+            const {
+                Place
+            } = await google.maps.importLibrary("places");
+            const {
+                places
+            } = await Place.searchNearby(request);
 
             if (places && places.length > 0) {
                 places.forEach(function(place) {
@@ -546,7 +710,9 @@
                         iconAnchor: [16, 16]
                     });
 
-                    const m = L.marker([plat, plng], { icon: customIcon })
+                    const m = L.marker([plat, plng], {
+                            icon: customIcon
+                        })
                         .addTo(mapaInstance)
                         .bindPopup(`
                             <div style="font-family:'Outfit',sans-serif; padding:4px; min-width: 140px;">

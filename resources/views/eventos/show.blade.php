@@ -84,11 +84,17 @@
             @forelse($evento->resenas as $resena)
             <div class="flex gap-4 py-4 border-b border-slate-100 last:border-0">
                 <div class="w-10 h-10 rounded-full bg-[#28628f]/10 flex items-center justify-center text-sm font-black text-[#28628f] shrink-0">
-                    {{ strtoupper(substr($resena->user->name ?? 'U', 0, 1)) }}
+                    {{ ($resena->anonima || !$resena->user) ? '?' : strtoupper(substr($resena->user->name, 0, 1)) }}
                 </div>
                 <div class="flex-1">
                     <div class="flex items-center justify-between mb-1">
-                        <p class="text-sm font-bold text-slate-700">{{ $resena->user->name ?? 'Usuario' }}</p>
+                        <p class="text-sm font-bold text-slate-700">
+                            @if($resena->anonima || !$resena->user)
+                            Viajero Anónimo
+                            @else
+                            <a href="{{ route('usuarios.show', $resena->user) }}" class="hover:underline text-decoration-none">{{ $resena->user->name }}</a>
+                            @endif
+                        </p>
                         <div class="flex items-center gap-0.5">
                             @for($i = 1; $i <= 5; $i++)
                                 <span class="material-symbols-outlined text-[14px] {{ $i <= ($resena->calificacion ?? 5) ? 'text-amber-400' : 'text-slate-200' }}"

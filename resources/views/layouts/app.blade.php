@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </header>
 
-            <main class="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
+            <main class="flex-grow w-full mx-auto @yield('main_class', 'px-4 sm:px-6 lg:px-8 py-8 max-w-7xl')">
                 @if(session('status'))
                 <div class="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[#28628f] text-sm font-semibold flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">info</span>{{ session('status') }}

@@ -91,4 +91,14 @@ class ProfileController extends Controller
 
         return null;
     }
+
+    public function visibilidad(Request $request): RedirectResponse
+    {
+        $publico = $request->boolean('perfil_publico');
+
+        $request->user()->update(['perfil_publico' => $publico]);
+
+        return redirect()->route('profile.edit')
+            ->with('success', $publico ? 'Tu perfil ahora es público.' : 'Tu perfil ahora es privado.');
+    }
 }

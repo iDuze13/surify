@@ -7,6 +7,7 @@ use App\Http\Controllers\ResenaController;
 use App\Http\Controllers\CombustibleController;
 use App\Http\Controllers\EventoVisitadoController;
 use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\PerfilPublicoController;
 use App\Http\Controllers\Admin\RolController;
 use App\Http\Controllers\Admin\DestinoController as AdminDestinoController;
 use App\Http\Controllers\Admin\ResenaController as AdminResenaController;
@@ -26,7 +27,6 @@ Route::post('/traducir', [\App\Http\Controllers\TraduccionController::class, 'tr
 Route::put('/resenas/{resena}', [ResenaController::class, 'update'])->name('resenas.update');
 Route::delete('/resenas/{resena}', [ResenaController::class, 'destroy'])->name('resenas.destroy');
 Route::view('/terminos-y-condiciones', 'legal.terminos')->name('terminos');
-Route::post('/admin/backup', [\App\Http\Controllers\Admin\BackupController::class, 'generar'])->name('admin.backup');
 
 // ==================== ADMIN ====================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -34,6 +34,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('usuarios', UsuarioController::class)->only(['index', 'edit', 'update']);
     Route::get('/anuncios', [AdminAnuncioController::class, 'create'])->name('anuncios.create');
     Route::post('/anuncios', [AdminAnuncioController::class, 'store'])->name('anuncios.store');
+
+    // Backup manual: antes estaba afuera de este grupo y cualquiera podía dispararlo.
+    // Misma URL (/admin/backup) y mismo nombre (admin.backup), ahora solo para admins.
+    Route::post('/backup', [\App\Http\Controllers\Admin\BackupController::class, 'generar'])->name('backup');
 });
 
 Route::middleware(['auth', 'permiso:crear_evento,modificar_evento,eliminar_evento,administrar_eventos_sugeridos'])->prefix('admin')->name('admin.')->group(function () {
@@ -163,6 +167,11 @@ Route::get('/eventos/{id}', [EventoController::class, 'show'])->name('eventos.sh
 
 Route::get('/buscar', [\App\Http\Controllers\BusquedaController::class, 'buscar'])->name('busqueda.buscar');
 
+// Perfil público de un usuario (respeta si eligió perfil privado)
+Route::get('/usuarios/{user}', [PerfilPublicoController::class, 'show'])
+    ->whereNumber('user')
+    ->name('usuarios.show');
+
 // ==================== AUTH ====================
 Route::middleware('auth')->group(function () {
     Route::post('/resenas', [ResenaController::class, 'store'])->name('resenas.store');
@@ -171,6 +180,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::patch('/profile/visibilidad', [ProfileController::class, 'visibilidad'])->name('profile.visibilidad');
 
     Route::get('/herramientas/combustible', [CombustibleController::class, 'index'])->name('combustible.index');
     Route::post('/eventos/sugerir', [\App\Http\Controllers\EventoSugerenciaController::class, 'store'])->name('eventos.sugerir');
