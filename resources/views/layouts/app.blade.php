@@ -344,6 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a href="{{ route('admin.roles.index') }}" class="side-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span> Roles</a>
                 <a href="{{ route('admin.usuarios.index') }}" class="side-link {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">group</span> Usuarios</a>
                 <a href="{{ route('admin.anuncios.create') }}" class="side-link {{ request()->routeIs('admin.anuncios.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">campaign</span> Anuncios</a>
+                <a href="{{ route('admin.reportes.index') }}" class="side-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">summarize</span> Reportes</a>
                 @endif
 
                 @if($tieneAlguno(['crear_destino', 'modificar_destino', 'eliminar_destino', 'administrar_destinos_sugeridos']))

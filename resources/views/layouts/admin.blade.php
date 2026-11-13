@@ -147,6 +147,9 @@
                         <a href="{{ route('admin.anuncios.create') }}" class="side-link {{ request()->routeIs('admin.anuncios.*') ? 'active' : '' }}">
                             <span class="material-symbols-outlined text-[18px]">campaign</span> Anuncios
                         </a>
+                        <a href="{{ route('admin.reportes.index') }}" class="side-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}">
+                            <span class="material-symbols-outlined text-[18px]">summarize</span> Reportes
+                        </a>
                         @endcan
 
                         @if(auth()->user()->can('crear_destino') || auth()->user()->can('modificar_destino') || auth()->user()->can('eliminar_destino') || auth()->user()->can('administrar_destinos_sugeridos'))

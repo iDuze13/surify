@@ -159,6 +159,11 @@
                     Moderar Reseñas
                 </a>
 
+                <a href="{{ route('admin.reportes.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-medium text-decoration-none">
+                    <span class="material-symbols-outlined text-sky-300 text-[20px]">summarize</span>
+                    Generar Reportes
+                </a>
+
                 {{-- Botón Backup --}}
                 <form method="POST" action="{{ route('admin.backup') }}" id="form-backup">
                     @csrf
