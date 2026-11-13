@@ -7,38 +7,158 @@
 {{-- ========== ANIMACIONES DE LA PÁGINA DE PROVINCIA ========== --}}
 <style>
     /* Variantes del .reveal global (el observer del layout les agrega .visible) */
-    .reveal.from-left { transform: translateX(-32px); }
-    .reveal.zoom { transform: scale(.94); }
-    @media (min-width: 1024px) {
-        .reveal.from-right { transform: translateX(32px); }
+    .reveal.from-left {
+        transform: translateX(-32px);
     }
+
+    .reveal.zoom {
+        transform: scale(.94);
+    }
+
+    @media (min-width: 1024px) {
+        .reveal.from-right {
+            transform: translateX(32px);
+        }
+    }
+
     .reveal.from-left.visible,
     .reveal.from-right.visible,
-    .reveal.zoom.visible { transform: none; }
+    .reveal.zoom.visible {
+        transform: none;
+    }
 
     /* Barra de progreso de scroll */
     #scroll-progress {
-        position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 9990;
-        background: #28628f; transform: scaleX(0); transform-origin: left; pointer-events: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        z-index: 9990;
+        background: #28628f;
+        transform: scaleX(0);
+        transform-origin: left;
+        pointer-events: none;
     }
 
     /* Solo se animan si la persona NO pidió reducir movimiento */
     @media (prefers-reduced-motion: no-preference) {
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-        @keyframes imgIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
-        @keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.12) translate(-1%, -1%); } }
-        @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes nudgeDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-        @keyframes pinBounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } 60% { transform: translateY(0); } }
-        @keyframes popIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
 
-        .hero-in { animation: fadeUp .7s cubic-bezier(.2, .7, .2, 1) both; animation-delay: var(--d, 0s); }
-        .gal-in { animation: imgIn .8s cubic-bezier(.2, .7, .2, 1) both; animation-delay: var(--d, 0s); }
-        .kenburns { animation: kenburns 20s ease-in-out infinite alternate; }
-        .float-y { animation: floatY 3.5s ease-in-out infinite; }
-        .nudge-down { animation: nudgeDown 1.4s ease-in-out infinite; }
-        .pin-bounce { animation: pinBounce 2.2s ease-in-out infinite; }
-        .pop { animation: popIn .45s cubic-bezier(.2, .7, .2, 1) both; animation-delay: var(--pd, 0s); }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @keyframes imgIn {
+            from {
+                opacity: 0;
+                transform: scale(.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @keyframes kenburns {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.12) translate(-1%, -1%);
+            }
+        }
+
+        @keyframes floatY {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes nudgeDown {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(4px);
+            }
+        }
+
+        @keyframes pinBounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-4px);
+            }
+
+            60% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .hero-in {
+            animation: fadeUp .7s cubic-bezier(.2, .7, .2, 1) both;
+            animation-delay: var(--d, 0s);
+        }
+
+        .gal-in {
+            animation: imgIn .8s cubic-bezier(.2, .7, .2, 1) both;
+            animation-delay: var(--d, 0s);
+        }
+
+        .kenburns {
+            animation: kenburns 20s ease-in-out infinite alternate;
+        }
+
+        .float-y {
+            animation: floatY 3.5s ease-in-out infinite;
+        }
+
+        .nudge-down {
+            animation: nudgeDown 1.4s ease-in-out infinite;
+        }
+
+        .pin-bounce {
+            animation: pinBounce 2.2s ease-in-out infinite;
+        }
+
+        .pop {
+            animation: popIn .45s cubic-bezier(.2, .7, .2, 1) both;
+            animation-delay: var(--pd, 0s);
+        }
     }
 </style>
 <div id="scroll-progress"></div>
@@ -343,7 +463,7 @@
                             </div>
                             <span class="material-symbols-outlined text-slate-300 group-hover:text-[#28628f] group-hover:translate-x-1 ml-auto self-center transition-all shrink-0">arrow_forward</span>
                         </a>
-                        {{--  FIN evento clickeable --}}
+                        {{-- FIN evento clickeable --}}
                     </div>
                     @endforeach
                     @else
@@ -437,13 +557,17 @@
                         @elseif($resena->user->avatar)
                         <img src="{{ $resena->user->avatar }}" class="w-10 h-10 rounded-full object-cover" alt="">
                         @else
-                        {{ strtoupper(substr($resena->user->name, 0, 1)) }}
+                        {{ $resena->anonima ? '?' : strtoupper(substr($resena->user->name, 0, 1)) }}
                         @endif
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center justify-between mb-1">
                             <span class="font-bold text-slate-800 text-sm">
-                                {{ $resena->anonima ? 'Viajero Anónimo' : $resena->user->name }}
+                                @if($resena->anonima || !$resena->user)
+                                Viajero Anónimo
+                                @else
+                                <a href="{{ route('usuarios.show', $resena->user) }}" class="hover:underline text-decoration-none">{{ $resena->user->name }}</a>
+                                @endif
                             </span>
                             <div class="flex items-center gap-0.5">
                                 @for($i = 1; $i <= 5; $i++)
@@ -709,7 +833,9 @@
 
         // Saca la clase .pop cuando termina la animación del filtro
         document.querySelectorAll('.destino-card').forEach(function(c) {
-            c.addEventListener('animationend', function() { c.classList.remove('pop'); });
+            c.addEventListener('animationend', function() {
+                c.classList.remove('pop');
+            });
         });
 
         // Contadores (data-count): arrancan cuando aparecen en pantalla
@@ -719,6 +845,7 @@
             const sufijo = el.dataset.suffix || '';
             const duracion = 1200;
             const t0 = performance.now();
+
             function paso(t) {
                 const p = Math.min((t - t0) / duracion, 1);
                 const suave = 1 - Math.pow(1 - p, 3);
@@ -737,14 +864,19 @@
                         obs.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.4 });
-            contadores.forEach(function(el) { obs.observe(el); });
+            }, {
+                threshold: 0.4
+            });
+            contadores.forEach(function(el) {
+                obs.observe(el);
+            });
         }
 
         // Barra de progreso de scroll
         const barra = document.getElementById('scroll-progress');
         if (barra) {
             let pendiente = false;
+
             function actualizarBarra() {
                 const total = document.documentElement.scrollHeight - window.innerHeight;
                 barra.style.transform = 'scaleX(' + (total > 0 ? window.scrollY / total : 0) + ')';
@@ -755,7 +887,9 @@
                     requestAnimationFrame(actualizarBarra);
                     pendiente = true;
                 }
-            }, { passive: true });
+            }, {
+                passive: true
+            });
             actualizarBarra();
         }
     });

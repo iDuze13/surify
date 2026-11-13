@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Resena;
+use App\Notifications\ResenaModerada;
+use App\Services\NotificacionService;
 use Illuminate\Http\Request;
 
 class ResenaController extends Controller
@@ -31,25 +33,34 @@ class ResenaController extends Controller
 
     public function aprobar(Resena $resena)
     {
-        // Una decisión manual siempre tiene la última palabra sobre la de la IA.
-        $resena->update([
-            'aprobada' => true,
-            'moderada_por' => 'manual',
-            'moderada_at' => now(),
-        ]);
-
+        $this->moderar($resena, true);
         return redirect()->back()->with('success', 'Reseña aprobada correctamente.');
     }
 
     public function rechazar(Resena $resena)
     {
+        $this->moderar($resena, false);
+        return redirect()->back()->with('success', 'Reseña rechazada correctamente.');
+    }
+
+    /**
+     * Cambia el estado de la reseña, deja registrado que la decisión fue manual
+     * (una decisión manual siempre tiene la última palabra sobre la de la IA)
+     * y le avisa al autor, solo si el estado cambió (para no mandar avisos repetidos).
+     */
+    private function moderar(Resena $resena, bool $aprobada): void
+    {
+        $cambio = $resena->aprobada !== $aprobada;
+
         $resena->update([
-            'aprobada' => false,
+            'aprobada' => $aprobada,
             'moderada_por' => 'manual',
             'moderada_at' => now(),
         ]);
 
-        return redirect()->back()->with('success', 'Reseña rechazada correctamente.');
+        if ($cambio && $resena->user) {
+            NotificacionService::enviar($resena->user, new ResenaModerada($resena->load(['destino', 'evento']), $aprobada));
+        }
     }
 
     public function destroy(Resena $resena)

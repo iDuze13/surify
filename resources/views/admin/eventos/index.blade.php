@@ -84,7 +84,9 @@
                             <div>
                                 <p class="text-sm font-bold text-slate-800">{{ $evento->nombre }}</p>
                                 @if($evento->sugerido_por)
-                                <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Sugerido por usuario</span>
+                                <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">
+                                    Sugerido por usuario{{ $evento->activo ? '' : ' · Pendiente de aprobación' }}
+                                </span>
                                 @else
                                 <p class="text-xs text-slate-400">ID: {{ $evento->id }}</p>
                                 @endif
@@ -121,12 +123,9 @@
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             @if(!$evento->activo)
-                            <form method="POST" action="{{ route('admin.eventos.update', $evento) }}">
+                            <form method="POST" action="{{ route('admin.eventos.aprobar', $evento) }}">
                                 @csrf
-                                @method('PUT')
-                                <input type="hidden" name="nombre" value="{{ $evento->nombre }}">
-                                <input type="hidden" name="fecha_inicio" value="{{ $evento->fecha_inicio }}">
-                                <input type="hidden" name="activo" value="1">
+                                @method('PATCH')
                                 <button type="submit"
                                     class="w-9 h-9 bg-emerald-50 hover:bg-emerald-100 text-emerald-500 rounded-lg flex items-center justify-center transition-all"
                                     title="Aprobar">

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Evento;
+use App\Notifications\NuevaSugerenciaEvento;
 use App\Notifications\SugerenciaEventoRecibida;
+use App\Services\NotificacionService;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -56,7 +58,13 @@ class EventoSugerenciaController extends Controller
         ]);
 
         // Aviso en la campanita: "¡Gracias por tu sugerencia!"
-        auth()->user()->notify(new SugerenciaEventoRecibida($evento));
+        NotificacionService::enviar(auth()->user(), new SugerenciaEventoRecibida($evento));
+
+        // Aviso a los administradores: hay una sugerencia para revisar
+        NotificacionService::enviar(
+            NotificacionService::moderadoresDeEventos()->where('id', '!=', auth()->id()),
+            new NuevaSugerenciaEvento($evento, auth()->user()->name)
+        );
 
         return redirect()->route('eventos.index')->with('sugerencia_enviada', true);
     }

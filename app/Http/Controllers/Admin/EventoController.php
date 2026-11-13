@@ -8,9 +8,10 @@ use App\Models\Evento;
 use App\Models\Provincia;
 use App\Models\User;
 use App\Notifications\NuevoEventoFavorito;
+use App\Notifications\SugerenciaEventoRespondida;
+use App\Services\NotificacionService;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 
 class EventoController extends Controller
 {
@@ -101,22 +102,9 @@ class EventoController extends Controller
             'activo'       => $request->has('activo'),
         ]);
 
-        // Avisamos a los usuarios que tienen este destino en favoritos
-        // (solo si el evento queda publicado: no avisamos de algo que todavía no se ve)
-        if ($evento->destino_id && $evento->activo) {
-            $usuarios = User::whereHas('favoritos', function ($q) use ($evento) {
-                $q->where('destino_id', $evento->destino_id);
-            })->get();
-
-            if ($usuarios->isNotEmpty()) {
-                try {
-                    Notification::send($usuarios, new NuevoEventoFavorito($evento));
-                } catch (\Throwable $e) {
-                    // Si falla el envío (por ejemplo, el mail), el evento ya quedó creado:
-                    // registramos el error en el log y seguimos.
-                    report($e);
-                }
-            }
+        // Si queda publicado, avisamos a quienes tienen el destino en favoritos
+        if ($evento->activo) {
+            $this->avisarFavoritos($evento);
         }
 
         return redirect()->route('admin.eventos.index')
@@ -132,6 +120,8 @@ class EventoController extends Controller
 
     public function update(Request $request, Evento $evento)
     {
+        $estabaActivo = (bool) $evento->activo;
+
         $request->validate([
             'nombre'       => 'required|string|max:255',
             'fecha_inicio' => 'required|date',
@@ -182,8 +172,54 @@ class EventoController extends Controller
             'activo'       => $request->has('activo'),
         ]);
 
+        // Si se publicó recién ahora (por ejemplo, una sugerencia aprobada desde Editar)
+        if (!$estabaActivo && $evento->activo) {
+            $this->alPublicar($evento);
+        }
+
         return redirect()->route('admin.eventos.index')
             ->with('success', 'Evento actualizado correctamente.');
+    }
+
+    /**
+     * Botón ✓ del listado: publica un evento pendiente sin tocar el resto de sus datos.
+     */
+    public function aprobar(Evento $evento)
+    {
+        if (!$evento->activo) {
+            $evento->update(['activo' => true]);
+            $this->alPublicar($evento);
+        }
+
+        return redirect()->route('admin.eventos.index')
+            ->with('success', 'Evento aprobado y publicado.');
+    }
+
+    /**
+     * Avisos cuando un evento pasa de pendiente a publicado:
+     * al usuario que lo sugirió y a quienes tienen el destino en favoritos.
+     */
+    private function alPublicar(Evento $evento): void
+    {
+        if ($evento->sugerido_por) {
+            NotificacionService::enviar(
+                User::find($evento->sugerido_por),
+                new SugerenciaEventoRespondida($evento->nombre, true, $evento->id)
+            );
+        }
+
+        $this->avisarFavoritos($evento);
+    }
+
+    private function avisarFavoritos(Evento $evento): void
+    {
+        if (!$evento->destino_id) {
+            return;
+        }
+
+        $usuarios = User::whereHas('favoritos', fn ($q) => $q->where('destino_id', $evento->destino_id))->get();
+
+        NotificacionService::enviar($usuarios, new NuevoEventoFavorito($evento->load('destino')));
     }
 
     public function destroy(Evento $evento)
@@ -193,6 +229,14 @@ class EventoController extends Controller
             if ($publicId) {
                 $this->cloudinary->eliminarImagen($publicId);
             }
+        }
+
+        // Si era una sugerencia que todavía no se había publicado, se toma como rechazada
+        if (!$evento->activo && $evento->sugerido_por) {
+            NotificacionService::enviar(
+                User::find($evento->sugerido_por),
+                new SugerenciaEventoRespondida($evento->nombre, false)
+            );
         }
 
         $evento->delete();

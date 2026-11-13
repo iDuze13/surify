@@ -159,7 +159,11 @@
                         <div class="flex-1">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="font-bold text-slate-800 text-sm">
-                                    {{ $resena->anonima ? 'Viajero Anónimo' : ($resena->user?->name ?? 'Usuario') }}
+                                    @if($resena->anonima || !$resena->user)
+                                    Viajero Anónimo
+                                    @else
+                                    <a href="{{ route('usuarios.show', $resena->user) }}" class="hover:underline text-decoration-none">{{ $resena->user->name }}</a>
+                                    @endif
                                 </span>
                                 <div class="flex items-center gap-0.5">
                                     @for($i = 1; $i <= 5; $i++)

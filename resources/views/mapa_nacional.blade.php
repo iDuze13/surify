@@ -23,9 +23,13 @@
     .surify-map-dashboard {
         position: relative;
         width: 100%;
-        height: calc(100vh - 4rem);
+        height: calc(100vh - 4rem); /* valor inicial: el JS lo ajusta al alto real del header */
         overflow: hidden;
         background-color: #f8f9fa;
+        /* Encierra los z-index del mapa (Leaflet usa 400-1000) para que
+           nada del mapa se ponga por encima del header ni de los menús */
+        isolation: isolate;
+        z-index: 0;
     }
 
     #mapa-container {
@@ -47,9 +51,158 @@
         pointer-events: none;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: 12px;
         padding: 24px;
         box-sizing: border-box;
+    }
+
+    /* ===== Distribución de los paneles sobre el mapa =====
+       Arriba: explorador (izq.) y botones de zoom (der.).
+       Abajo: tarjetas de provincia/destino y el botón del explorador (celular).
+       El explorador se achica solo para dejarle lugar a las tarjetas,
+       así nunca se pisan. */
+    .mapa-fila-superior {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    #mobile-sidebar-container {
+        display: flex;
+        align-items: flex-start;
+        height: 100%;
+        min-height: 0;
+    }
+
+    .panel-explorador {
+        border-radius: 16px;
+        padding: 16px;
+        width: 230px;
+        max-height: min(450px, 100%);
+        box-sizing: border-box;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .mapa-tarjetas {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .mapa-tarjetas>.light-panel {
+        width: 230px;
+    }
+
+    /* Botón "Explorar" (solo celular): arriba a la izquierda, a la altura del zoom */
+    #btn-toggle-sidebar {
+        display: none;
+        flex-shrink: 0;
+        height: 40px;
+        border-radius: 10px;
+        padding: 0 14px;
+        font-weight: 700;
+        font-size: 13px;
+        color: #28628f !important;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .cabecera-explorador {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .cabecera-explorador .menu-label {
+        margin-bottom: 0;
+    }
+
+    /* X para cerrar el explorador (solo celular) */
+    .cerrar-explorador {
+        display: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: none;
+        background: #f1f5f9;
+        color: #475569;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+
+    /* Créditos del mapa: chiquitos y pegados al borde de abajo, en la franja
+       libre que queda debajo del reproductor de música */
+    .surify-map-dashboard .leaflet-control-attribution {
+        font-size: 9px;
+        line-height: 1.4;
+        padding: 0 5px;
+        background: rgba(255, 255, 255, 0.6) !important;
+        border-top-left-radius: 6px;
+    }
+
+    /* Tablet y celular: el botón de accesibilidad y el reproductor quedan
+       encima del mapa, así que los paneles se corren hacia arriba */
+    @media (max-width: 1023px) {
+        .ui-overlay {
+            padding-bottom: 84px;
+        }
+    }
+
+    /* Celular: explorador oculto hasta que se toca el botón, tarjetas a todo el ancho */
+    @media (max-width: 767px) {
+        .ui-overlay {
+            padding: 12px 12px 84px;
+        }
+
+        #mobile-sidebar-container {
+            display: none;
+        }
+
+        #mobile-sidebar-container.abierto {
+            display: flex;
+        }
+
+        .panel-explorador {
+            width: min(260px, calc(100vw - 88px));
+            max-height: 100%;
+        }
+
+        .mapa-tarjetas {
+            align-items: stretch;
+        }
+
+        .mapa-tarjetas>.light-panel {
+            width: auto;
+        }
+
+        #card-img {
+            height: 110px !important;
+        }
+
+        #btn-toggle-sidebar {
+            display: flex;
+        }
+
+        /* Con el explorador abierto, el botón se esconde y aparece la X */
+        .ui-overlay.explorador-abierto #btn-toggle-sidebar {
+            display: none;
+        }
+
+        .cerrar-explorador {
+            display: flex;
+        }
     }
 
     .interactuable {
@@ -164,17 +317,33 @@
     #card-destino.visible {
         display: block;
     }
+
+    /* Evita las líneas blancas entre los tiles del mapa */
+    .leaflet-tile-container img.leaflet-tile {
+        mix-blend-mode: plus-lighter;
+        outline: 1px solid transparent;
+    }
 </style>
 
 <div class="surify-map-dashboard">
     <div id="mapa-container"></div>
 
     <div class="ui-overlay">
-        <div style="display: flex; justify-content: space-between; width: 100%;">
+        <div class="mapa-fila-superior">
 
-            <div class="interactuable" id="mobile-sidebar-container">
-                <aside class="light-panel" style="border-radius: 16px; padding: 16px; width: 230px; max-height: 450px; overflow-y: auto;">
-                    <p class="menu-label">Explorador</p>
+            <!-- Solo celular: abre el explorador -->
+            <button id="btn-toggle-sidebar" type="button" class="interactuable light-panel" onclick="toggleExplorador(true)">
+                <i class="fa-solid fa-list"></i> Explorar
+            </button>
+
+            <div id="mobile-sidebar-container">
+                <aside class="interactuable light-panel panel-explorador">
+                    <div class="cabecera-explorador">
+                        <p class="menu-label">Explorador</p>
+                        <button type="button" class="cerrar-explorador" onclick="toggleExplorador(false)" title="Cerrar explorador">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                     <ul class="menu-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px;">
                         <li><a class="is-active-menu" onclick="filtrarCategoria('todos')" style="cursor:pointer;"><i class="fa-solid fa-compass" style="margin-right:10px; font-size: 14px;"></i> Todos</a></li>
                         <li><a onclick="filtrarCategoria('Patrimonio Natural')" style="cursor:pointer;"><i class="fa-solid fa-tree" style="margin-right:10px; font-size: 14px;"></i> Naturaleza</a></li>
@@ -210,7 +379,7 @@
                 </aside>
             </div>
 
-            <div class="interactuable custom-zoom-controls" style="display: flex; flex-direction: column; padding-right: 4px;">
+            <div class="interactuable custom-zoom-controls" style="display: flex; flex-direction: column; padding-right: 4px; margin-left: auto;">
                 <button onclick="mapaInstance.zoomIn()" title="Acercar"><i class="fa-solid fa-plus"></i></button>
                 <button onclick="mapaInstance.zoomOut()" title="Alejar"><i class="fa-solid fa-minus"></i></button>
                 <button onclick="centrarEnArgentina()" title="Recentrar"><i class="fa-solid fa-location-crosshairs"></i></button>
@@ -218,14 +387,14 @@
             </div>
         </div>
 
-        <div style="position: absolute; bottom: 24px; left: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; z-index: 5;">
-            <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px; width: 230px;">
+        <div class="mapa-tarjetas">
+            <div id="card-provincia-mapa" class="interactuable light-panel" style="display:none; border-radius: 16px; padding: 14px 16px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap: 8px;">
                     <span style="display:flex; align-items:center; gap:6px; font-weight:800; font-size:14px; color:#0f172a;">
                         <i class="fa-solid fa-map-pin" style="color:#28628f;"></i>
                         <span id="card-provincia-nombre"></span>
                     </span>
-                    <button onclick="document.getElementById('card-provincia-mapa').style.display='none';" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px;">
+                    <button onclick="document.getElementById('card-provincia-mapa').style.display='none';" title="Cerrar" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px;">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
@@ -234,9 +403,13 @@
                 </a>
             </div>
 
-            <div id="card-destino" class="interactuable light-panel" style="border-radius: 16px; overflow: hidden; width: 230px;">
+            <div id="card-destino" class="interactuable light-panel" style="border-radius: 16px; overflow: hidden;">
                 <div style="position: relative;">
                     <img id="card-img" src="" alt="" style="width: 100%; height: 135px; object-fit: cover; display: block;">
+                    <button onclick="document.getElementById('card-destino').classList.remove('visible');" title="Cerrar"
+                        style="position: absolute; top: 10px; left: 10px; width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                     <span style="position: absolute; top: 10px; right: 10px; background: #28628f; color: white; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 800;">
                         <i class="fa-solid fa-star" style="color: #fbbf24; margin-right: 2px;"></i>
                         <span id="card-categoria"></span>
@@ -245,16 +418,11 @@
                 <div class="card-info">
                     <p id="card-provincia"></p>
                     <h2 id="card-nombre"></h2>
-                    <p id="card-desc" style="color: #64748b; font-size: 11px; text-transform: none; font-weight: 400; margin-bottom: 10px;"></p>
+                    <p id="card-desc" style="color: #64748b; font-size: 11px; text-transform: none; font-weight: 400; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"></p>
                     <a id="card-link" href="#" class="btn-ver" style="display:block; text-align:center; text-decoration:none;">Ver detalles</a>
                 </div>
             </div>
         </div>
-
-        <!-- Botón flotante solo para celulares -->
-        <button id="btn-toggle-sidebar" class="md:hidden interactuable light-panel" style="position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); border-radius: 99px; padding: 10px 20px; font-weight: 800; font-size: 13px; color: #28628f !important; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 2px solid #28628f; z-index: 50;">
-            <i class="fa-solid fa-eye-slash"></i> Ocultar Explorador
-        </button>
     </div>
 </div>
 
@@ -264,30 +432,126 @@
     var destinosData = @json($destinos);
 
     var coordenadasProvincias = {
-        'Buenos Aires': { lat: -36.6769, lng: -60.5583, zoom: 7 },
-        'Catamarca': { lat: -27.3357, lng: -66.9477, zoom: 7 },
-        'Chaco': { lat: -26.9478, lng: -60.1658, zoom: 7 },
-        'Chubut': { lat: -43.2934, lng: -65.1078, zoom: 6 },
-        'Córdoba': { lat: -31.4135, lng: -64.1811, zoom: 7 },
-        'Corrientes': { lat: -27.4692, lng: -58.8306, zoom: 7 },
-        'Entre Ríos': { lat: -31.7748, lng: -60.4956, zoom: 7 },
-        'Formosa': { lat: -24.8948, lng: -59.8901, zoom: 7 },
-        'Jujuy': { lat: -23.1897, lng: -65.9997, zoom: 7 },
-        'La Pampa': { lat: -36.6148, lng: -64.2839, zoom: 7 },
-        'La Rioja': { lat: -29.4127, lng: -66.8552, zoom: 7 },
-        'Mendoza': { lat: -32.8908, lng: -68.8458, zoom: 7 },
-        'Misiones': { lat: -26.9478, lng: -54.6964, zoom: 7 },
-        'Neuquén': { lat: -38.9516, lng: -68.0591, zoom: 7 },
-        'Río Negro': { lat: -40.8135, lng: -63.0154, zoom: 7 },
-        'Salta': { lat: -24.7821, lng: -65.4117, zoom: 7 },
-        'San Juan': { lat: -30.8653, lng: -68.8894, zoom: 7 },
-        'San Luis': { lat: -33.2950, lng: -66.3356, zoom: 7 },
-        'Santa Cruz': { lat: -51.6230, lng: -69.2168, zoom: 6 },
-        'Santa Fe': { lat: -30.7069, lng: -60.9498, zoom: 7 },
-        'Santiago del Estero': { lat: -27.7824, lng: -64.2661, zoom: 7 },
-        'Tierra del Fuego': { lat: -54.0000, lng: -67.0000, zoom: 7 },
-        'Tucumán': { lat: -26.8083, lng: -65.2176, zoom: 8 },
-        'Ciudad Autónoma de Buenos Aires': { lat: -34.6037, lng: -58.3816, zoom: 12 },
+        'Buenos Aires': {
+            lat: -36.6769,
+            lng: -60.5583,
+            zoom: 7
+        },
+        'Catamarca': {
+            lat: -27.3357,
+            lng: -66.9477,
+            zoom: 7
+        },
+        'Chaco': {
+            lat: -26.9478,
+            lng: -60.1658,
+            zoom: 7
+        },
+        'Chubut': {
+            lat: -43.2934,
+            lng: -65.1078,
+            zoom: 6
+        },
+        'Córdoba': {
+            lat: -31.4135,
+            lng: -64.1811,
+            zoom: 7
+        },
+        'Corrientes': {
+            lat: -27.4692,
+            lng: -58.8306,
+            zoom: 7
+        },
+        'Entre Ríos': {
+            lat: -31.7748,
+            lng: -60.4956,
+            zoom: 7
+        },
+        'Formosa': {
+            lat: -24.8948,
+            lng: -59.8901,
+            zoom: 7
+        },
+        'Jujuy': {
+            lat: -23.1897,
+            lng: -65.9997,
+            zoom: 7
+        },
+        'La Pampa': {
+            lat: -36.6148,
+            lng: -64.2839,
+            zoom: 7
+        },
+        'La Rioja': {
+            lat: -29.4127,
+            lng: -66.8552,
+            zoom: 7
+        },
+        'Mendoza': {
+            lat: -32.8908,
+            lng: -68.8458,
+            zoom: 7
+        },
+        'Misiones': {
+            lat: -26.9478,
+            lng: -54.6964,
+            zoom: 7
+        },
+        'Neuquén': {
+            lat: -38.9516,
+            lng: -68.0591,
+            zoom: 7
+        },
+        'Río Negro': {
+            lat: -40.8135,
+            lng: -63.0154,
+            zoom: 7
+        },
+        'Salta': {
+            lat: -24.7821,
+            lng: -65.4117,
+            zoom: 7
+        },
+        'San Juan': {
+            lat: -30.8653,
+            lng: -68.8894,
+            zoom: 7
+        },
+        'San Luis': {
+            lat: -33.2950,
+            lng: -66.3356,
+            zoom: 7
+        },
+        'Santa Cruz': {
+            lat: -51.6230,
+            lng: -69.2168,
+            zoom: 6
+        },
+        'Santa Fe': {
+            lat: -30.7069,
+            lng: -60.9498,
+            zoom: 7
+        },
+        'Santiago del Estero': {
+            lat: -27.7824,
+            lng: -64.2661,
+            zoom: 7
+        },
+        'Tierra del Fuego': {
+            lat: -54.0000,
+            lng: -67.0000,
+            zoom: 7
+        },
+        'Tucumán': {
+            lat: -26.8083,
+            lng: -65.2176,
+            zoom: 8
+        },
+        'Ciudad Autónoma de Buenos Aires': {
+            lat: -34.6037,
+            lng: -58.3816,
+            zoom: 12
+        },
     };
 
     var icono = L.divIcon({
@@ -297,7 +561,19 @@
         iconAnchor: [7, 7],
     });
 
+    // Ajusta el alto del mapa al espacio que queda debajo del header,
+    // así la página no scrollea y el mapa no se mete abajo del header
+    function ajustarAltoMapa() {
+        var dashboard = document.querySelector('.surify-map-dashboard');
+        if (!dashboard) return;
+        var top = dashboard.getBoundingClientRect().top + window.scrollY;
+        dashboard.style.height = Math.max(window.innerHeight - top, 400) + 'px';
+        if (mapaInstance) mapaInstance.invalidateSize();
+    }
+    window.addEventListener('resize', ajustarAltoMapa);
+
     function inicializarMapa() {
+        ajustarAltoMapa();
         var contenedor = document.getElementById('mapa-container');
         if (!contenedor || mapaInstance !== null) return;
 
@@ -314,14 +590,19 @@
             maxBoundsViscosity: 1.0
         }).setView([-38.416097, -63.616672], 4);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            subdomains: 'abc',
+        // OpenStreetMap ya no recomienda los subdominios a/b/c: se usa la URL directa
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
             maxZoom: 19
         }).addTo(mapaInstance);
 
+        // Sin el "Leaflet |" adelante: queda solo el crédito obligatorio de OpenStreetMap
+        mapaInstance.attributionControl.setPrefix(false);
+
         destinosData.forEach(function(destino) {
-            var marker = L.marker([destino.lat, destino.lng], { icon: icono })
+            var marker = L.marker([destino.lat, destino.lng], {
+                    icon: icono
+                })
                 .addTo(mapaInstance)
                 .on('click', function() {
                     mostrarCard(destino);
@@ -351,40 +632,72 @@
         document.getElementById('card-link').href = '/destinos/' + destino.id;
         document.getElementById('card-destino').classList.add('visible');
         document.getElementById('card-provincia-mapa').style.display = 'none';
+        toggleExplorador(false);
 
         if (mapaInstance && destino.lat && destino.lng) {
-            mapaInstance.flyTo([destino.lat, destino.lng], 12, { duration: 1.5 });
+            mapaInstance.flyTo([destino.lat, destino.lng], 12, {
+                duration: 1.5
+            });
         }
     }
 
-    function aplicarFiltroCategoria(categoria) {
-        var categoriaNormalizada = categoria.trim().toLowerCase();
+    // Categorías elegidas. Vacío = "Todos"
+    var categoriasActivas = new Set();
 
+    // "Gastronomía" y "gastronomia" cuentan como la misma categoría
+    function normalizarCategoria(texto) {
+        return (texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    }
+
+    function aplicarFiltroCategoria() {
         todosLosMarkers.forEach(function(marker) {
-            var categoriaDestino = (marker._destinoCategoria || '').trim().toLowerCase();
-            if (categoria === 'todos' || categoriaDestino === categoriaNormalizada) {
+            var cat = normalizarCategoria(marker._destinoCategoria);
+            var mostrar = categoriasActivas.size === 0 || categoriasActivas.has(cat);
+
+            if (mostrar) {
                 if (!mapaInstance.hasLayer(marker)) mapaInstance.addLayer(marker);
             } else {
                 if (mapaInstance.hasLayer(marker)) mapaInstance.removeLayer(marker);
             }
         });
+        actualizarBotonesCategoria();
     }
 
+    // Marca como activos los botones de las categorías elegidas (o "Todos" si no hay ninguna)
+    function actualizarBotonesCategoria() {
+        document.querySelectorAll('.menu-list a[onclick*="filtrarCategoria("]').forEach(function(a) {
+            var m = a.getAttribute('onclick').match(/filtrarCategoria\('([^']+)'\)/);
+            if (!m) return;
+            var cat = normalizarCategoria(m[1]);
+            var activo = cat === 'todos' ? categoriasActivas.size === 0 : categoriasActivas.has(cat);
+            a.classList.toggle('is-active-menu', activo);
+        });
+    }
+
+    // Clic en una categoría: la agrega o la saca. "Todos" limpia la selección.
     function filtrarCategoria(categoria) {
-        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
-        event.target.closest('a').classList.add('is-active-menu');
-        aplicarFiltroCategoria(categoria);
+        var cat = normalizarCategoria(categoria);
+
+        if (cat === 'todos') {
+            categoriasActivas.clear();
+        } else if (categoriasActivas.has(cat)) {
+            categoriasActivas.delete(cat);
+        } else {
+            categoriasActivas.add(cat);
+        }
+
+        aplicarFiltroCategoria();
     }
 
     function irAProvincia(nombre) {
-        aplicarFiltroCategoria('todos');
-        document.querySelectorAll('.menu-list a').forEach(a => a.classList.remove('is-active-menu'));
-        var btnTodos = document.querySelector('.menu-list a[onclick*="filtrarCategoria(\'todos\')"]');
-        if (btnTodos) btnTodos.classList.add('is-active-menu');
+        categoriasActivas.clear();
+        aplicarFiltroCategoria();
 
         var coords = coordenadasProvincias[nombre];
         if (coords && mapaInstance) {
-            mapaInstance.flyTo([coords.lat, coords.lng], coords.zoom, { duration: 1.5 });
+            mapaInstance.flyTo([coords.lat, coords.lng], coords.zoom, {
+                duration: 1.5
+            });
         }
 
         document.getElementById('card-provincia-nombre').textContent = nombre;
@@ -392,10 +705,13 @@
         document.getElementById('card-provincia-mapa').style.display = 'block';
 
         document.getElementById('card-destino').classList.remove('visible');
+        toggleExplorador(false);
     }
 
     function centrarEnArgentina() {
-        mapaInstance.flyTo([-38.416097, -63.616672], 4, { duration: 1.5 });
+        mapaInstance.flyTo([-38.416097, -63.616672], 4, {
+            duration: 1.5
+        });
     }
 
     inicializarMapa();
@@ -419,7 +735,9 @@
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            mapaInstance.flyTo([lat, lng], 10, { duration: 1.5 });
+            mapaInstance.flyTo([lat, lng], 10, {
+                duration: 1.5
+            });
 
             const iconoUsuario = L.divIcon({
                 html: '<div style="background:#e11d48; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(225,29,72,0.5); animation: pulse 1.5s infinite;"></div>',
@@ -432,7 +750,9 @@
                 mapaInstance.removeLayer(window.marcadorUsuario);
             }
 
-            window.marcadorUsuario = L.marker([lat, lng], { icon: iconoUsuario })
+            window.marcadorUsuario = L.marker([lat, lng], {
+                    icon: iconoUsuario
+                })
                 .addTo(mapaInstance)
                 .bindPopup('<div style="font-family:sans-serif; font-size:13px;"><strong style="color:#e11d48;">📍 Tu ubicación</strong></div>')
                 .openPopup();
@@ -509,7 +829,10 @@
         const request = {
             fields: ['displayName', 'formattedAddress', 'location', 'rating'],
             locationRestriction: {
-                center: { lat: lat, lng: lng },
+                center: {
+                    lat: lat,
+                    lng: lng
+                },
                 radius: 5000,
             },
             includedPrimaryTypes: [tipo === 'restaurant' ? 'restaurant' : (tipo === 'gas_station' ? 'gas_station' : 'lodging')],
@@ -517,8 +840,12 @@
         };
 
         try {
-            const { Place } = await google.maps.importLibrary("places");
-            const { places } = await Place.searchNearby(request);
+            const {
+                Place
+            } = await google.maps.importLibrary("places");
+            const {
+                places
+            } = await Place.searchNearby(request);
 
             if (places && places.length > 0) {
                 places.forEach(function(place) {
@@ -546,7 +873,9 @@
                         iconAnchor: [16, 16]
                     });
 
-                    const m = L.marker([plat, plng], { icon: customIcon })
+                    const m = L.marker([plat, plng], {
+                            icon: customIcon
+                        })
                         .addTo(mapaInstance)
                         .bindPopup(`
                             <div style="font-family:'Outfit',sans-serif; padding:4px; min-width: 140px;">
@@ -583,24 +912,16 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_KEY') }}&libraries=places"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const btnToggle = document.getElementById('btn-toggle-sidebar');
-        const sidebar = document.getElementById('mobile-sidebar-container');
-        let sidebarVisible = true;
-
-        if (btnToggle && sidebar) {
-            btnToggle.addEventListener('click', function() {
-                sidebarVisible = !sidebarVisible;
-                if (sidebarVisible) {
-                    sidebar.style.display = 'block';
-                    btnToggle.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Ocultar Explorador';
-                } else {
-                    sidebar.style.display = 'none';
-                    btnToggle.innerHTML = '<i class="fa-solid fa-list"></i> Ver Explorador';
-                }
-            });
-        }
-    });
+    // Celular: abre/cierra el explorador. Sin argumento alterna; con true/false lo fuerza.
+    // En compu y tablet el explorador siempre se ve (lo maneja el CSS).
+    function toggleExplorador(abrir) {
+        var panel = document.getElementById('mobile-sidebar-container');
+        var overlay = document.querySelector('.ui-overlay');
+        if (!panel || !overlay) return;
+        var abierto = typeof abrir === 'boolean' ? abrir : !panel.classList.contains('abierto');
+        panel.classList.toggle('abierto', abierto);
+        overlay.classList.toggle('explorador-abierto', abierto);
+    }
 </script>
 
 @endsection
