@@ -38,6 +38,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Backup manual: antes estaba afuera de este grupo y cualquiera podía dispararlo.
     // Misma URL (/admin/backup) y mismo nombre (admin.backup), ahora solo para admins.
     Route::post('/backup', [\App\Http\Controllers\Admin\BackupController::class, 'generar'])->name('backup');
+
+    // Reportes en PDF
+    Route::get('/reportes', [\App\Http\Controllers\Admin\ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/pdf', [\App\Http\Controllers\Admin\ReporteController::class, 'generar'])->name('reportes.pdf');
 });
 
 Route::middleware(['auth', 'permiso:crear_evento,modificar_evento,eliminar_evento,administrar_eventos_sugeridos'])->prefix('admin')->name('admin.')->group(function () {
