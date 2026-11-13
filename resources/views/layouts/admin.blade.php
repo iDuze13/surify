@@ -21,8 +21,16 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        :root { --bg-body: #f8fafc; --text-body: #1e293b; }
-        .dark { --bg-body: #0f172a; --text-body: #e2e8f0; }
+        :root {
+            --bg-body: #f8fafc;
+            --text-body: #1e293b;
+        }
+
+        .dark {
+            --bg-body: #0f172a;
+            --text-body: #e2e8f0;
+        }
+
         body {
             background-color: var(--bg-body);
             color: var(--text-body);
@@ -37,41 +45,82 @@
         }
 
         /* ===== Modo oscuro global para componentes repetidos (cards, paneles, etc.) ===== */
-        .dark .bg-white { background-color: #1e293b !important; }
-        .dark .bg-slate-50 { background-color: #0f172a !important; }
-        .dark .bg-slate-100 { background-color: #1e293b !important; }
-        .dark .bg-slate-200 { background-color: #334155 !important; }
+        .dark .bg-white {
+            background-color: #1e293b !important;
+        }
+
+        .dark .bg-slate-50 {
+            background-color: #0f172a !important;
+        }
+
+        .dark .bg-slate-100 {
+            background-color: #1e293b !important;
+        }
+
+        .dark .bg-slate-200 {
+            background-color: #334155 !important;
+        }
 
         .dark .text-slate-700,
         .dark .text-slate-800,
-        .dark .text-slate-900 { color: #e2e8f0 !important; }
+        .dark .text-slate-900 {
+            color: #e2e8f0 !important;
+        }
 
         .dark .text-slate-400,
-        .dark .text-slate-500 { color: #94a3b8 !important; }
+        .dark .text-slate-500 {
+            color: #94a3b8 !important;
+        }
 
-        .dark .text-slate-600 { color: #cbd5e1 !important; }
-        .dark .text-slate-300 { color: #64748b !important; }
+        .dark .text-slate-600 {
+            color: #cbd5e1 !important;
+        }
+
+        .dark .text-slate-300 {
+            color: #64748b !important;
+        }
 
         .dark .border-slate-100,
-        .dark .border-slate-200 { border-color: #334155 !important; }
-        .dark .border-slate-300 { border-color: #475569 !important; }
+        .dark .border-slate-200 {
+            border-color: #334155 !important;
+        }
+
+        .dark .border-slate-300 {
+            border-color: #475569 !important;
+        }
 
         .dark .shadow-sm,
         .dark .shadow-xl,
-        .dark .shadow-lg { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
-        .dark .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important; }
+        .dark .shadow-lg {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .dark .shadow-2xl {
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6) !important;
+        }
 
         .dark .hover\:bg-slate-50:hover,
-        .dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+        .dark .hover\:bg-slate-100:hover {
+            background-color: #334155 !important;
+        }
 
         .dark input,
         .dark select,
-        .dark textarea { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+        .dark textarea {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+
         .dark input::placeholder,
-        .dark textarea::placeholder { color: #64748b !important; }
+        .dark textarea::placeholder {
+            color: #64748b !important;
+        }
 
         .logo-pill,
-        .dark .logo-pill { background-color: #f8fafc !important; }
+        .dark .logo-pill {
+            background-color: #f8fafc !important;
+        }
 
         /* ===== Sidebar ===== */
         #admin-sidebar {
@@ -79,33 +128,80 @@
             transform: translateX(-100%);
             transition: transform 0.25s ease;
         }
-        #admin-sidebar.open { transform: translateX(0); }
-        @media (min-width: 1024px) {
-            #admin-sidebar { transform: translateX(0); position: sticky; top: 0; height: 100vh; }
+
+        #admin-sidebar.open {
+            transform: translateX(0);
         }
-        #sidebar-overlay { display: none; }
-        #sidebar-overlay.open { display: block; }
+
+        @media (min-width: 1024px) {
+            #admin-sidebar {
+                transform: translateX(0);
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+        }
+
+        #sidebar-overlay {
+            display: none;
+        }
+
+        #sidebar-overlay.open {
+            display: block;
+        }
 
         .side-link {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 10px;
-            font-size: 14px; font-weight: 600;
-            color: #475569; text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            text-decoration: none;
             transition: all 0.15s;
         }
-        .side-link:hover { background: #f1f5f9; color: #28628f; }
-        .side-link.active { background: #e8f3fb; color: #28628f; }
-        .dark .side-link { color: #cbd5e1; }
-        .dark .side-link:hover { background: #334155; color: #97ccfe; }
-        .dark .side-link.active { background: #1e3a52; color: #97ccfe; }
+
+        .side-link:hover {
+            background: #f1f5f9;
+            color: #28628f;
+        }
+
+        .side-link.active {
+            background: #e8f3fb;
+            color: #28628f;
+        }
+
+        .dark .side-link {
+            color: #cbd5e1;
+        }
+
+        .dark .side-link:hover {
+            background: #334155;
+            color: #97ccfe;
+        }
+
+        .dark .side-link.active {
+            background: #1e3a52;
+            color: #97ccfe;
+        }
 
         /* ===== Notificaciones ===== */
-        #notif-dropdown { display: none; }
-        #notif-dropdown.open { display: block; }
+        #notif-dropdown {
+            display: none;
+        }
+
+        #notif-dropdown.open {
+            display: block;
+        }
     </style>
     <script>
-        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
-        else { document.documentElement.classList.remove('dark'); }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     </script>
 </head>
 
@@ -131,78 +227,80 @@
 
             <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
                 @auth
-                    @if(!session('modo_usuario'))
+                @if(!session('modo_usuario'))
 
-                        <a href="{{ route('dashboard') }}" class="side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">dashboard</span> Dashboard
-                        </a>
+                @if(auth()->user()->hasRole('Admin') || auth()->user()->hasRole('admin'))
+                <a href="{{ route('dashboard') }}" class="side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">dashboard</span> Dashboard
+                </a>
+                @endif
 
-                        @can('administrar_roles')
-                        <a href="{{ route('admin.roles.index') }}" class="side-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span> Roles
-                        </a>
-                        <a href="{{ route('admin.usuarios.index') }}" class="side-link {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">group</span> Usuarios
-                        </a>
-                        <a href="{{ route('admin.anuncios.create') }}" class="side-link {{ request()->routeIs('admin.anuncios.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">campaign</span> Anuncios
-                        </a>
-                        <a href="{{ route('admin.reportes.index') }}" class="side-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">summarize</span> Reportes
-                        </a>
-                        @endcan
+                @can('administrar_roles')
+                <a href="{{ route('admin.roles.index') }}" class="side-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span> Roles
+                </a>
+                <a href="{{ route('admin.usuarios.index') }}" class="side-link {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">group</span> Usuarios
+                </a>
+                <a href="{{ route('admin.anuncios.create') }}" class="side-link {{ request()->routeIs('admin.anuncios.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">campaign</span> Anuncios
+                </a>
+                <a href="{{ route('admin.reportes.index') }}" class="side-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">summarize</span> Reportes
+                </a>
+                @endcan
 
-                        @if(auth()->user()->can('crear_destino') || auth()->user()->can('modificar_destino') || auth()->user()->can('eliminar_destino') || auth()->user()->can('administrar_destinos_sugeridos'))
-                        <a href="{{ route('admin.destinos.index') }}" class="side-link {{ request()->routeIs('admin.destinos.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">landscape</span> Destinos
-                        </a>
-                        @endif
+                @if(auth()->user()->can('crear_destino') || auth()->user()->can('modificar_destino') || auth()->user()->can('eliminar_destino') || auth()->user()->can('administrar_destinos_sugeridos'))
+                <a href="{{ route('admin.destinos.index') }}" class="side-link {{ request()->routeIs('admin.destinos.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">landscape</span> Destinos
+                </a>
+                @endif
 
-                        @if(auth()->user()->can('crear_evento') || auth()->user()->can('modificar_evento') || auth()->user()->can('eliminar_evento') || auth()->user()->can('administrar_eventos_sugeridos'))
-                        <a href="{{ route('admin.eventos.index') }}" data-native-link="true" class="side-link {{ request()->routeIs('admin.eventos.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">celebration</span> Eventos
-                        </a>
-                        @endif
+                @if(auth()->user()->can('crear_evento') || auth()->user()->can('modificar_evento') || auth()->user()->can('eliminar_evento') || auth()->user()->can('administrar_eventos_sugeridos'))
+                <a href="{{ route('admin.eventos.index') }}" data-native-link="true" class="side-link {{ request()->routeIs('admin.eventos.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">celebration</span> Eventos
+                </a>
+                @endif
 
-                        @if(auth()->user()->can('administrar_resenas') || auth()->user()->can('administrar_reseñas') || auth()->user()->can('eliminar_comentario'))
-                        <a href="{{ route('admin.resenas.index') }}" class="side-link {{ request()->routeIs('admin.resenas.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Reseñas
-                        </a>
-                        @endif
+                @if(auth()->user()->can('administrar_resenas') || auth()->user()->can('administrar_reseñas') || auth()->user()->can('eliminar_comentario'))
+                <a href="{{ route('admin.resenas.index') }}" class="side-link {{ request()->routeIs('admin.resenas.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Reseñas
+                </a>
+                @endif
 
-                        @if(auth()->user()->can('gestionar_gastronomia'))
-                        <a href="{{ route('admin.gastronomia.index') }}" class="side-link {{ request()->routeIs('admin.gastronomia.*') ? 'active' : '' }}">
-                            <span class="material-symbols-outlined text-[18px]">restaurant</span> Gastronomía
-                        </a>
-                        @endif
+                @if(auth()->user()->can('gestionar_gastronomia'))
+                <a href="{{ route('admin.gastronomia.index') }}" class="side-link {{ request()->routeIs('admin.gastronomia.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">restaurant</span> Gastronomía
+                </a>
+                @endif
 
-                    @else
+                @else
 
-                        {{-- Modo usuario: links públicos para no dejar el sidebar vacío --}}
-                        <a href="{{ route('home') }}" class="side-link">
-                            <span class="material-symbols-outlined text-[18px]">home</span> Inicio
-                        </a>
-                        <a href="{{ route('mapa.nacional') }}" class="side-link">
-                            <span class="material-symbols-outlined text-[18px]">map</span> Mapa
-                        </a>
-                        <a href="{{ route('eventos.index') }}" class="side-link">
-                            <span class="material-symbols-outlined text-[18px]">event</span> Eventos
-                        </a>
-                        <a href="{{ route('combustible.index') }}" class="side-link">
-                            <span class="material-symbols-outlined text-[18px]">local_gas_station</span> Combustible
-                        </a>
+                {{-- Modo usuario: links públicos para no dejar el sidebar vacío --}}
+                <a href="{{ route('home') }}" class="side-link">
+                    <span class="material-symbols-outlined text-[18px]">home</span> Inicio
+                </a>
+                <a href="{{ route('mapa.nacional') }}" class="side-link">
+                    <span class="material-symbols-outlined text-[18px]">map</span> Mapa
+                </a>
+                <a href="{{ route('eventos.index') }}" class="side-link">
+                    <span class="material-symbols-outlined text-[18px]">event</span> Eventos
+                </a>
+                <a href="{{ route('combustible.index') }}" class="side-link">
+                    <span class="material-symbols-outlined text-[18px]">local_gas_station</span> Combustible
+                </a>
 
-                    @endif
+                @endif
                 @endauth
             </nav>
 
             @auth
             @php
-                $authUser = auth()->user();
-                $puedeCambiarVista = $authUser->hasRole('admin')
-                    || $authUser->hasRole('Admin')
-                    || $authUser->hasRole('AdministradorFestivales')
-                    || count($authUser->permisos()->pluck('nombre')->toArray()) > 0;
+            $authUser = auth()->user();
+            $puedeCambiarVista = $authUser->hasRole('admin')
+            || $authUser->hasRole('Admin')
+            || $authUser->hasRole('AdministradorFestivales')
+            || count($authUser->permisos()->pluck('nombre')->toArray()) > 0;
             @endphp
             @if($puedeCambiarVista)
             <div class="p-3 border-t border-slate-200 dark:border-slate-700 shrink-0">
@@ -411,78 +509,91 @@
     {{-- SISTEMA DE NOTIFICACIONES (campanita) --}}
     @auth
     <script>
-    (function() {
-        const container = document.getElementById('notif-container');
-        if (!container) return;
-        const dropdown = document.getElementById('notif-dropdown');
-        const badge = document.getElementById('notif-badge');
-        const list = document.getElementById('notif-list');
-        const empty = document.getElementById('notif-empty');
-        const csrf = document.querySelector('meta[name="csrf-token"]').content;
-        let abierto = false;
+        (function() {
+            const container = document.getElementById('notif-container');
+            if (!container) return;
+            const dropdown = document.getElementById('notif-dropdown');
+            const badge = document.getElementById('notif-badge');
+            const list = document.getElementById('notif-list');
+            const empty = document.getElementById('notif-empty');
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+            let abierto = false;
 
-        window.toggleNotifDropdown = function() {
-            abierto = !abierto;
-            dropdown.classList.toggle('open', abierto);
-            if (abierto) cargarNotificaciones();
-        };
+            window.toggleNotifDropdown = function() {
+                abierto = !abierto;
+                dropdown.classList.toggle('open', abierto);
+                if (abierto) cargarNotificaciones();
+            };
 
-        document.addEventListener('click', function(e) {
-            if (!container.contains(e.target)) { dropdown.classList.remove('open'); abierto = false; }
-        });
-
-        function cargarNotificaciones() {
-            fetch('{{ route("notificaciones.index") }}').then(r => r.json()).then(data => {
-                actualizarBadge(data.no_leidas);
-                list.innerHTML = '';
-                if (data.notificaciones.length === 0) {
-                    empty.classList.remove('hidden');
-                    return;
+            document.addEventListener('click', function(e) {
+                if (!container.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                    abierto = false;
                 }
-                empty.classList.add('hidden');
-                data.notificaciones.forEach(n => {
-                    const a = document.createElement('a');
-                    a.href = n.url;
-                    a.className = 'flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 text-decoration-none' + (n.leida ? '' : ' bg-blue-50/50 dark:bg-slate-700/40');
-                    a.onclick = function() { marcarLeida(n.id); };
-                    a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${n.icono}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${n.titulo}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.mensaje}</p><p class="text-[10px] text-slate-400 mt-1">${n.fecha}</p></div>`;
-                    list.appendChild(a);
-                });
-            }).catch(() => {});
-        }
+            });
 
-        function actualizarBadge(count) {
-            if (count > 0) {
-                badge.textContent = count > 9 ? '9+' : count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+            function cargarNotificaciones() {
+                fetch('{{ route("notificaciones.index") }}').then(r => r.json()).then(data => {
+                    actualizarBadge(data.no_leidas);
+                    list.innerHTML = '';
+                    if (data.notificaciones.length === 0) {
+                        empty.classList.remove('hidden');
+                        return;
+                    }
+                    empty.classList.add('hidden');
+                    data.notificaciones.forEach(n => {
+                        const a = document.createElement('a');
+                        a.href = n.url;
+                        a.className = 'flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 text-decoration-none' + (n.leida ? '' : ' bg-blue-50/50 dark:bg-slate-700/40');
+                        a.onclick = function() {
+                            marcarLeida(n.id);
+                        };
+                        a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${n.icono}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${n.titulo}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.mensaje}</p><p class="text-[10px] text-slate-400 mt-1">${n.fecha}</p></div>`;
+                        list.appendChild(a);
+                    });
+                }).catch(() => {});
             }
-        }
 
-        window.marcarLeida = function(id) {
-            fetch(`/notificaciones/${id}/leer`, {
-                method: 'POST',
-                keepalive: true,
-                headers: { 'X-CSRF-TOKEN': csrf }
-            }).catch(() => {});
-        };
+            function actualizarBadge(count) {
+                if (count > 0) {
+                    badge.textContent = count > 9 ? '9+' : count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
 
-        window.marcarTodasLeidas = function() {
-            fetch('{{ route("notificaciones.leer_todas") }}', {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrf }
-            }).then(() => cargarNotificaciones()).catch(() => {});
-        };
+            window.marcarLeida = function(id) {
+                fetch(`/notificaciones/${id}/leer`, {
+                    method: 'POST',
+                    keepalive: true,
+                    headers: {
+                        'X-CSRF-TOKEN': csrf
+                    }
+                }).catch(() => {});
+            };
 
-        cargarNotificaciones();
-        setInterval(cargarNotificaciones, 30000);
-    })();
+            window.marcarTodasLeidas = function() {
+                fetch('{{ route("notificaciones.leer_todas") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf
+                    }
+                }).then(() => cargarNotificaciones()).catch(() => {});
+            };
+
+            cargarNotificaciones();
+            setInterval(cargarNotificaciones, 30000);
+        })();
     </script>
     @endauth
 
     <script>
-        var esAdmin = {{ auth()->check() && (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('AdministradorFestivales')) ? 'true' : 'false' }};
+        var esAdmin = {
+            {
+                auth() - > check() && (auth() - > user() - > hasRole('Admin') || auth() - > user() - > hasRole('AdministradorFestivales')) ? 'true' : 'false'
+            }
+        };
 
         function navegarSinRecarga(url) {
             fetch(url)
@@ -534,7 +645,7 @@
         window.addEventListener('popstate', function() {
             window.location.reload();
         });
-         // Interceptor global para formularios de eliminación con SweetAlert2
+        // Interceptor global para formularios de eliminación con SweetAlert2
         document.addEventListener('DOMContentLoaded', function() {
             document.body.addEventListener('submit', function(e) {
                 if (e.target && e.target.classList.contains('form-eliminar')) {
@@ -565,19 +676,19 @@
     </script>
 
     <script>
-    (function() {
-        function actualizarIcono() {
-            const icon = document.getElementById('theme-icon');
-            if(!icon) return;
-            icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
-        }
-        window.toggleTema = function() {
-            const esOscuro = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
-            actualizarIcono();
-        };
-        document.addEventListener('DOMContentLoaded', actualizarIcono);
-    })();
+        (function() {
+            function actualizarIcono() {
+                const icon = document.getElementById('theme-icon');
+                if (!icon) return;
+                icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+            }
+            window.toggleTema = function() {
+                const esOscuro = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', esOscuro ? 'dark' : 'light');
+                actualizarIcono();
+            };
+            document.addEventListener('DOMContentLoaded', actualizarIcono);
+        })();
     </script>
 
 </body>

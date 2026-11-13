@@ -16,59 +16,201 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        :root { --bg-body: #f8fafc; --text-body: #1e293b; }
-        .dark { --bg-body: #0f172a; --text-body: #e2e8f0; }
-        body { background-color: var(--bg-body); color: var(--text-body); font-family: 'Outfit', sans-serif; transition: background-color 0.2s ease, color 0.2s ease; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
-        #loading-screen { position: fixed; inset: 0; z-index: 9999; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
-        #loading-screen.oculto { opacity: 0; pointer-events: none; }
-        #lang-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.10); z-index: 100; min-width: 130px; overflow: hidden; }
-        .dark #lang-dropdown { background: #1e293b; border-color: #334155; }
-        #lang-dropdown.open { display: block; }
-        .lang-option { display: flex; align-items: center; gap: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; color: #334155; cursor: pointer; transition: background 0.15s; border: none; background: none; width: 100%; text-align: left; }
-        .dark .lang-option { color: #cbd5e1; }
-        .lang-option:hover { background: #f0f7ff; color: #28628f; }
-        .dark .lang-option:hover { background: #334155; color: #97ccfe; }
-        .lang-option.active { background: #e8f3fb; color: #28628f; }
-        .dark .lang-option.active { background: #1e3a52; color: #97ccfe; }
-        #traduccion-indicator { display: none; position: fixed; bottom: 80px; right: 24px; background: #28628f; color: white; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        :root {
+            --bg-body: #f8fafc;
+            --text-body: #1e293b;
+        }
+
+        .dark {
+            --bg-body: #0f172a;
+            --text-body: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-body);
+            font-family: 'Outfit', sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-screen.oculto {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #lang-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+            z-index: 100;
+            min-width: 130px;
+            overflow: hidden;
+        }
+
+        .dark #lang-dropdown {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        #lang-dropdown.open {
+            display: block;
+        }
+
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: background 0.15s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dark .lang-option {
+            color: #cbd5e1;
+        }
+
+        .lang-option:hover {
+            background: #f0f7ff;
+            color: #28628f;
+        }
+
+        .dark .lang-option:hover {
+            background: #334155;
+            color: #97ccfe;
+        }
+
+        .lang-option.active {
+            background: #e8f3fb;
+            color: #28628f;
+        }
+
+        .dark .lang-option.active {
+            background: #1e3a52;
+            color: #97ccfe;
+        }
+
+        #traduccion-indicator {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            background: #28628f;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
 
         /* ===== Modo oscuro global para componentes repetidos (cards, paneles, etc.) ===== */
-        .dark .bg-white { background-color: #1e293b !important; }
-        .dark .bg-slate-50 { background-color: #0f172a !important; }
-        .dark .bg-slate-100 { background-color: #1e293b !important; }
-        .dark .bg-slate-200 { background-color: #334155 !important; }
+        .dark .bg-white {
+            background-color: #1e293b !important;
+        }
+
+        .dark .bg-slate-50 {
+            background-color: #0f172a !important;
+        }
+
+        .dark .bg-slate-100 {
+            background-color: #1e293b !important;
+        }
+
+        .dark .bg-slate-200 {
+            background-color: #334155 !important;
+        }
 
         .dark .text-slate-700,
         .dark .text-slate-800,
-        .dark .text-slate-900 { color: #e2e8f0 !important; }
+        .dark .text-slate-900 {
+            color: #e2e8f0 !important;
+        }
 
         .dark .text-slate-400,
-        .dark .text-slate-500 { color: #94a3b8 !important; }
+        .dark .text-slate-500 {
+            color: #94a3b8 !important;
+        }
 
-        .dark .text-slate-600 { color: #cbd5e1 !important; }
-        .dark .text-slate-300 { color: #64748b !important; }
+        .dark .text-slate-600 {
+            color: #cbd5e1 !important;
+        }
+
+        .dark .text-slate-300 {
+            color: #64748b !important;
+        }
 
         .dark .border-slate-100,
-        .dark .border-slate-200 { border-color: #334155 !important; }
-        .dark .border-slate-300 { border-color: #475569 !important; }
+        .dark .border-slate-200 {
+            border-color: #334155 !important;
+        }
+
+        .dark .border-slate-300 {
+            border-color: #475569 !important;
+        }
 
         .dark .shadow-sm,
         .dark .shadow-xl,
-        .dark .shadow-lg { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
-        .dark .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important; }
+        .dark .shadow-lg {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .dark .shadow-2xl {
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6) !important;
+        }
 
         .dark .hover\:bg-slate-50:hover,
-        .dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+        .dark .hover\:bg-slate-100:hover {
+            background-color: #334155 !important;
+        }
 
         .dark input,
         .dark select,
-        .dark textarea { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+        .dark textarea {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            border-color: #334155 !important;
+        }
+
         .dark input::placeholder,
-        .dark textarea::placeholder { color: #64748b !important; }
+        .dark textarea::placeholder {
+            color: #64748b !important;
+        }
 
         .logo-pill,
-        .dark .logo-pill { background-color: #f8fafc !important; }
+        .dark .logo-pill {
+            background-color: #f8fafc !important;
+        }
 
         /* ===== Sidebar ===== */
         #main-sidebar {
@@ -76,27 +218,74 @@
             transform: translateX(-100%);
             transition: transform 0.25s ease;
         }
-        #main-sidebar.open { transform: translateX(0); }
-        @media (min-width: 1024px) {
-            #main-sidebar { transform: translateX(0); position: sticky; top: 0; height: 100vh; }
+
+        #main-sidebar.open {
+            transform: translateX(0);
         }
-        #sidebar-overlay { display: none; }
-        #sidebar-overlay.open { display: block; }
+
+        @media (min-width: 1024px) {
+            #main-sidebar {
+                transform: translateX(0);
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+        }
+
+        #sidebar-overlay {
+            display: none;
+        }
+
+        #sidebar-overlay.open {
+            display: block;
+        }
 
         .side-link {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 10px;
-            font-size: 14px; font-weight: 600;
-            color: #475569; text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            text-decoration: none;
             transition: all 0.15s;
         }
-        .side-link:hover { background: #f1f5f9; color: #28628f; }
-        .side-link.active { background: #e8f3fb; color: #28628f; }
-        .dark .side-link { color: #cbd5e1; }
-        .dark .side-link:hover { background: #334155; color: #97ccfe; }
-        .dark .side-link.active { background: #1e3a52; color: #97ccfe; }
-        .side-divider { height: 1px; background: #e2e8f0; margin: 8px 4px; }
-        .dark .side-divider { background: #334155; }
+
+        .side-link:hover {
+            background: #f1f5f9;
+            color: #28628f;
+        }
+
+        .side-link.active {
+            background: #e8f3fb;
+            color: #28628f;
+        }
+
+        .dark .side-link {
+            color: #cbd5e1;
+        }
+
+        .dark .side-link:hover {
+            background: #334155;
+            color: #97ccfe;
+        }
+
+        .dark .side-link.active {
+            background: #1e3a52;
+            color: #97ccfe;
+        }
+
+        .side-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 8px 4px;
+        }
+
+        .dark .side-divider {
+            background: #334155;
+        }
 
         /* ===== Buscador en celular: se abre como una barra debajo del header ===== */
         @media (max-width: 767px) {
@@ -112,51 +301,279 @@
                 border-bottom: 1px solid #e2e8f0;
                 box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
             }
-            .dark #search-container.abierto-movil { background: #0f172a; border-color: #334155; }
+
+            .dark #search-container.abierto-movil {
+                background: #0f172a;
+                border-color: #334155;
+            }
         }
 
         /* ===== Notificaciones ===== */
-        #notif-dropdown { display: none; }
-        #notif-dropdown.open { display: block; }
+        #notif-dropdown {
+            display: none;
+        }
+
+        #notif-dropdown.open {
+            display: block;
+        }
     </style>
     <script>
-        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
-        else { document.documentElement.classList.remove('dark'); }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     </script>
 </head>
 
 <style>
-    .acc-fab { position: fixed; bottom: 24px; left: 24px; z-index: 9998; }
-    .acc-btn { width: 48px; height: 48px; border-radius: 50%; background: #28628f; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.18); transition: background 0.2s; }
-    .acc-btn:hover { background: #1a4669; }
-    .acc-panel { position: fixed; bottom: 84px; left: 24px; z-index: 9997; background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; width: 260px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: none; flex-direction: column; gap: 16px; }
-    .acc-panel.open { display: flex; }
-    .acc-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin: 0; }
-    .acc-section { display: flex; flex-direction: column; gap: 8px; }
-    .acc-label { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
-    .acc-row { display: flex; align-items: center; gap: 8px; }
-    .text-btn { flex: 1; padding: 6px 0; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; font-weight: 700; color: #28628f; transition: all 0.15s; }
-    .text-btn:hover { background: #f0f7ff; border-color: #28628f; }
-    .text-btn.active { background: #28628f; color: white; border-color: #28628f; }
-    .reader-btn { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #28628f; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
-    .reader-btn:hover { background: #f0f7ff; border-color: #28628f; }
-    .reader-btn.active { background: #28628f; color: white; }
-    .tour-btn { width: 100%; padding: 10px; border-radius: 10px; border: none; background: #28628f; color: white; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
-    .tour-btn:hover { background: #1a4669; }
-    .acc-divider { height: 1px; background: #f1f5f9; margin: 0; }
-    .tour-highlight { position: fixed; border: 3px solid #28628f; border-radius: 12px; z-index: 9996; box-shadow: 0 0 0 4000px rgba(0,0,0,0.45); transition: all 0.4s ease; pointer-events: none; display: none; }
-    .tour-tooltip { position: fixed; z-index: 9999; background: white; border-radius: 14px; padding: 18px 20px; width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid #e2e8f0; display: none; }
-    .tour-tooltip h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: #1e293b; }
-    .tour-tooltip p { margin: 0 0 14px; font-size: 13px; color: #64748b; line-height: 1.5; }
-    .tour-nav { display: flex; align-items: center; justify-content: space-between; }
-    .tour-step-info { font-size: 12px; color: #94a3b8; font-weight: 600; }
-    .tour-next { padding: 8px 16px; background: #28628f; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .tour-next:hover { background: #1a4669; }
-    .tour-skip { font-size: 12px; color: #94a3b8; background: none; border: none; cursor: pointer; padding: 0; }
-    .tour-skip:hover { color: #64748b; }
-    .reader-status { font-size: 11px; color: #94a3b8; text-align: center; display: none; }
-    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .acc-fab {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 9998;
+    }
+
+    .acc-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #28628f;
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+        transition: background 0.2s;
+    }
+
+    .acc-btn:hover {
+        background: #1a4669;
+    }
+
+    .acc-panel {
+        position: fixed;
+        bottom: 84px;
+        left: 24px;
+        z-index: 9997;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
+        width: 260px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        display: none;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .acc-panel.open {
+        display: flex;
+    }
+
+    .acc-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0;
+    }
+
+    .acc-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .acc-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .acc-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .text-btn {
+        flex: 1;
+        padding: 6px 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-weight: 700;
+        color: #28628f;
+        transition: all 0.15s;
+    }
+
+    .text-btn:hover {
+        background: #f0f7ff;
+        border-color: #28628f;
+    }
+
+    .text-btn.active {
+        background: #28628f;
+        color: white;
+        border-color: #28628f;
+    }
+
+    .reader-btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: #28628f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.15s;
+    }
+
+    .reader-btn:hover {
+        background: #f0f7ff;
+        border-color: #28628f;
+    }
+
+    .reader-btn.active {
+        background: #28628f;
+        color: white;
+    }
+
+    .tour-btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background: #28628f;
+        color: white;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.15s;
+    }
+
+    .tour-btn:hover {
+        background: #1a4669;
+    }
+
+    .acc-divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin: 0;
+    }
+
+    .tour-highlight {
+        position: fixed;
+        border: 3px solid #28628f;
+        border-radius: 12px;
+        z-index: 9996;
+        box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.45);
+        transition: all 0.4s ease;
+        pointer-events: none;
+        display: none;
+    }
+
+    .tour-tooltip {
+        position: fixed;
+        z-index: 9999;
+        background: white;
+        border-radius: 14px;
+        padding: 18px 20px;
+        width: 280px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        border: 1px solid #e2e8f0;
+        display: none;
+    }
+
+    .tour-tooltip h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .tour-tooltip p {
+        margin: 0 0 14px;
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.5;
+    }
+
+    .tour-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tour-step-info {
+        font-size: 12px;
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .tour-next {
+        padding: 8px 16px;
+        background: #28628f;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .tour-next:hover {
+        background: #1a4669;
+    }
+
+    .tour-skip {
+        font-size: 12px;
+        color: #94a3b8;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .tour-skip:hover {
+        color: #64748b;
+    }
+
+    .reader-status {
+        font-size: 11px;
+        color: #94a3b8;
+        text-align: center;
+        display: none;
+    }
+
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 </style>
 
 <div class="acc-fab">
@@ -202,75 +619,147 @@
 <div id="traduccion-indicator">🌐 Traduciendo...</div>
 
 <script>
-(function() {
-    var panelAbierto = false, lectorActivo = false, pasoActual = 0;
-    var tamanos = { small: '14px', normal: '16px', large: '19px', xlarge: '22px' };
-    var pasosTour = [
-        { selector: 'header', titulo: '🧭 Barra de navegación', desc: 'Desde acá podés acceder a todas las secciones: Inicio, Mapa interactivo, Eventos y Combustible.' },
-        { selector: '#search-container', titulo: '🔍 Buscador', desc: 'Buscá destinos, festivales o provincias. Los resultados aparecen en tiempo real.' },
-        { selector: 'main', titulo: '🌎 Contenido principal', desc: 'Acá encontrás los destinos destacados, clima en tiempo real y las regiones más icónicas de Argentina.' },
-        { selector: 'footer', titulo: '📌 Pie de página', desc: 'Información sobre el proyecto Surify.' },
-        { selector: '.fixed.bottom-6.right-6', titulo: '🎵 Reproductor de música', desc: 'Reproducí el himno de Surify mientras explorás la plataforma.' }
-    ];
-    window.surifyTogglePanel = function() { panelAbierto = !panelAbierto; document.getElementById('accPanel').classList.toggle('open', panelAbierto); };
-    window.surifyAccTexto = function(size) {
-        document.documentElement.style.fontSize = tamanos[size];
-        ['small','normal','large','xlarge'].forEach(s => document.getElementById('acc-btn-'+s).classList.toggle('active', s===size));
-        localStorage.setItem('surify-text-size', size);
-    };
-    window.surifyToggleLector = function() {
-        lectorActivo = !lectorActivo;
-        var btn = document.getElementById('accReaderBtn');
-        var label = document.getElementById('accReaderLabel');
-        var status = document.getElementById('accReaderStatus');
-        btn.classList.toggle('active', lectorActivo);
-        btn.setAttribute('aria-pressed', lectorActivo);
-        label.textContent = lectorActivo ? 'Desactivar lector' : 'Activar lector';
-        status.style.display = lectorActivo ? 'block' : 'none';
-        document.body.style.cursor = lectorActivo ? 'text' : '';
-        if(lectorActivo) { document.addEventListener('click', surifyLeerElemento, true); }
-        else { document.removeEventListener('click', surifyLeerElemento, true); window.speechSynthesis && window.speechSynthesis.cancel(); }
-    };
-    function surifyLeerElemento(e) {
-        if(!lectorActivo) return;
-        if(e.target.closest('#accPanel') || e.target.closest('.acc-fab')) return;
-        var texto = (e.target.innerText || e.target.textContent || '').trim();
-        if(texto.length > 2) {
-            e.preventDefault(); e.stopPropagation();
-            if(window.speechSynthesis) { window.speechSynthesis.cancel(); var utt = new SpeechSynthesisUtterance(texto); utt.lang='es-ES'; utt.rate=0.9; window.speechSynthesis.speak(utt); }
+    (function() {
+        var panelAbierto = false,
+            lectorActivo = false,
+            pasoActual = 0;
+        var tamanos = {
+            small: '14px',
+            normal: '16px',
+            large: '19px',
+            xlarge: '22px'
+        };
+        var pasosTour = [{
+                selector: 'header',
+                titulo: '🧭 Barra de navegación',
+                desc: 'Desde acá podés acceder a todas las secciones: Inicio, Mapa interactivo, Eventos y Combustible.'
+            },
+            {
+                selector: '#search-container',
+                titulo: '🔍 Buscador',
+                desc: 'Buscá destinos, festivales o provincias. Los resultados aparecen en tiempo real.'
+            },
+            {
+                selector: 'main',
+                titulo: '🌎 Contenido principal',
+                desc: 'Acá encontrás los destinos destacados, clima en tiempo real y las regiones más icónicas de Argentina.'
+            },
+            {
+                selector: 'footer',
+                titulo: '📌 Pie de página',
+                desc: 'Información sobre el proyecto Surify.'
+            },
+            {
+                selector: '.fixed.bottom-6.right-6',
+                titulo: '🎵 Reproductor de música',
+                desc: 'Reproducí el himno de Surify mientras explorás la plataforma.'
+            }
+        ];
+        window.surifyTogglePanel = function() {
+            panelAbierto = !panelAbierto;
+            document.getElementById('accPanel').classList.toggle('open', panelAbierto);
+        };
+        window.surifyAccTexto = function(size) {
+            document.documentElement.style.fontSize = tamanos[size];
+            ['small', 'normal', 'large', 'xlarge'].forEach(s => document.getElementById('acc-btn-' + s).classList.toggle('active', s === size));
+            localStorage.setItem('surify-text-size', size);
+        };
+        window.surifyToggleLector = function() {
+            lectorActivo = !lectorActivo;
+            var btn = document.getElementById('accReaderBtn');
+            var label = document.getElementById('accReaderLabel');
+            var status = document.getElementById('accReaderStatus');
+            btn.classList.toggle('active', lectorActivo);
+            btn.setAttribute('aria-pressed', lectorActivo);
+            label.textContent = lectorActivo ? 'Desactivar lector' : 'Activar lector';
+            status.style.display = lectorActivo ? 'block' : 'none';
+            document.body.style.cursor = lectorActivo ? 'text' : '';
+            if (lectorActivo) {
+                document.addEventListener('click', surifyLeerElemento, true);
+            } else {
+                document.removeEventListener('click', surifyLeerElemento, true);
+                window.speechSynthesis && window.speechSynthesis.cancel();
+            }
+        };
+
+        function surifyLeerElemento(e) {
+            if (!lectorActivo) return;
+            if (e.target.closest('#accPanel') || e.target.closest('.acc-fab')) return;
+            var texto = (e.target.innerText || e.target.textContent || '').trim();
+            if (texto.length > 2) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                    var utt = new SpeechSynthesisUtterance(texto);
+                    utt.lang = 'es-ES';
+                    utt.rate = 0.9;
+                    window.speechSynthesis.speak(utt);
+                }
+            }
         }
-    }
-    window.surifyIniciarTour = function() { pasoActual = 0; surifyTogglePanel(); surifyMostrarPaso(); };
-    function surifyMostrarPaso() {
-        if(pasoActual >= pasosTour.length) { surifyCerrarTour(); return; }
-        var paso = pasosTour[pasoActual], el = document.querySelector(paso.selector);
-        var highlight = document.getElementById('tourHighlight'), tooltip = document.getElementById('tourTooltip');
-        document.getElementById('tourTitle').textContent = paso.titulo;
-        document.getElementById('tourDesc').textContent = paso.desc;
-        document.getElementById('tourStepInfo').textContent = (pasoActual+1)+' de '+pasosTour.length;
-        document.getElementById('tourNextBtn').textContent = pasoActual===pasosTour.length-1 ? 'Finalizar ✓' : 'Siguiente →';
-        if(el) {
-            var rect = el.getBoundingClientRect();
-            highlight.style.cssText = 'display:block;top:'+(rect.top-6)+'px;left:'+(rect.left-6)+'px;width:'+(rect.width+12)+'px;height:'+(rect.height+12)+'px;';
-            var tt = rect.bottom+16; if(tt+200>window.innerHeight) tt=rect.top-210; if(tt<10) tt=10;
-            tooltip.style.top=tt+'px'; tooltip.style.left=Math.min(Math.max(10,rect.left),window.innerWidth-300)+'px';
-            window.scrollTo({top:Math.max(0,rect.top+window.scrollY-150),behavior:'smooth'});
+        window.surifyIniciarTour = function() {
+            pasoActual = 0;
+            surifyTogglePanel();
+            surifyMostrarPaso();
+        };
+
+        function surifyMostrarPaso() {
+            if (pasoActual >= pasosTour.length) {
+                surifyCerrarTour();
+                return;
+            }
+            var paso = pasosTour[pasoActual],
+                el = document.querySelector(paso.selector);
+            var highlight = document.getElementById('tourHighlight'),
+                tooltip = document.getElementById('tourTooltip');
+            document.getElementById('tourTitle').textContent = paso.titulo;
+            document.getElementById('tourDesc').textContent = paso.desc;
+            document.getElementById('tourStepInfo').textContent = (pasoActual + 1) + ' de ' + pasosTour.length;
+            document.getElementById('tourNextBtn').textContent = pasoActual === pasosTour.length - 1 ? 'Finalizar ✓' : 'Siguiente →';
+            if (el) {
+                var rect = el.getBoundingClientRect();
+                highlight.style.cssText = 'display:block;top:' + (rect.top - 6) + 'px;left:' + (rect.left - 6) + 'px;width:' + (rect.width + 12) + 'px;height:' + (rect.height + 12) + 'px;';
+                var tt = rect.bottom + 16;
+                if (tt + 200 > window.innerHeight) tt = rect.top - 210;
+                if (tt < 10) tt = 10;
+                tooltip.style.top = tt + 'px';
+                tooltip.style.left = Math.min(Math.max(10, rect.left), window.innerWidth - 300) + 'px';
+                window.scrollTo({
+                    top: Math.max(0, rect.top + window.scrollY - 150),
+                    behavior: 'smooth'
+                });
+            }
+            tooltip.style.display = 'block';
         }
-        tooltip.style.display = 'block';
-    }
-    window.surifySiguientePaso = function() { pasoActual++; surifyMostrarPaso(); };
-    window.surifyCerrarTour = function() { document.getElementById('tourHighlight').style.display='none'; document.getElementById('tourTooltip').style.display='none'; };
-    document.addEventListener('DOMContentLoaded', function() { var s=localStorage.getItem('surify-text-size'); if(s) surifyAccTexto(s); });
-})();
+        window.surifySiguientePaso = function() {
+            pasoActual++;
+            surifyMostrarPaso();
+        };
+        window.surifyCerrarTour = function() {
+            document.getElementById('tourHighlight').style.display = 'none';
+            document.getElementById('tourTooltip').style.display = 'none';
+        };
+        document.addEventListener('DOMContentLoaded', function() {
+            var s = localStorage.getItem('surify-text-size');
+            if (s) surifyAccTexto(s);
+        });
+    })();
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) { if(entry.isIntersecting) entry.target.classList.add('visible'); });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, {
+            threshold: 0.1
+        });
+        document.querySelectorAll('.reveal').forEach(function(el) {
+            observer.observe(el);
+        });
+    });
 </script>
 
 <body class="antialiased">
@@ -337,7 +826,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 @if($esOperador)
                 <div class="side-divider"></div>
+                @if($esAdmin)
                 <a href="{{ route('dashboard') }}" class="side-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">dashboard</span> Dashboard</a>
+                @endif
                 @endif
 
                 @if($esAdmin)
@@ -382,11 +873,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             @auth
             @php
-                $authUser = auth()->user();
-                $puedeCambiarVista = $authUser->hasRole('admin')
-                    || $authUser->hasRole('Admin')
-                    || $authUser->hasRole('AdministradorFestivales')
-                    || count($authUser->permisos()->pluck('nombre')->toArray()) > 0;
+            $authUser = auth()->user();
+            $puedeCambiarVista = $authUser->hasRole('admin')
+            || $authUser->hasRole('Admin')
+            || $authUser->hasRole('AdministradorFestivales')
+            || count($authUser->permisos()->pluck('nombre')->toArray()) > 0;
             @endphp
             @if($puedeCambiarVista)
             <div class="p-3 border-t border-slate-200 dark:border-slate-700 shrink-0">
@@ -552,302 +1043,409 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 
     <script>
-    (function() {
-        const bar = document.getElementById('loading-bar-screen');
-        const screen = document.getElementById('loading-screen');
-        let progress = 0, oculto = false;
-        const interval = setInterval(() => { progress += Math.random()*15; if(progress>85) progress=85; bar.style.width=progress+'%'; }, 100);
-        function ocultarPantalla() {
-            if(oculto) return; oculto=true; clearInterval(interval); bar.style.width='100%';
-            setTimeout(() => { screen.classList.add('oculto'); setTimeout(() => { if(screen.parentNode) screen.remove(); }, 500); }, 200);
-        }
-        document.addEventListener('DOMContentLoaded', ocultarPantalla);
-        setTimeout(ocultarPantalla, 5000);
-    })();
+        (function() {
+            const bar = document.getElementById('loading-bar-screen');
+            const screen = document.getElementById('loading-screen');
+            let progress = 0,
+                oculto = false;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 85) progress = 85;
+                bar.style.width = progress + '%';
+            }, 100);
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const audio = document.getElementById('global-surify-song');
-        const btn = document.getElementById('global-music-btn');
-        const icon = document.getElementById('global-music-icon');
-        const status = document.getElementById('global-music-status');
-        setInterval(function() { if(audio && !audio.paused) { localStorage.setItem('surify-music-time', audio.currentTime); localStorage.setItem('surify-music-playing','true'); } }, 1000);
-        audio.addEventListener('loadedmetadata', function() {
-            const savedTime = parseFloat(localStorage.getItem('surify-music-time')||'0');
-            const wasPlaying = localStorage.getItem('surify-music-playing')==='true';
-            if(savedTime>0) audio.currentTime=savedTime;
-            if(wasPlaying) { audio.play().then(()=>{ icon.textContent='pause'; status.textContent='Reproduciendo'; status.className="text-[10px] text-emerald-500 font-bold animate-pulse tracking-wide"; }).catch(()=>{ icon.textContent='play_arrow'; status.textContent='Continuar Himno'; status.className="text-[10px] text-amber-500 font-bold tracking-wide animate-pulse"; }); }
-        }, {once:true});
-        btn.addEventListener('click', function() {
-            if(audio.paused) { audio.play().then(()=>{ icon.textContent='pause'; status.textContent='Reproduciendo'; status.className="text-[10px] text-emerald-500 font-bold animate-pulse tracking-wide"; localStorage.setItem('surify-music-playing','true'); }); }
-            else { audio.pause(); icon.textContent='play_arrow'; status.textContent='Pausado'; status.className="text-[10px] text-slate-400 font-semibold tracking-wide"; localStorage.setItem('surify-music-playing','false'); localStorage.removeItem('surify-music-time'); }
-        });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.body.addEventListener('submit', function(e) {
-            if(e.target && e.target.classList.contains('form-eliminar')) {
-                e.preventDefault();
-                const form = e.target;
-                Swal.fire({ title: form.dataset.title||'¿Estás seguro?', text: form.dataset.text||'¡No vas a poder revertir esto!', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', cancelButtonColor:'#3085d6', confirmButtonText:'Sí, eliminar', cancelButtonText:'Cancelar' })
-                .then(result => { if(result.isConfirmed) form.submit(); });
+            function ocultarPantalla() {
+                if (oculto) return;
+                oculto = true;
+                clearInterval(interval);
+                bar.style.width = '100%';
+                setTimeout(() => {
+                    screen.classList.add('oculto');
+                    setTimeout(() => {
+                        if (screen.parentNode) screen.remove();
+                    }, 500);
+                }, 200);
             }
+            document.addEventListener('DOMContentLoaded', ocultarPantalla);
+            setTimeout(ocultarPantalla, 5000);
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('global-surify-song');
+            const btn = document.getElementById('global-music-btn');
+            const icon = document.getElementById('global-music-icon');
+            const status = document.getElementById('global-music-status');
+            setInterval(function() {
+                if (audio && !audio.paused) {
+                    localStorage.setItem('surify-music-time', audio.currentTime);
+                    localStorage.setItem('surify-music-playing', 'true');
+                }
+            }, 1000);
+            audio.addEventListener('loadedmetadata', function() {
+                const savedTime = parseFloat(localStorage.getItem('surify-music-time') || '0');
+                const wasPlaying = localStorage.getItem('surify-music-playing') === 'true';
+                if (savedTime > 0) audio.currentTime = savedTime;
+                if (wasPlaying) {
+                    audio.play().then(() => {
+                        icon.textContent = 'pause';
+                        status.textContent = 'Reproduciendo';
+                        status.className = "text-[10px] text-emerald-500 font-bold animate-pulse tracking-wide";
+                    }).catch(() => {
+                        icon.textContent = 'play_arrow';
+                        status.textContent = 'Continuar Himno';
+                        status.className = "text-[10px] text-amber-500 font-bold tracking-wide animate-pulse";
+                    });
+                }
+            }, {
+                once: true
+            });
+            btn.addEventListener('click', function() {
+                if (audio.paused) {
+                    audio.play().then(() => {
+                        icon.textContent = 'pause';
+                        status.textContent = 'Reproduciendo';
+                        status.className = "text-[10px] text-emerald-500 font-bold animate-pulse tracking-wide";
+                        localStorage.setItem('surify-music-playing', 'true');
+                    });
+                } else {
+                    audio.pause();
+                    icon.textContent = 'play_arrow';
+                    status.textContent = 'Pausado';
+                    status.className = "text-[10px] text-slate-400 font-semibold tracking-wide";
+                    localStorage.setItem('surify-music-playing', 'false');
+                    localStorage.removeItem('surify-music-time');
+                }
+            });
         });
-    });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.addEventListener('submit', function(e) {
+                if (e.target && e.target.classList.contains('form-eliminar')) {
+                    e.preventDefault();
+                    const form = e.target;
+                    Swal.fire({
+                            title: form.dataset.title || '¿Estás seguro?',
+                            text: form.dataset.text || '¡No vas a poder revertir esto!',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Sí, eliminar',
+                            cancelButtonText: 'Cancelar'
+                        })
+                        .then(result => {
+                            if (result.isConfirmed) form.submit();
+                        });
+                }
+            });
+        });
     </script>
 
     <script>
-    (function() {
-        const input = document.getElementById('search-input');
-        const dropdown = document.getElementById('search-dropdown');
-        const resultsContainer = document.getElementById('search-results');
-        const emptyMsg = document.getElementById('search-empty');
-        let debounceTimer = null;
-        if(!input) return;
-        input.addEventListener('input', function() {
-            const query = this.value.trim();
-            clearTimeout(debounceTimer);
-            if(query.length<2) { dropdown.classList.add('hidden'); return; }
-            debounceTimer = setTimeout(() => {
-                fetch(`{{ route('busqueda.buscar') }}?q=${encodeURIComponent(query)}`).then(r=>r.json()).then(data => {
-                    resultsContainer.innerHTML='';
-                    if(data.resultados.length===0) { emptyMsg.classList.remove('hidden'); }
-                    else {
-                        emptyMsg.classList.add('hidden');
-                        data.resultados.forEach(item => {
-                            const a = document.createElement('a');
-                            a.href=item.url; a.className='flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 text-decoration-none';
-                            a.innerHTML=`<span class="material-symbols-outlined text-[#28628f] text-[20px]">${item.icono}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 truncate">${item.nombre}</p><p class="text-xs text-slate-400">${item.tipo}${item.subtitulo?' • '+item.subtitulo:''}</p></div>`;
-                            resultsContainer.appendChild(a);
-                        });
-                    }
-                    dropdown.classList.remove('hidden');
-                }).catch(()=>dropdown.classList.add('hidden'));
-            }, 300);
-        });
-        document.addEventListener('click', function(e) { if(!document.getElementById('search-container').contains(e.target)) dropdown.classList.add('hidden'); });
-        input.addEventListener('keydown', function(e) { if(e.key==='Escape') { dropdown.classList.add('hidden'); input.blur(); toggleBusquedaMovil(false); } });
+        (function() {
+            const input = document.getElementById('search-input');
+            const dropdown = document.getElementById('search-dropdown');
+            const resultsContainer = document.getElementById('search-results');
+            const emptyMsg = document.getElementById('search-empty');
+            let debounceTimer = null;
+            if (!input) return;
+            input.addEventListener('input', function() {
+                const query = this.value.trim();
+                clearTimeout(debounceTimer);
+                if (query.length < 2) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+                debounceTimer = setTimeout(() => {
+                    fetch(`{{ route('busqueda.buscar') }}?q=${encodeURIComponent(query)}`).then(r => r.json()).then(data => {
+                        resultsContainer.innerHTML = '';
+                        if (data.resultados.length === 0) {
+                            emptyMsg.classList.remove('hidden');
+                        } else {
+                            emptyMsg.classList.add('hidden');
+                            data.resultados.forEach(item => {
+                                const a = document.createElement('a');
+                                a.href = item.url;
+                                a.className = 'flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 text-decoration-none';
+                                a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px]">${item.icono}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 truncate">${item.nombre}</p><p class="text-xs text-slate-400">${item.tipo}${item.subtitulo?' • '+item.subtitulo:''}</p></div>`;
+                                resultsContainer.appendChild(a);
+                            });
+                        }
+                        dropdown.classList.remove('hidden');
+                    }).catch(() => dropdown.classList.add('hidden'));
+                }, 300);
+            });
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('search-container').contains(e.target)) dropdown.classList.add('hidden');
+            });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    dropdown.classList.add('hidden');
+                    input.blur();
+                    toggleBusquedaMovil(false);
+                }
+            });
 
-        // Celular: la lupa abre/cierra la barra de búsqueda debajo del header
-        window.toggleBusquedaMovil = function(abrir) {
-            const cont = document.getElementById('search-container');
-            const abierto = typeof abrir === 'boolean' ? abrir : !cont.classList.contains('abierto-movil');
-            cont.classList.toggle('abierto-movil', abierto);
-            if (abierto) { input.focus(); }
-            else { dropdown.classList.add('hidden'); }
-        };
-    })();
+            // Celular: la lupa abre/cierra la barra de búsqueda debajo del header
+            window.toggleBusquedaMovil = function(abrir) {
+                const cont = document.getElementById('search-container');
+                const abierto = typeof abrir === 'boolean' ? abrir : !cont.classList.contains('abierto-movil');
+                cont.classList.toggle('abierto-movil', abierto);
+                if (abierto) {
+                    input.focus();
+                } else {
+                    dropdown.classList.add('hidden');
+                }
+            };
+        })();
     </script>
 
     {{-- SISTEMA DE NOTIFICACIONES (campanita) --}}
     @auth
     <script>
-    (function() {
-        const container = document.getElementById('notif-container');
-        if (!container) return;
-        const dropdown = document.getElementById('notif-dropdown');
-        const badge = document.getElementById('notif-badge');
-        const list = document.getElementById('notif-list');
-        const empty = document.getElementById('notif-empty');
-        const csrf = document.querySelector('meta[name="csrf-token"]').content;
-        let abierto = false;
+        (function() {
+            const container = document.getElementById('notif-container');
+            if (!container) return;
+            const dropdown = document.getElementById('notif-dropdown');
+            const badge = document.getElementById('notif-badge');
+            const list = document.getElementById('notif-list');
+            const empty = document.getElementById('notif-empty');
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+            let abierto = false;
 
-        window.toggleNotifDropdown = function() {
-            abierto = !abierto;
-            dropdown.classList.toggle('open', abierto);
-            if (abierto) cargarNotificaciones();
-        };
+            window.toggleNotifDropdown = function() {
+                abierto = !abierto;
+                dropdown.classList.toggle('open', abierto);
+                if (abierto) cargarNotificaciones();
+            };
 
-        document.addEventListener('click', function(e) {
-            if (!container.contains(e.target)) { dropdown.classList.remove('open'); abierto = false; }
-        });
-
-        // Los textos pueden venir de usuarios (ej: el nombre de un evento sugerido): se escapan
-        function esc(texto) {
-            const d = document.createElement('div');
-            d.textContent = texto ?? '';
-            return d.innerHTML;
-        }
-
-        function cargarNotificaciones() {
-            fetch('{{ route("notificaciones.index") }}').then(r => r.json()).then(data => {
-                actualizarBadge(data.no_leidas);
-                list.innerHTML = '';
-                if (data.notificaciones.length === 0) {
-                    empty.classList.remove('hidden');
-                    return;
+            document.addEventListener('click', function(e) {
+                if (!container.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                    abierto = false;
                 }
-                empty.classList.add('hidden');
-                data.notificaciones.forEach(n => {
-                    const a = document.createElement('a');
-                    a.href = n.url;
-                    a.className = 'flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 text-decoration-none' + (n.leida ? '' : ' bg-blue-50/50 dark:bg-slate-700/40');
-                    a.onclick = function() { marcarLeida(n.id); };
-                    a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${esc(n.icono)}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${esc(n.titulo)}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${esc(n.mensaje)}</p><p class="text-[10px] text-slate-400 mt-1">${esc(n.fecha)}</p></div>`;
-                    list.appendChild(a);
-                });
-            }).catch(() => {});
-        }
+            });
 
-        function actualizarBadge(count) {
-            if (count > 0) {
-                badge.textContent = count > 9 ? '9+' : count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+            // Los textos pueden venir de usuarios (ej: el nombre de un evento sugerido): se escapan
+            function esc(texto) {
+                const d = document.createElement('div');
+                d.textContent = texto ?? '';
+                return d.innerHTML;
             }
-        }
 
-        window.marcarLeida = function(id) {
-            fetch(`/notificaciones/${id}/leer`, {
-                method: 'POST',
-                keepalive: true,
-                headers: { 'X-CSRF-TOKEN': csrf }
-            }).catch(() => {});
-        };
+            function cargarNotificaciones() {
+                fetch('{{ route("notificaciones.index") }}').then(r => r.json()).then(data => {
+                    actualizarBadge(data.no_leidas);
+                    list.innerHTML = '';
+                    if (data.notificaciones.length === 0) {
+                        empty.classList.remove('hidden');
+                        return;
+                    }
+                    empty.classList.add('hidden');
+                    data.notificaciones.forEach(n => {
+                        const a = document.createElement('a');
+                        a.href = n.url;
+                        a.className = 'flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 text-decoration-none' + (n.leida ? '' : ' bg-blue-50/50 dark:bg-slate-700/40');
+                        a.onclick = function() {
+                            marcarLeida(n.id);
+                        };
+                        a.innerHTML = `<span class="material-symbols-outlined text-[#28628f] text-[20px] mt-0.5">${esc(n.icono)}</span><div class="min-w-0"><p class="text-sm font-bold text-slate-700 dark:text-slate-200">${esc(n.titulo)}</p><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${esc(n.mensaje)}</p><p class="text-[10px] text-slate-400 mt-1">${esc(n.fecha)}</p></div>`;
+                        list.appendChild(a);
+                    });
+                }).catch(() => {});
+            }
 
-        window.marcarTodasLeidas = function() {
-            fetch('{{ route("notificaciones.leer_todas") }}', {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrf }
-            }).then(() => cargarNotificaciones()).catch(() => {});
-        };
+            function actualizarBadge(count) {
+                if (count > 0) {
+                    badge.textContent = count > 9 ? '9+' : count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
 
-        cargarNotificaciones();
-        setInterval(cargarNotificaciones, 30000);
-    })();
+            window.marcarLeida = function(id) {
+                fetch(`/notificaciones/${id}/leer`, {
+                    method: 'POST',
+                    keepalive: true,
+                    headers: {
+                        'X-CSRF-TOKEN': csrf
+                    }
+                }).catch(() => {});
+            };
+
+            window.marcarTodasLeidas = function() {
+                fetch('{{ route("notificaciones.leer_todas") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf
+                    }
+                }).then(() => cargarNotificaciones()).catch(() => {});
+            };
+
+            cargarNotificaciones();
+            setInterval(cargarNotificaciones, 30000);
+        })();
     </script>
     @endauth
 
     {{-- SISTEMA DE TRADUCCIÓN CON MYMEMORY --}}
     <script>
-    (function() {
-        const SKIP_TAGS = ['SCRIPT','STYLE','NOSCRIPT','META','LINK','INPUT','TEXTAREA','SELECT','OPTION','CODE','PRE'];
-        const SKIP_CLASSES = ['material-symbols-outlined','fa','fas','far'];
+        (function() {
+            const SKIP_TAGS = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'META', 'LINK', 'INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'CODE', 'PRE'];
+            const SKIP_CLASSES = ['material-symbols-outlined', 'fa', 'fas', 'far'];
 
-        let idiomaActual = localStorage.getItem('surify-idioma') || 'es';
-        let textoOriginales = new Map();
-        let traduccionCache = {};
+            let idiomaActual = localStorage.getItem('surify-idioma') || 'es';
+            let textoOriginales = new Map();
+            let traduccionCache = {};
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const saved = localStorage.getItem('surify-idioma') || 'es';
-            actualizarBotonIdioma(saved);
-            if(saved !== 'es') traducirPagina(saved);
-        });
+            document.addEventListener('DOMContentLoaded', function() {
+                const saved = localStorage.getItem('surify-idioma') || 'es';
+                actualizarBotonIdioma(saved);
+                if (saved !== 'es') traducirPagina(saved);
+            });
 
-        document.addEventListener('click', function(e) {
-            if(!document.getElementById('lang-selector-container').contains(e.target)) {
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('lang-selector-container').contains(e.target)) {
+                    document.getElementById('lang-dropdown').classList.remove('open');
+                }
+            });
+
+            window.toggleLangDropdown = function() {
+                document.getElementById('lang-dropdown').classList.toggle('open');
+            };
+
+            window.cambiarIdioma = function(idioma, bandera, abrev) {
                 document.getElementById('lang-dropdown').classList.remove('open');
-            }
-        });
+                actualizarBotonIdioma(idioma, bandera, abrev);
 
-        window.toggleLangDropdown = function() {
-            document.getElementById('lang-dropdown').classList.toggle('open');
-        };
-
-        window.cambiarIdioma = function(idioma, bandera, abrev) {
-            document.getElementById('lang-dropdown').classList.remove('open');
-            actualizarBotonIdioma(idioma, bandera, abrev);
-
-            if(idioma === 'es') {
-                textoOriginales.forEach((original, nodo) => { nodo.textContent = original; });
-                textoOriginales.clear();
-                localStorage.setItem('surify-idioma', 'es');
-                idiomaActual = 'es';
-                guardarIdiomaBackend('es');
-                return;
-            }
-
-            localStorage.setItem('surify-idioma', idioma);
-            idiomaActual = idioma;
-            guardarIdiomaBackend(idioma);
-            traducirPagina(idioma);
-        };
-
-        function actualizarBotonIdioma(idioma, bandera, abrev) {
-            const flags = { es:'🇦🇷', en:'🇬🇧', pt:'🇧🇷' };
-            const labels = { es:'ES', en:'EN', pt:'PT' };
-            document.getElementById('lang-flag').textContent = bandera || flags[idioma] || '🌐';
-            document.getElementById('lang-label').textContent = abrev || labels[idioma] || idioma.toUpperCase();
-            document.querySelectorAll('.lang-option').forEach(btn => {
-                btn.classList.remove('active');
-                if(btn.getAttribute('onclick').includes("'"+idioma+"'")) btn.classList.add('active');
-            });
-        }
-
-        async function traducirTexto(texto, target) {
-            const cacheKey = texto + '_' + target;
-            if(traduccionCache[cacheKey]) return traduccionCache[cacheKey];
-            try {
-                const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=es|${target}`;
-                const response = await fetch(url);
-                if(response.ok) {
-                    const data = await response.json();
-                    const traducido = data.responseData?.translatedText || texto;
-                    traduccionCache[cacheKey] = traducido;
-                    return traducido;
+                if (idioma === 'es') {
+                    textoOriginales.forEach((original, nodo) => {
+                        nodo.textContent = original;
+                    });
+                    textoOriginales.clear();
+                    localStorage.setItem('surify-idioma', 'es');
+                    idiomaActual = 'es';
+                    guardarIdiomaBackend('es');
+                    return;
                 }
-            } catch(e) {}
-            return texto;
-        }
 
-        async function traducirPagina(idiomaDestino) {
-            const indicator = document.getElementById('traduccion-indicator');
-            indicator.style.display = 'block';
+                localStorage.setItem('surify-idioma', idioma);
+                idiomaActual = idioma;
+                guardarIdiomaBackend(idioma);
+                traducirPagina(idioma);
+            };
 
-            const nodos = obtenerNodosTexto(document.body);
-            const nodosParaTraducir = [];
-
-            nodos.forEach(nodo => {
-                const texto = nodo.textContent.trim();
-                if(texto.length < 2) return;
-                if(!textoOriginales.has(nodo)) textoOriginales.set(nodo, nodo.textContent);
-                nodosParaTraducir.push({ nodo, texto });
-            });
-
-            const BATCH_SIZE = 10;
-            const resultados = new Map();
-
-            for(let i = 0; i < nodosParaTraducir.length; i += BATCH_SIZE) {
-                const lote = nodosParaTraducir.slice(i, i + BATCH_SIZE);
-                await Promise.all(lote.map(async ({ nodo, texto }) => {
-                    const traducido = await traducirTexto(texto, idiomaDestino);
-                    resultados.set(nodo, { texto, traducido });
-                }));
+            function actualizarBotonIdioma(idioma, bandera, abrev) {
+                const flags = {
+                    es: '🇦🇷',
+                    en: '🇬🇧',
+                    pt: '🇧🇷'
+                };
+                const labels = {
+                    es: 'ES',
+                    en: 'EN',
+                    pt: 'PT'
+                };
+                document.getElementById('lang-flag').textContent = bandera || flags[idioma] || '🌐';
+                document.getElementById('lang-label').textContent = abrev || labels[idioma] || idioma.toUpperCase();
+                document.querySelectorAll('.lang-option').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('onclick').includes("'" + idioma + "'")) btn.classList.add('active');
+                });
             }
 
-            resultados.forEach(({ texto, traducido }, nodo) => {
-                nodo.textContent = nodo.textContent.replace(texto, traducido);
-            });
+            async function traducirTexto(texto, target) {
+                const cacheKey = texto + '_' + target;
+                if (traduccionCache[cacheKey]) return traduccionCache[cacheKey];
+                try {
+                    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=es|${target}`;
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const traducido = data.responseData?.translatedText || texto;
+                        traduccionCache[cacheKey] = traducido;
+                        return traducido;
+                    }
+                } catch (e) {}
+                return texto;
+            }
 
-            indicator.style.display = 'none';
-        }
+            async function traducirPagina(idiomaDestino) {
+                const indicator = document.getElementById('traduccion-indicator');
+                indicator.style.display = 'block';
 
-        function obtenerNodosTexto(elemento) {
-            const nodos = [];
-            const walker = document.createTreeWalker(elemento, NodeFilter.SHOW_TEXT, {
-                acceptNode: function(node) {
-                    const padre = node.parentElement;
-                    if(!padre) return NodeFilter.FILTER_REJECT;
-                    if(SKIP_TAGS.includes(padre.tagName)) return NodeFilter.FILTER_REJECT;
-                    if(SKIP_CLASSES.some(cls => padre.classList.contains(cls))) return NodeFilter.FILTER_REJECT;
-                    if(padre.closest('script, style, .material-symbols-outlined')) return NodeFilter.FILTER_REJECT;
-                    if(node.textContent.trim().length < 2) return NodeFilter.FILTER_REJECT;
-                    return NodeFilter.FILTER_ACCEPT;
+                const nodos = obtenerNodosTexto(document.body);
+                const nodosParaTraducir = [];
+
+                nodos.forEach(nodo => {
+                    const texto = nodo.textContent.trim();
+                    if (texto.length < 2) return;
+                    if (!textoOriginales.has(nodo)) textoOriginales.set(nodo, nodo.textContent);
+                    nodosParaTraducir.push({
+                        nodo,
+                        texto
+                    });
+                });
+
+                const BATCH_SIZE = 10;
+                const resultados = new Map();
+
+                for (let i = 0; i < nodosParaTraducir.length; i += BATCH_SIZE) {
+                    const lote = nodosParaTraducir.slice(i, i + BATCH_SIZE);
+                    await Promise.all(lote.map(async ({
+                        nodo,
+                        texto
+                    }) => {
+                        const traducido = await traducirTexto(texto, idiomaDestino);
+                        resultados.set(nodo, {
+                            texto,
+                            traducido
+                        });
+                    }));
                 }
-            });
-            let nodo;
-            while((nodo = walker.nextNode())) nodos.push(nodo);
-            return nodos;
-        }
 
-        function guardarIdiomaBackend(idioma) {
-            fetch('{{ route("idioma.cambiar") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                body: JSON.stringify({ idioma })
-            }).catch(() => {});
-        }
-    })();
+                resultados.forEach(({
+                    texto,
+                    traducido
+                }, nodo) => {
+                    nodo.textContent = nodo.textContent.replace(texto, traducido);
+                });
+
+                indicator.style.display = 'none';
+            }
+
+            function obtenerNodosTexto(elemento) {
+                const nodos = [];
+                const walker = document.createTreeWalker(elemento, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function(node) {
+                        const padre = node.parentElement;
+                        if (!padre) return NodeFilter.FILTER_REJECT;
+                        if (SKIP_TAGS.includes(padre.tagName)) return NodeFilter.FILTER_REJECT;
+                        if (SKIP_CLASSES.some(cls => padre.classList.contains(cls))) return NodeFilter.FILTER_REJECT;
+                        if (padre.closest('script, style, .material-symbols-outlined')) return NodeFilter.FILTER_REJECT;
+                        if (node.textContent.trim().length < 2) return NodeFilter.FILTER_REJECT;
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                });
+                let nodo;
+                while ((nodo = walker.nextNode())) nodos.push(nodo);
+                return nodos;
+            }
+
+            function guardarIdiomaBackend(idioma) {
+                fetch('{{ route("idioma.cambiar") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        idioma
+                    })
+                }).catch(() => {});
+            }
+        })();
     </script>
     <script>
         (function() {
@@ -866,4 +1464,5 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 
 </body>
+
 </html>

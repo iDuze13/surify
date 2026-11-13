@@ -195,11 +195,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
     Route::post('/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.leer');
     Route::post('/notificaciones/leer-todas', [NotificacionController::class, 'marcarTodasLeidas'])->name('notificaciones.leer_todas');
-
 });
 
 // ==================== DASHBOARD ====================
 Route::get('/dashboard', function () {
+    $usuario = auth()->user();
+    // Solo el rol Admin ve el dashboard; los demás van a su pantalla de inicio
+    if (!($usuario->hasRole('Admin') || $usuario->hasRole('admin'))) {
+        return redirect()->route($usuario->rutaInicial());
+    }
     $provincias = \App\Models\Provincia::withCount('destinos')->with('imagenes')->get();
     $countDestinos = \App\Models\Destino::count();
     $countUsuarios = \App\Models\User::count();
