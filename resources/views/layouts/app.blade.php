@@ -576,6 +576,13 @@
     }
 </style>
 
+@php
+// Ocultar el botón de accesibilidad siempre que el logueado sea Admin (también en "Ver como usuario")
+$ocultarAccesibilidad = auth()->check()
+&& (auth()->user()->hasRole('admin') || auth()->user()->hasRole('Admin'));
+@endphp
+
+@unless($ocultarAccesibilidad)
 <div class="acc-fab">
     <div class="acc-panel" id="accPanel" role="dialog" aria-label="Panel de accesibilidad">
         <p class="acc-title">♿ Accesibilidad</p>
@@ -604,6 +611,7 @@
     </div>
     <button class="acc-btn" onclick="surifyTogglePanel()" title="Accesibilidad">♿</button>
 </div>
+@endunless
 
 <div class="tour-highlight" id="tourHighlight"></div>
 <div class="tour-tooltip" id="tourTooltip">
@@ -661,7 +669,7 @@
         };
         window.surifyAccTexto = function(size) {
             document.documentElement.style.fontSize = tamanos[size];
-            ['small', 'normal', 'large', 'xlarge'].forEach(s => document.getElementById('acc-btn-' + s).classList.toggle('active', s === size));
+            ['small', 'normal', 'large', 'xlarge'].forEach(s => document.getElementById('acc-btn-' + s)?.classList.toggle('active', s === size));
             localStorage.setItem('surify-text-size', size);
         };
         window.surifyToggleLector = function() {
