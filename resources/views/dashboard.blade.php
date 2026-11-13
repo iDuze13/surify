@@ -67,6 +67,8 @@
     </div>
 </section>
 
+<x-dashboard-graficos />
+
 {{-- Tabla + Acciones --}}
 <div class="flex flex-col lg:flex-row gap-6">
 
