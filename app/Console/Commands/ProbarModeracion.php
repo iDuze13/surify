@@ -9,7 +9,9 @@ use Illuminate\Support\Str;
 
 class ProbarModeracion extends Command
 {
-    protected $signature = 'moderacion:probar {--solo-errores : Muestra solo los casos donde el resultado no coincide con lo esperado}';
+    protected $signature = 'moderacion:probar
+                            {--solo-errores : Muestra solo los casos donde el resultado no coincide con lo esperado}
+                            {--pausa=0 : Segundos de espera entre casos (con el nivel gratuito de Gemini conviene usar 6)}';
 
     protected $description = 'Prueba la moderación automática con reseñas de ejemplo y mide cuántas acierta';
 
@@ -74,13 +76,20 @@ class ProbarModeracion extends Command
         $falsosRechazados = 0;  // esperado aprobar, la IA rechazó
         $aRevision = 0;
 
-        $this->info("Probando {$total} reseñas de ejemplo (puede tardar unos minutos)...");
+        $pausa = max(0, (int) $this->option('pausa'));
+
+        $this->info("Probando {$total} reseñas de ejemplo con el proveedor '" . config('moderacion.proveedor') . "' (puede tardar unos minutos)...");
 
         foreach ($casos as $i => $caso) {
             $numero = $i + 1;
             $this->line("  {$numero}/{$total}");
 
             $r = $servicio->moderarContenido($caso['texto'], [], $caso['contexto'] ?? null);
+
+            // Evita pasarse del límite de pedidos por minuto del nivel gratuito
+            if ($pausa > 0 && $numero < $total) {
+                sleep($pausa);
+            }
 
             $esperado = $caso['esperado'];
             $obtenido = $r['decision'];
