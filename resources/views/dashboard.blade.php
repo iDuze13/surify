@@ -76,9 +76,6 @@
     <section class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-black text-slate-800" style="font-family: 'Inter', sans-serif;">Provincias Cargadas</h2>
-            <a href="#" class="px-4 py-2 bg-[#28628f] text-white text-xs font-bold rounded-full hover:bg-[#1a4669] transition-all text-decoration-none">
-                + Nueva Provincia
-            </a>
         </div>
         @php
         $provincias = $provincias ?? collect();
@@ -144,7 +141,7 @@
                     <span class="material-symbols-outlined text-amber-400 text-[20px]">add_location</span>
                     Agregar Destino
                 </a>
-                <a href="#" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-medium text-decoration-none">
+                <a href="{{ route('admin.eventos.create') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-medium text-decoration-none">
                     <span class="material-symbols-outlined text-blue-300 text-[20px]">celebration</span>
                     Cargar Evento
                 </a>
