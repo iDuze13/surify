@@ -95,12 +95,15 @@ TXT;
     {
         try {
             // Etapa 1: API de moderación (gratis)
-            $categoriasMarcadas = $this->etapaModeracion($texto, $imagenes);
+            $etapa1 = $this->etapaModeracion($texto, $imagenes);
 
-            if (!empty($categoriasMarcadas)) {
+            // Solo se rechaza directo cuando la API está muy segura (puntaje alto).
+            // Si lo marcó con poca seguridad (ej: "me morí de calor", "ganas de matar al que
+            // diseñó la ruta"), decide la etapa 2, que entiende exageraciones y contexto.
+            if (!empty($etapa1['etiquetas']) && $etapa1['puntaje'] >= (float) config('moderacion.umbral_rechazo', 0.8)) {
                 return $this->resultado(
                     'rechazar',
-                    'Tu reseña no cumple nuestras normas de convivencia (' . implode(', ', $categoriasMarcadas) . ').',
+                    'Tu reseña no cumple nuestras normas de convivencia (' . implode(', ', $etapa1['etiquetas']) . ').',
                     'contenido_danino',
                     'moderacion_openai'
                 );
@@ -135,7 +138,9 @@ TXT;
     // ------------------------------------------------------------------
 
     /**
-     * @return array<int, string> categorías marcadas (vacío si no hay nada)
+     * @return array{etiquetas: array<int, string>, puntaje: float}
+     *         etiquetas: categorías marcadas (vacío si no hay nada)
+     *         puntaje: el puntaje más alto entre las categorías marcadas (0 a 1)
      */
     private function etapaModeracion(string $texto, array $imagenes): array
     {
@@ -155,6 +160,7 @@ TXT;
 
         $etiquetas = [];
         $marcado = false;
+        $puntaje = 0.0;
 
         foreach ($respuesta['results'] ?? [] as $resultado) {
             if (empty($resultado['flagged'])) {
@@ -167,15 +173,20 @@ TXT;
                 if ($activa) {
                     $raiz = Str::before($categoria, '/');
                     $etiquetas[] = self::ETIQUETAS[$raiz] ?? 'contenido inapropiado';
+                    $puntaje = max($puntaje, (float) ($resultado['category_scores'][$categoria] ?? 1.0));
                 }
             }
         }
 
         if ($marcado && empty($etiquetas)) {
             $etiquetas[] = 'contenido inapropiado';
+            $puntaje = 1.0;
         }
 
-        return array_values(array_unique($etiquetas));
+        return [
+            'etiquetas' => array_values(array_unique($etiquetas)),
+            'puntaje'   => $puntaje,
+        ];
     }
 
     // ------------------------------------------------------------------
@@ -216,14 +227,13 @@ TXT;
             ->post(self::URL_GEMINI . $modelo . ':generateContent', [
                 'systemInstruction' => ['parts' => [['text' => self::INSTRUCCIONES]]],
                 'contents' => [['role' => 'user', 'parts' => $partes]],
+                // Formato de la API generateContent: responseMimeType + responseJsonSchema
+                // dentro de generationConfig ("responseFormat" es de otra API y daba error 400).
                 'generationConfig' => [
-                    'responseFormat' => [
-                        'text' => [
-                            'mimeType' => 'application/json',
-                            'schema' => $this->esquema(),
-                        ],
-                    ],
-                    'maxOutputTokens' => 2048,
+                    'responseMimeType' => 'application/json',
+                    'responseJsonSchema' => $this->esquema(),
+                    // Margen amplio: en los modelos que "piensan", esos tokens también cuentan.
+                    'maxOutputTokens' => 4096,
                 ],
             ])
             ->throw()
