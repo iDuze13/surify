@@ -21,13 +21,17 @@ class Resena extends Model
         'titulo',
         'comentario',
         'anonima',
-        'aprobada',
+        'aprobada',          // null = pendiente, true = aprobada, false = rechazada
+        'moderacion_motivo', // explicación breve de la decisión
+        'moderada_por',      // 'ia' o 'manual'
+        'moderada_at',
     ];
 
     protected $casts = [
         'calificacion' => 'integer',
         'anonima' => 'boolean',
         'aprobada' => 'boolean',
+        'moderada_at' => 'datetime',
     ];
 
     /**

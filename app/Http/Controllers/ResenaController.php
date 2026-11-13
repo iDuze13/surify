@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ModerarResenaJob;
 use App\Models\Resena;
 use App\Services\CloudinaryService;
+use App\Services\ModeracionResenaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +19,9 @@ class ResenaController extends Controller
             'destino_id' => 'nullable|exists:destinos,id',
             'evento_id' => 'nullable|exists:eventos,id',
             'calificacion' => 'required|integer|min:1|max:5',
+            'titulo' => 'nullable|string|max:150',
             'comentario' => 'required|string|min:5|max:1000',
+            'anonima' => 'nullable|boolean',
             'imagenes' => 'nullable|array|max:5',
             'imagenes.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -33,8 +37,11 @@ class ResenaController extends Controller
         $resena->destino_id = $validated['destino_id'] ?? null;
         $resena->evento_id = $validated['evento_id'] ?? null;
         $resena->calificacion = $validated['calificacion'];
+        $resena->titulo = $validated['titulo'] ?? null;
         $resena->comentario = $validated['comentario'];
-        $resena->save();
+        // El formulario manda anonima=1 solo cuando la casilla está tildada
+        $resena->anonima = $request->boolean('anonima');
+        $resena->save(); // aprobada queda en null = pendiente
 
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $file) {
@@ -45,7 +52,12 @@ class ResenaController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', '¡Gracias por compartir tu experiencia!');
+        // Moderación automática (texto + fotos). Corre después de responderle a la persona.
+        if (ModeracionResenaService::habilitada()) {
+            ModerarResenaJob::dispatchAfterResponse($resena->id);
+        }
+
+        return redirect()->back()->with('success', '¡Gracias por compartir tu experiencia! Tu reseña se publicará en cuanto sea revisada.');
     }
 
     public function update(Request $request, Resena $resena)
@@ -59,9 +71,20 @@ class ResenaController extends Controller
             'comentario'   => 'required|string|min:5|max:1000',
         ]);
 
-        $resena->update($validated);
+        // Al editar, la reseña vuelve a moderarse: si no, alguien podría publicar
+        // algo correcto, esperar la aprobación y después cambiarlo por spam.
+        $resena->update($validated + [
+            'aprobada' => null,
+            'moderacion_motivo' => null,
+            'moderada_por' => null,
+            'moderada_at' => null,
+        ]);
 
-        return redirect()->back()->with('success', 'Reseña actualizada correctamente.');
+        if (ModeracionResenaService::habilitada()) {
+            ModerarResenaJob::dispatchAfterResponse($resena->id);
+        }
+
+        return redirect()->back()->with('success', 'Reseña actualizada. Volverá a publicarse cuando sea revisada.');
     }
 
     public function destroy(Resena $resena)

@@ -12,6 +12,7 @@
         "php": "^8.3",
         "ext-zip": "*",
         "bacon/bacon-qr-code": "^3.1",
+        "barryvdh/laravel-dompdf": "*",
         "cloudinary/cloudinary_php": "^3.1",
         "deeplcom/deepl-php": "^1.20",
         "guzzlehttp/guzzle": "^7.15",

@@ -31,13 +31,24 @@ class ResenaController extends Controller
 
     public function aprobar(Resena $resena)
     {
-        $resena->update(['aprobada' => true]);
+        // Una decisión manual siempre tiene la última palabra sobre la de la IA.
+        $resena->update([
+            'aprobada' => true,
+            'moderada_por' => 'manual',
+            'moderada_at' => now(),
+        ]);
+
         return redirect()->back()->with('success', 'Reseña aprobada correctamente.');
     }
 
     public function rechazar(Resena $resena)
     {
-        $resena->update(['aprobada' => false]);
+        $resena->update([
+            'aprobada' => false,
+            'moderada_por' => 'manual',
+            'moderada_at' => now(),
+        ]);
+
         return redirect()->back()->with('success', 'Reseña rechazada correctamente.');
     }
 
