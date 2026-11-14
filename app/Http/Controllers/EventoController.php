@@ -28,7 +28,10 @@ class EventoController extends Controller
 
         $provincias = \App\Models\Provincia::orderBy('nombre')->get();
 
-        return view('eventos.index', compact('eventos', 'provincias', 'año', 'mes'));
+        // Para el campo "Lugar" del formulario de sugerencia
+        $destinosSugerencia = \App\Models\Destino::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'provincia_id']);
+
+        return view('eventos.index', compact('eventos', 'provincias', 'año', 'mes', 'destinosSugerencia'));
     }
 
     /**

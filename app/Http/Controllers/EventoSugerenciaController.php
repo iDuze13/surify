@@ -8,7 +8,9 @@ use App\Notifications\SugerenciaEventoRecibida;
 use App\Services\NotificacionService;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class EventoSugerenciaController extends Controller
 {
@@ -20,34 +22,50 @@ class EventoSugerenciaController extends Controller
             'nombre'       => 'required|string|max:255',
             'tipo'         => 'required|string|max:100',
             'provincia_id' => 'required|exists:provincias,id',
-            'ubicacion'    => 'nullable|string|max:255',
+            // Lugar: se elige de los destinos ya cargados (y tiene que ser de la provincia elegida)
+            'destino_id'   => [
+                'nullable',
+                Rule::exists('destinos', 'id')->where('provincia_id', $request->provincia_id),
+            ],
             'fecha_inicio' => 'required|date',
             'fecha_fin'    => 'nullable|date|after_or_equal:fecha_inicio',
             'rango_precio' => 'nullable|string|max:100',
             'descripcion'  => 'required|string|max:2000',
             'imagen'       => 'nullable|image|max:5120',
+        ], [
+            'fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la fecha de inicio.',
         ]);
 
-        // Si hay errores, volvemos siempre a /eventos (con el modal abierto y los datos cargados)
+        // Si hay errores, vuelve a la página desde donde se sugirió (calendario o destino)
+        // con el modal abierto y los datos cargados
         if ($validator->fails()) {
-            return redirect()->route('eventos.index')
+            return back()
                 ->withErrors($validator, 'sugerencia')
                 ->withInput();
         }
 
         $imagenUrl = null;
         if ($request->hasFile('imagen')) {
-            $imagenUrl = $this->cloudinary->subirImagen(
-                $request->file('imagen')->getRealPath(),
-                'surify/sugerencias/eventos'
-            );
+            try {
+                $imagenUrl = $this->cloudinary->subirImagen(
+                    $request->file('imagen')->getRealPath(),
+                    'surify/sugerencias/eventos'
+                );
+            } catch (\Throwable $e) {
+                // Si Cloudinary falla, no se pierde todo lo que escribió el usuario
+                Log::warning('No se pudo subir la imagen de una sugerencia de evento: ' . $e->getMessage());
+
+                return back()
+                    ->withErrors(['imagen' => 'No pudimos subir la imagen. Probá con otra o enviá la sugerencia sin imagen.'], 'sugerencia')
+                    ->withInput();
+            }
         }
 
         $evento = Evento::create([
             'nombre'       => $request->nombre,
             'tipo'         => $request->tipo,
             'provincia_id' => $request->provincia_id,
-            'ubicacion'    => $request->ubicacion,
+            'destino_id'   => $request->destino_id ?: null,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin'    => $request->fecha_fin ?: null,
             'rango_precio' => $request->rango_precio,
@@ -66,6 +84,6 @@ class EventoSugerenciaController extends Controller
             new NuevaSugerenciaEvento($evento, auth()->user()->name)
         );
 
-        return redirect()->route('eventos.index')->with('sugerencia_enviada', true);
+        return back()->with('sugerencia_enviada', true);
     }
 }

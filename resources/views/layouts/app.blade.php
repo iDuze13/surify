@@ -854,6 +854,16 @@ $ocultarAccesibilidad = auth()->check()
                 <a href="/admin/eventos" class="side-link"><span class="material-symbols-outlined text-[18px]">celebration</span> Festivales</a>
                 @endif
 
+                @if($tieneAlguno(['administrar_eventos_sugeridos']))
+                @php $sugerenciasPendientes = \App\Models\Evento::sugerencias('pendiente')->count(); @endphp
+                <a href="{{ route('admin.eventos.sugerencias') }}" class="side-link {{ request()->routeIs('admin.eventos.sugerencias') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined text-[18px]">pending_actions</span> Sugerencias
+                    @if($sugerenciasPendientes > 0)
+                    <span class="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">{{ $sugerenciasPendientes }}</span>
+                    @endif
+                </a>
+                @endif
+
                 @if($tieneAlguno(['administrar_resena', 'administrar_resenas', 'eliminar_comentario']))
                 <a href="{{ route('admin.resenas.index') }}" class="side-link {{ request()->routeIs('admin.resenas.*') ? 'active' : '' }}"><span class="material-symbols-outlined text-[18px]">chat_bubble</span> Reseñas</a>
                 @endif
@@ -1468,6 +1478,39 @@ $ocultarAccesibilidad = auth()->check()
                 actualizarIcono();
             };
             document.addEventListener('DOMContentLoaded', actualizarIcono);
+        })();
+    </script>
+
+    {{-- Fechas: la de fin no puede ser anterior a la de inicio (en cualquier formulario con fecha_inicio / fecha_fin) --}}
+    <script>
+        (function() {
+            const MENSAJE = 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+
+            function sincronizar(form) {
+                const inicio = form.querySelector('input[name="fecha_inicio"]');
+                const fin = form.querySelector('input[name="fecha_fin"]');
+                if (!inicio || !fin) return;
+
+                // El calendario de "fin" no deja elegir días anteriores al inicio
+                fin.min = inicio.value || '';
+
+                if (inicio.value && fin.value && fin.value < inicio.value) {
+                    fin.setCustomValidity(MENSAJE);
+                } else {
+                    fin.setCustomValidity('');
+                }
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target.matches('input[name="fecha_inicio"], input[name="fecha_fin"]') && e.target.form) {
+                    sincronizar(e.target.form);
+                    if (e.target.name === 'fecha_fin') e.target.reportValidity();
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('form').forEach(sincronizar);
+            });
         })();
     </script>
 

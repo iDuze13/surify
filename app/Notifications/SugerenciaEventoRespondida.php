@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 
 /**
  * Le avisa a quien sugirió un evento si el equipo lo aprobó o lo rechazó.
- * Recibe el nombre (y no el modelo) porque al rechazar el evento se borra.
+ * Recibe el nombre (y no el modelo) porque el evento rechazado no tiene página pública.
  */
 class SugerenciaEventoRespondida extends Notification
 {
@@ -16,7 +16,8 @@ class SugerenciaEventoRespondida extends Notification
     public function __construct(
         protected string $nombreEvento,
         protected bool $aprobada,
-        protected ?int $eventoId = null
+        protected ?int $eventoId = null,
+        protected ?string $motivo = null
     ) {}
 
     public function via(object $notifiable): array
@@ -37,7 +38,8 @@ class SugerenciaEventoRespondida extends Notification
 
         return [
             'titulo'  => 'Tu sugerencia no fue aprobada',
-            'mensaje' => 'Revisamos "' . $this->nombreEvento . '" y esta vez no lo vamos a publicar. ¡Gracias igual por sumar!',
+            'mensaje' => 'Revisamos "' . $this->nombreEvento . '" y esta vez no lo vamos a publicar.'
+                . ($this->motivo ? ' Motivo: ' . $this->motivo : ' ¡Gracias igual por sumar!'),
             'url'     => route('eventos.index'),
             'icono'   => 'cancel',
         ];

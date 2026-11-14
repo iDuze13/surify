@@ -21,7 +21,8 @@ class EventoController extends Controller
     {
         $filtro = $request->get('filtro', 'todos');
 
-        $query = Evento::with(['provincia', 'destino'])->orderBy('fecha_inicio', 'asc');
+        // Las sugerencias rechazadas no se listan acá: quedan en Sugerencias → Rechazadas
+        $query = Evento::with(['provincia', 'destino'])->whereNull('rechazado_at')->orderBy('fecha_inicio', 'asc');
 
         if ($request->filled('buscar')) {
             $query->where('nombre', 'ilike', '%' . $request->buscar . '%');
@@ -43,9 +44,10 @@ class EventoController extends Controller
             $eventos = $eventos->filter(fn($e) => $e->pasado);
         }
 
-        $countTodos    = Evento::count();
-        $countProximos = Evento::get()->filter(fn($e) => !$e->pasado)->count();
-        $countPasados  = Evento::get()->filter(fn($e) => $e->pasado)->count();
+        $todos         = Evento::whereNull('rechazado_at')->get();
+        $countTodos    = $todos->count();
+        $countProximos = $todos->filter(fn($e) => !$e->pasado)->count();
+        $countPasados  = $todos->filter(fn($e) => $e->pasado)->count();
         $provincias    = Provincia::orderBy('nombre')->get();
 
         return view('admin.eventos.index', compact(
@@ -72,6 +74,8 @@ class EventoController extends Controller
             'rango_precio' => 'nullable|string|max:255',
             'descripcion'  => 'nullable|string',
             'imagen'       => 'nullable|image|max:10240',
+        ], [
+            'fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la fecha de inicio.',
         ]);
 
         // Si seleccionó destino, tomamos su provincia automáticamente
@@ -132,6 +136,8 @@ class EventoController extends Controller
             'rango_precio' => 'nullable|string|max:255',
             'descripcion'  => 'nullable|string',
             'imagen'       => 'nullable|image|max:10240',
+        ], [
+            'fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la fecha de inicio.',
         ]);
 
         $provinciaId = $request->provincia_id;
@@ -174,6 +180,7 @@ class EventoController extends Controller
 
         // Si se publicó recién ahora (por ejemplo, una sugerencia aprobada desde Editar)
         if (!$estabaActivo && $evento->activo) {
+            $this->marcarRevisado($evento);
             $this->alPublicar($evento);
         }
 
@@ -188,11 +195,93 @@ class EventoController extends Controller
     {
         if (!$evento->activo) {
             $evento->update(['activo' => true]);
+            $this->marcarRevisado($evento);
             $this->alPublicar($evento);
         }
 
-        return redirect()->route('admin.eventos.index')
-            ->with('success', 'Evento aprobado y publicado.');
+        // Vuelve a la pantalla desde donde se aprobó (listado de eventos o Sugerencias)
+        return back()->with('success', 'Evento aprobado y publicado.');
+    }
+
+    /**
+     * Sección "Sugerencias de festivales": lo que mandan los usuarios, por estado.
+     */
+    public function sugerencias(Request $request)
+    {
+        $estado = in_array($request->get('estado'), ['pendiente', 'aprobada', 'rechazada'])
+            ? $request->get('estado')
+            : 'pendiente';
+
+        $sugerencias = Evento::sugerencias($estado)
+            ->with(['provincia', 'destino', 'autorSugerencia', 'revisor'])
+            ->orderByDesc($estado === 'pendiente' ? 'created_at' : 'revisado_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        $countPendientes = Evento::sugerencias('pendiente')->count();
+        $countAprobadas  = Evento::sugerencias('aprobada')->count();
+        $countRechazadas = Evento::sugerencias('rechazada')->count();
+
+        return view('admin.eventos.sugerencias', compact(
+            'sugerencias', 'estado', 'countPendientes', 'countAprobadas', 'countRechazadas'
+        ));
+    }
+
+    /**
+     * Rechaza una sugerencia: no se publica, queda guardada en "Rechazadas"
+     * y se le avisa al usuario (con el motivo, si se escribió uno).
+     */
+    public function rechazar(Request $request, Evento $evento)
+    {
+        $request->validate([
+            'motivo' => 'nullable|string|max:500',
+        ]);
+
+        if (!$evento->sugerido_por || $evento->activo || $evento->rechazado_at) {
+            return back()->with('error', 'Esta sugerencia ya fue revisada.');
+        }
+
+        $evento->update([
+            'rechazado_at'   => now(),
+            'motivo_rechazo' => $request->motivo ?: null,
+        ]);
+        $this->marcarRevisado($evento);
+
+        NotificacionService::enviar(
+            User::find($evento->sugerido_por),
+            new SugerenciaEventoRespondida($evento->nombre, false, null, $evento->motivo_rechazo)
+        );
+
+        return back()->with('success', 'Sugerencia rechazada. Le avisamos al usuario.');
+    }
+
+    /**
+     * Vuelve a poner como pendiente una sugerencia rechazada por error.
+     */
+    public function restaurar(Evento $evento)
+    {
+        if ($evento->sugerido_por && $evento->rechazado_at) {
+            $evento->update([
+                'rechazado_at'   => null,
+                'motivo_rechazo' => null,
+                'revisado_por'   => null,
+                'revisado_at'    => null,
+            ]);
+        }
+
+        return back()->with('success', 'La sugerencia volvió a Pendientes.');
+    }
+
+    private function marcarRevisado(Evento $evento): void
+    {
+        if ($evento->sugerido_por) {
+            $evento->update([
+                'revisado_por'   => auth()->id(),
+                'revisado_at'    => now(),
+                'rechazado_at'   => null,
+                'motivo_rechazo' => null,
+            ]);
+        }
     }
 
     /**

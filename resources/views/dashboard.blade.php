@@ -145,6 +145,14 @@
                     <span class="material-symbols-outlined text-blue-300 text-[20px]">celebration</span>
                     Cargar Evento
                 </a>
+                @php $pendientesDashboard = \App\Models\Evento::sugerencias('pendiente')->count(); @endphp
+                <a href="{{ route('admin.eventos.sugerencias') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-medium text-decoration-none">
+                    <span class="material-symbols-outlined text-orange-300 text-[20px]">pending_actions</span>
+                    Sugerencias de Festivales
+                    @if($pendientesDashboard > 0)
+                    <span class="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">{{ $pendientesDashboard }}</span>
+                    @endif
+                </a>
                 <a href="{{ route('admin.roles.index') }}" class="flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-medium text-decoration-none">
                     <span class="material-symbols-outlined text-emerald-400 text-[20px]">admin_panel_settings</span>
                     Gestionar Roles

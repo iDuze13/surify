@@ -54,6 +54,13 @@ Route::middleware(['auth', 'permiso:crear_evento,modificar_evento,eliminar_event
     Route::delete('/eventos/{evento}', [AdminEventoController::class, 'destroy'])->name('eventos.destroy');
 });
 
+// Moderación de festivales/eventos sugeridos por usuarios (Admin pasa siempre por Gate::before / el middleware)
+Route::middleware(['auth', 'permiso:administrar_eventos_sugeridos'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/sugerencias-eventos', [AdminEventoController::class, 'sugerencias'])->name('eventos.sugerencias');
+    Route::patch('/sugerencias-eventos/{evento}/rechazar', [AdminEventoController::class, 'rechazar'])->name('eventos.rechazar');
+    Route::patch('/sugerencias-eventos/{evento}/restaurar', [AdminEventoController::class, 'restaurar'])->name('eventos.restaurar');
+});
+
 Route::middleware(['auth', 'permiso:crear_destino,modificar_destino,eliminar_destino,administrar_destinos_sugeridos'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('destinos', AdminDestinoController::class);
 });

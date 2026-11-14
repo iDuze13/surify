@@ -339,6 +339,26 @@
             @endauth
         </div>
 
+        {{-- Sugerir evento en este destino --}}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center reveal from-right" style="transition-delay: 350ms">
+            <span class="material-symbols-outlined text-4xl text-amber-500 block mb-3 float-y">celebration</span>
+            <h3 class="text-base font-bold text-slate-800 mb-2">¿Conocés un evento acá?</h3>
+            <p class="text-slate-500 text-sm mb-5">Sugerí un festival o evento en {{ $destino->nombre }}. Lo revisamos y lo sumamos al calendario.</p>
+            @auth
+            <button type="button" onclick="document.getElementById('modal-sugerir-evento').classList.remove('hidden')"
+                class="border border-[#28628f] text-[#28628f] px-6 py-2.5 rounded-xl font-bold hover:bg-blue-50 transition-all inline-flex items-center gap-2 w-full justify-center">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Sugerir evento
+            </button>
+            @else
+            <a href="{{ route('login') }}"
+                class="border border-[#28628f] text-[#28628f] px-6 py-2.5 rounded-xl font-bold hover:bg-blue-50 transition-all inline-flex items-center gap-2 w-full justify-center text-decoration-none">
+                <span class="material-symbols-outlined text-[18px]">login</span>
+                Iniciá sesión para sugerir
+            </a>
+            @endauth
+        </div>
+
         {{-- Volver --}}
         <div class="reveal from-right" style="transition-delay: 400ms">
         <a href="{{ route('provincia.show', $destino->provincia->nombre) }}"
@@ -483,6 +503,9 @@
     </div>
 </div>
 @endauth
+
+{{-- Modal para sugerir un evento: queda registrado directo en este destino --}}
+<x-modal-sugerir-evento :destino="$destino" />
 
 <script>
     function setCalificacionDestino(valor) {

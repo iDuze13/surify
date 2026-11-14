@@ -25,7 +25,7 @@ class NuevaSugerenciaEvento extends Notification
         return [
             'titulo'  => 'Nueva sugerencia de evento',
             'mensaje' => $this->autor . ' sugirió "' . $this->evento->nombre . '". Está pendiente de revisión.',
-            'url'     => route('admin.eventos.index'),
+            'url'     => route('admin.eventos.sugerencias'),
             'icono'   => 'pending_actions',
         ];
     }
