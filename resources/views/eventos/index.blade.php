@@ -21,7 +21,8 @@
         @endauth
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    {{-- Contenedor que se reemplaza por AJAX al cambiar de mes o de provincia --}}
+    <div id="eventos-contenido" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start transition-opacity duration-200">
 
         <!-- SIDEBAR -->
         <aside class="col-span-1 lg:col-span-4 flex flex-col gap-4">
@@ -32,7 +33,7 @@
             $mesSiguiente = \Carbon\Carbon::create($año, $mes, 1)->addMonth();
             @endphp
             <div class="bg-slate-100 rounded-2xl p-4 flex items-center justify-between border border-slate-200/60 hero-in" style="--d:.2s">
-                <a href="{{ route('eventos.index', ['año' => $mesAnterior->year, 'mes' => $mesAnterior->month, 'provincia_id' => request('provincia_id')]) }}"
+                <a data-cal-nav href="{{ route('eventos.index', ['año' => $mesAnterior->year, 'mes' => $mesAnterior->month, 'provincia_id' => request('provincia_id')]) }}"
                     class="w-9 h-9 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm">
                     <span class="material-symbols-outlined text-slate-500 text-sm">chevron_left</span>
                 </a>
@@ -40,7 +41,7 @@
                     <span class="text-[10px] font-bold text-[#28628f] uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[12px] pin-bounce">event</span>Calendario Anual</span>
                     <h2 class="text-lg font-black text-slate-800">{{ ucfirst(\Carbon\Carbon::create($año, $mes, 1)->translatedFormat('F Y')) }}</h2>
                 </div>
-                <a href="{{ route('eventos.index', ['año' => $mesSiguiente->year, 'mes' => $mesSiguiente->month, 'provincia_id' => request('provincia_id')]) }}"
+                <a data-cal-nav href="{{ route('eventos.index', ['año' => $mesSiguiente->year, 'mes' => $mesSiguiente->month, 'provincia_id' => request('provincia_id')]) }}"
                     class="w-9 h-9 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm">
                     <span class="material-symbols-outlined text-slate-500 text-sm">chevron_right</span>
                 </a>
@@ -48,12 +49,12 @@
 
             {{-- Filtros provincia --}}
             <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none select-none hero-in" style="--d:.3s">
-                <a href="{{ route('eventos.index', ['año' => $año, 'mes' => $mes]) }}"
+                <a data-cal-nav href="{{ route('eventos.index', ['año' => $año, 'mes' => $mes]) }}"
                     class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap {{ !request('provincia_id') ? 'bg-[#28628f] text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600' }}">
                     Todas
                 </a>
                 @foreach($provincias as $prov)
-                <a href="{{ route('eventos.index', ['año' => $año, 'mes' => $mes, 'provincia_id' => $prov->id]) }}"
+                <a data-cal-nav href="{{ route('eventos.index', ['año' => $año, 'mes' => $mes, 'provincia_id' => $prov->id]) }}"
                     class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap {{ request('provincia_id') == $prov->id ? 'bg-[#28628f] text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600' }}">
                     {{ $prov->nombre }}
                 </a>
@@ -204,6 +205,81 @@
             reader.readAsDataURL(file);
         });
     }
+</script>
+
+{{-- Cambiar de mes / provincia sin recargar toda la página --}}
+<script>
+    (function() {
+        const ID = 'eventos-contenido';
+        let cargando = false;
+
+        async function cargarCalendario(url, agregarAlHistorial) {
+            const actual = document.getElementById(ID);
+            if (!actual || cargando) return;
+            cargando = true;
+            actual.style.opacity = '0.5';
+            actual.style.pointerEvents = 'none';
+
+            try {
+                const resp = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (!resp.ok) throw new Error(resp.status);
+
+                const html = await resp.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const nuevo = doc.getElementById(ID);
+                if (!nuevo) throw new Error('sin contenido');
+
+                // Sin la animación de entrada del encabezado (solo la cascada del calendario)
+                nuevo.querySelectorAll('.hero-in').forEach(el => el.classList.remove('hero-in'));
+                // Al terminar la cascada se saca .pop para que no pise el hover
+                nuevo.querySelectorAll('.pop').forEach(function(el) {
+                    el.addEventListener('animationend', function(e) {
+                        if (e.target === el) el.classList.remove('pop');
+                    });
+                });
+
+                actual.replaceWith(nuevo);
+                if (agregarAlHistorial) history.pushState({
+                    calendario: true
+                }, '', url);
+
+                // Si el sitio está en otro idioma, traducir el contenido nuevo
+                const idioma = localStorage.getItem('surify-idioma') || 'es';
+                if (idioma !== 'es' && typeof window.cambiarIdioma === 'function') {
+                    window.cambiarIdioma(idioma);
+                }
+            } catch (e) {
+                // Si algo falla, se navega de la forma normal
+                window.location.href = url;
+            } finally {
+                cargando = false;
+                const el = document.getElementById(ID);
+                if (el) {
+                    el.style.opacity = '';
+                    el.style.pointerEvents = '';
+                }
+            }
+        }
+
+        // Flechas de mes y filtros de provincia (delegado: sigue andando después de reemplazar el contenido)
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[data-cal-nav]');
+            if (!link) return;
+            // Ctrl/Cmd + clic o clic del medio: abrir en otra pestaña como siempre
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+            e.preventDefault();
+            cargarCalendario(link.href, true);
+        });
+
+        // Botones Atrás / Adelante del navegador
+        window.addEventListener('popstate', function() {
+            cargarCalendario(window.location.href, false);
+        });
+    })();
 </script>
 
 {{-- Modal Evento --}}

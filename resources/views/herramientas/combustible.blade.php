@@ -156,7 +156,9 @@
     <div class="lg:col-span-5 flex flex-col gap-6">
 
         {{-- Mapa Leaflet --}}
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden" style="height:280px;">
+        {{-- isolation:isolate encierra los z-index de Leaflet (400-1000) para que el mapa
+             no se ponga por encima del header ni de los menús al scrollear --}}
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative z-0" style="height:280px; isolation:isolate;">
             <div id="mapa-ruta" class="w-full h-full"></div>
         </div>
 
