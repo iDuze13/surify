@@ -4,25 +4,27 @@
 
 @section('content')
 
+<x-animaciones />
+
 {{-- Hero --}}
 <section class="relative h-[450px] w-full overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 -mt-8 mb-8">
     <img src="{{ $destino->imagen_url ?? 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200' }}"
-        class="w-full h-full object-cover" alt="{{ $destino->nombre }}">
+        class="w-full h-full object-cover kenburns" alt="{{ $destino->nombre }}">
     <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6));"></div>
     <div class="absolute bottom-0 left-0 p-8 max-w-3xl">
-        <div class="flex items-center gap-2 mb-3">
+        <div class="flex items-center gap-2 mb-3 hero-in" style="--d:.1s">
             <a href="{{ route('provincia.show', $destino->provincia->nombre) }}"
                 class="text-white/80 text-xs font-bold uppercase tracking-widest hover:text-white transition-colors text-decoration-none flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                <span class="material-symbols-outlined text-[14px] pin-bounce">location_on</span>
                 {{ $destino->provincia->nombre ?? 'Argentina' }}
             </a>
             <span class="text-white/40">•</span>
             <span class="text-white/80 text-xs font-bold uppercase tracking-widest">{{ $destino->categoria }}</span>
         </div>
-        <h1 class="text-5xl font-black text-white tracking-tight leading-none mb-3" style="font-family: 'Inter', sans-serif;">
+        <h1 class="text-5xl font-black text-white tracking-tight leading-none mb-3 hero-in" style="font-family: 'Inter', sans-serif; --d:.2s">
             {{ $destino->nombre }}
         </h1>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 hero-in" style="--d:.3s">
             <span class="px-3 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30">
                 {{ $destino->rango_precio ?? '$' }}
             </span>
@@ -44,7 +46,7 @@
     <div class="lg:col-span-8 flex flex-col gap-8">
 
         {{-- Descripción --}}
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal">
             <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f]">info</span>
                 Sobre este destino
@@ -54,16 +56,18 @@
 
         {{-- Eventos --}}
         @if($destino->eventos->count() > 0)
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal">
             <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f]">celebration</span>
                 Eventos en este destino
             </h2>
             <div class="flex flex-col gap-3">
                 @foreach($destino->eventos as $evento)
+                {{-- El wrapper lleva el reveal; la tarjeta conserva su hover --}}
+                <div class="reveal from-left" style="transition-delay: {{ $loop->index * 100 }}ms">
                 <a href="{{ route('eventos.show', $evento->id) }}"
                     class="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-[#28628f] hover:shadow-sm transition-all group text-decoration-none">
-                    <div class="flex flex-col items-center justify-center bg-[#28628f] text-white w-14 h-14 rounded-xl font-bold shrink-0">
+                    <div class="flex flex-col items-center justify-center bg-[#28628f] text-white w-14 h-14 rounded-xl font-bold shrink-0 group-hover:scale-110 transition-transform">
                         <span class="text-[10px] uppercase font-semibold leading-none mb-0.5">{{ \Carbon\Carbon::parse($evento->fecha_inicio)->format('M') }}</span>
                         <span class="text-lg font-black leading-none">{{ \Carbon\Carbon::parse($evento->fecha_inicio)->format('d') }}</span>
                     </div>
@@ -71,8 +75,9 @@
                         <h4 class="font-bold text-slate-800 group-hover:text-[#28628f] transition-colors">{{ $evento->nombre }}</h4>
                         <p class="text-slate-400 text-xs mt-0.5 line-clamp-2">{{ $evento->descripcion }}</p>
                     </div>
-                    <span class="material-symbols-outlined text-slate-300 group-hover:text-[#28628f] self-center transition-colors shrink-0">arrow_forward</span>
+                    <span class="material-symbols-outlined text-slate-300 group-hover:text-[#28628f] group-hover:translate-x-1 self-center transition-all shrink-0">arrow_forward</span>
                 </a>
+                </div>
                 @endforeach
             </div>
         </section>
@@ -82,18 +87,18 @@
         @if($clima)
         <section class="bg-white border-y border-slate-200 py-6 my-4 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 md:px-8">
-                <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#28628f]">partly_cloudy_day</span>
+                <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2 reveal">
+                    <span class="material-symbols-outlined text-[#28628f] float-y">partly_cloudy_day</span>
                     Clima en {{ $destino->nombre }} ahora
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-gradient-to-br from-[#28628f] to-[#1a4669] rounded-2xl p-6 text-white flex items-center gap-6">
+                    <div class="reveal zoom bg-gradient-to-br from-[#28628f] to-[#1a4669] rounded-2xl p-6 text-white flex items-center gap-6">
                         <div class="text-center">
                             <img src="https://openweathermap.org/img/wn/{{ $clima['weather'][0]['icon'] }}@2x.png"
-                                alt="{{ $clima['weather'][0]['description'] }}" class="w-20 h-20">
+                                alt="{{ $clima['weather'][0]['description'] }}" class="w-20 h-20 float-y">
                         </div>
                         <div>
-                            <p class="text-6xl font-black leading-none">{{ round($clima['main']['temp']) }}°</p>
+                            <p class="text-6xl font-black leading-none" data-count="{{ round($clima['main']['temp']) }}" data-suffix="°">{{ round($clima['main']['temp']) }}°</p>
                             <p class="text-white/80 capitalize text-sm mt-1">{{ $clima['weather'][0]['description'] }}</p>
                             <p class="text-white/60 text-xs mt-2">Sensación térmica: {{ round($clima['main']['feels_like']) }}°C</p>
                         </div>
@@ -113,11 +118,11 @@
                         </div>
                     </div>
                     @if($pronostico)
-                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                    <div class="reveal bg-slate-50 rounded-2xl p-4 border border-slate-200" style="transition-delay: 120ms">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Próximas horas</p>
                         <div class="grid grid-cols-4 gap-2">
                             @foreach(array_slice($pronostico['list'], 0, 4) as $item)
-                            <div class="text-center bg-white rounded-xl p-2 border border-slate-100">
+                            <div class="reveal zoom text-center bg-white rounded-xl p-2 border border-slate-100" style="transition-delay: {{ 200 + ($loop->index * 100) }}ms">
                                 <p class="text-xs text-slate-400 font-semibold">{{ \Carbon\Carbon::parse($item['dt_txt'])->format('H:i') }}</p>
                                 <img src="https://openweathermap.org/img/wn/{{ $item['weather'][0]['icon'] }}.png" class="w-10 h-10 mx-auto" alt="">
                                 <p class="text-sm font-black text-slate-700">{{ round($item['main']['temp']) }}°</p>
@@ -133,7 +138,7 @@
         @endif
 
         {{-- Reseñas --}}
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal">
             <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f]">rate_review</span>
                 Reseñas de la Comunidad
@@ -145,7 +150,7 @@
             @if($destino->resenas->where('aprobada', true)->count() > 0)
             <div class="flex flex-col gap-4">
                 @foreach($destino->resenas->where('aprobada', true) as $resena)
-                <div class="p-5 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 reveal" style="transition-delay: {{ min($loop->index, 4) * 100 }}ms">
                     <div class="flex items-start gap-3">
                         <div class="w-10 h-10 rounded-full bg-[#28628f] text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">
                             @if($resena->anonima)
@@ -217,7 +222,7 @@
             </div>
             @else
             <div class="text-center py-8 border-2 border-dashed border-slate-200 rounded-xl">
-                <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">chat_bubble_outline</span>
+                <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2 float-y">chat_bubble_outline</span>
                 <p class="text-slate-400 font-medium">Todavía no hay reseñas para este destino.</p>
                 <p class="text-slate-300 text-sm mt-1">¡Sé el primero en comentar!</p>
             </div>
@@ -230,7 +235,7 @@
     <aside class="lg:col-span-4 flex flex-col gap-6">
 
         {{-- Info rápida --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal from-right">
             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Información</h3>
             <div class="flex flex-col gap-3">
                 <div class="flex items-center gap-3">
@@ -263,7 +268,7 @@
         $esFavorito = auth()->user()->favoritos->where('destino_id', $destino->id)->count() > 0;
         $esVisitado = auth()->user()->destinosVisitados->where('destino_id', $destino->id)->count() > 0;
         @endphp
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col gap-3">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col gap-3 reveal from-right" style="transition-delay: 100ms">
             <button id="btn-favorito" onclick="toggleFavorito({{ $destino->id }})"
                 class="{{ $esFavorito ? 'bg-pink-400 text-white border-pink-400' : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-400' }} w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm">
                 <span id="icono-favorito" class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' {{ $esFavorito ? 1 : 0 }};">favorite</span>
@@ -278,7 +283,7 @@
         @endauth
 
         {{-- Compartir --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 reveal from-right" style="transition-delay: 200ms">
             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Compartir destino</h3>
             <div class="grid grid-cols-2 gap-2">
                 <a href="https://wa.me/?text={{ urlencode('¡Mirá ' . $destino->nombre . ' en Surify! ' . url()->current()) }}"
@@ -315,8 +320,8 @@
         </div>
 
         {{-- Escribir reseña --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
-            <span class="material-symbols-outlined text-4xl text-[#28628f] block mb-3">rate_review</span>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center reveal from-right" style="transition-delay: 300ms">
+            <span class="material-symbols-outlined text-4xl text-[#28628f] block mb-3 float-y">rate_review</span>
             <h3 class="text-base font-bold text-slate-800 mb-2">¿Visitaste este lugar?</h3>
             <p class="text-slate-500 text-sm mb-5">Compartí tu experiencia con otros viajeros.</p>
             @auth
@@ -335,18 +340,20 @@
         </div>
 
         {{-- Volver --}}
+        <div class="reveal from-right" style="transition-delay: 400ms">
         <a href="{{ route('provincia.show', $destino->provincia->nombre) }}"
             class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 justify-center text-decoration-none">
             <span class="material-symbols-outlined text-[18px]">arrow_back</span>
             Volver a {{ $destino->provincia->nombre ?? 'la provincia' }}
         </a>
+        </div>
 
     </aside>
 </div>
 
 {{-- Modal nueva reseña --}}
 <div id="modal-resena-destino" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-in">
         <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
             <div class="flex items-center justify-between mb-1">
                 <nav class="flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
@@ -438,7 +445,7 @@
 {{-- Modal editar reseña --}}
 @auth
 <div id="modal-editar-resena" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full modal-in">
         <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
             <h2 class="text-lg font-bold text-slate-800">Editar reseña</h2>
             <button onclick="document.getElementById('modal-editar-resena').classList.add('hidden')"

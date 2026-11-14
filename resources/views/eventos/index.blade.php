@@ -3,16 +3,18 @@
 @section('title', 'Surify - Eventos y Festividades')
 
 @section('content')
+<x-animaciones />
+
 <div class="max-w-[1280px] w-full mx-auto py-4">
 
     <div class="mb-8 flex items-start justify-between">
         <div>
-            <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-2">Festivales y Eventos</h1>
-            <p class="text-base text-slate-500 max-w-2xl">Planifica tu viaje en torno a las celebraciones culturales y festividades más vibrantes de Argentina.</p>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-2 hero-in" style="--d:.05s">Festivales y Eventos</h1>
+            <p class="text-base text-slate-500 max-w-2xl hero-in" style="--d:.15s">Planifica tu viaje en torno a las celebraciones culturales y festividades más vibrantes de Argentina.</p>
         </div>
         @auth
         <button onclick="document.getElementById('modal-sugerir-evento').classList.remove('hidden')"
-            class="bg-[#28628f] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#1a4669] transition-all shadow-sm flex items-center gap-2 shrink-0">
+            class="bg-[#28628f] text-white px-5 py-2.5 rounded-xl font-bold hover:bg-[#1a4669] transition-all shadow-sm flex items-center gap-2 shrink-0 hero-in" style="--d:.25s">
             <span class="material-symbols-outlined text-[18px]">add</span>
             Sugerir festival
         </button>
@@ -29,13 +31,13 @@
             $mesAnterior = \Carbon\Carbon::create($año, $mes, 1)->subMonth();
             $mesSiguiente = \Carbon\Carbon::create($año, $mes, 1)->addMonth();
             @endphp
-            <div class="bg-slate-100 rounded-2xl p-4 flex items-center justify-between border border-slate-200/60">
+            <div class="bg-slate-100 rounded-2xl p-4 flex items-center justify-between border border-slate-200/60 hero-in" style="--d:.2s">
                 <a href="{{ route('eventos.index', ['año' => $mesAnterior->year, 'mes' => $mesAnterior->month, 'provincia_id' => request('provincia_id')]) }}"
                     class="w-9 h-9 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-sm">
                     <span class="material-symbols-outlined text-slate-500 text-sm">chevron_left</span>
                 </a>
                 <div class="flex flex-col items-center select-none">
-                    <span class="text-[10px] font-bold text-[#28628f] uppercase tracking-widest">Calendario Anual</span>
+                    <span class="text-[10px] font-bold text-[#28628f] uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[12px] pin-bounce">event</span>Calendario Anual</span>
                     <h2 class="text-lg font-black text-slate-800">{{ ucfirst(\Carbon\Carbon::create($año, $mes, 1)->translatedFormat('F Y')) }}</h2>
                 </div>
                 <a href="{{ route('eventos.index', ['año' => $mesSiguiente->year, 'mes' => $mesSiguiente->month, 'provincia_id' => request('provincia_id')]) }}"
@@ -45,7 +47,7 @@
             </div>
 
             {{-- Filtros provincia --}}
-            <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none select-none">
+            <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none select-none hero-in" style="--d:.3s">
                 <a href="{{ route('eventos.index', ['año' => $año, 'mes' => $mes]) }}"
                     class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap {{ !request('provincia_id') ? 'bg-[#28628f] text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600' }}">
                     Todas
@@ -64,12 +66,12 @@
 
                 {{-- ✅ CAMBIADO: div onclick → <a href> --}}
                 <div onclick="abrirModalEvento({{ $evento->id }}, '{{ addslashes($evento->nombre) }}', '{{ addslashes($evento->tipo ?? 'Festival') }}', '{{ $evento->fecha_inicio->format('d/m/Y') }}', '{{ $evento->fecha_fin ? $evento->fecha_fin->format('d/m/Y') : '' }}', '{{ addslashes($evento->descripcion ?? '') }}', '{{ addslashes($evento->imagen_url ?? '') }}', '{{ addslashes($evento->provincia->nombre ?? '') }}', '{{ addslashes($evento->destino->nombre ?? '') }}', '{{ addslashes($evento->rango_precio ?? '') }}')"
-                    class="bg-white rounded-2xl p-4 border {{ $index === 0 ? 'border-[#28628f] ring-1 ring-[#28628f]/20' : 'border-slate-200' }} hover:border-[#28628f] hover:shadow-xs transition-all group relative overflow-hidden text-decoration-none block cursor-pointer">
+                    class="bg-white rounded-2xl p-4 border {{ $index === 0 ? 'border-[#28628f] ring-1 ring-[#28628f]/20' : 'border-slate-200' }} hover:border-[#28628f] hover:shadow-md hover:-translate-y-0.5 transition-all group relative overflow-hidden text-decoration-none block cursor-pointer pop" style="--pd: {{ 0.35 + min($loop->index, 8) * 0.08 }}s">
                     @if($index === 0)
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#28628f]"></div>
                     @endif
                     <div class="flex gap-4">
-                        <div class="flex flex-col items-center justify-center bg-slate-50 rounded-xl w-14 h-14 shrink-0 border border-slate-200">
+                        <div class="flex flex-col items-center justify-center bg-slate-50 rounded-xl w-14 h-14 shrink-0 border border-slate-200 group-hover:scale-110 group-hover:border-[#28628f] transition-all">
                             <span class="text-[9px] font-bold text-[#28628f] uppercase leading-none mb-0.5">{{ $evento->fecha_inicio->translatedFormat('M') }}</span>
                             <span class="text-base font-black text-slate-800 leading-none">{{ $evento->fecha_inicio->format('d') }}</span>
                         </div>
@@ -91,7 +93,8 @@
                 {{-- ✅ FIN cambio sidebar --}}
 
                 @empty
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 text-center text-slate-400 text-sm">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 text-center text-slate-400 text-sm pop" style="--pd:.35s">
+                    <span class="material-symbols-outlined text-3xl text-slate-300 block mb-1 float-y">event_busy</span>
                     No hay eventos para este mes.
                 </div>
                 @endforelse
@@ -100,7 +103,7 @@
 
         <!-- CALENDARIO -->
         <section class="col-span-1 lg:col-span-8">
-            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden gal-in" style="--d:.2s">
                 <div class="grid grid-cols-7 border-b border-slate-200 bg-slate-50 select-none">
                     @foreach(['DOM','LUN','MAR','MIE','JUE','VIE','SAB'] as $dia)
                     <div class="py-3 text-center text-xs font-bold text-slate-400">{{ $dia }}</div>
@@ -133,13 +136,13 @@
                         @if($eventoDelDia)
                         {{-- ✅ CAMBIADO: div onclick → <a href> --}}
                         <div onclick="abrirModalEvento({{ $eventoDelDia->id }}, '{{ addslashes($eventoDelDia->nombre) }}', '{{ addslashes($eventoDelDia->tipo ?? 'Festival') }}', '{{ $eventoDelDia->fecha_inicio->format('d/m/Y') }}', '{{ $eventoDelDia->fecha_fin ? $eventoDelDia->fecha_fin->format('d/m/Y') : '' }}', '{{ addslashes($eventoDelDia->descripcion ?? '') }}', '{{ addslashes($eventoDelDia->imagen_url ?? '') }}', '{{ addslashes($eventoDelDia->provincia->nombre ?? '') }}', '{{ addslashes($eventoDelDia->destino->nombre ?? '') }}', '{{ addslashes($eventoDelDia->rango_precio ?? '') }}')"
-                            class="bg-emerald-50/40 min-h-[100px] p-2 border-2 border-emerald-500/30 hover:bg-emerald-50 transition-colors block text-decoration-none cursor-pointer">
+                            class="bg-emerald-50/40 min-h-[100px] p-2 border-2 border-emerald-500/30 hover:bg-emerald-50 transition-colors block text-decoration-none cursor-pointer pop" style="--pd: {{ 0.3 + $d * 0.015 }}s">
                             <span class="text-xs font-bold text-emerald-700">{{ $d }}</span>
                             <div class="mt-1 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded truncate">{{ Str::limit($eventoDelDia->nombre, 12) }}</div>
                         </div>
                         {{-- ✅ FIN cambio calendario --}}
                         @else
-                        <div class="bg-white min-h-[100px] p-2 hover:bg-slate-50/80 transition-colors {{ $hoy ? 'ring-2 ring-inset ring-[#28628f]' : '' }}">
+                        <div class="bg-white min-h-[100px] p-2 hover:bg-slate-50/80 transition-colors pop {{ $hoy ? 'ring-2 ring-inset ring-[#28628f]' : '' }}" style="--pd: {{ 0.3 + $d * 0.015 }}s">
                             <span class="text-xs font-semibold {{ $hoy ? 'text-[#28628f] font-black' : 'text-slate-400' }}">{{ $d }}</span>
                         </div>
                         @endif
@@ -206,7 +209,7 @@
 {{-- Modal Evento --}}
 <div id="modal-evento" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('modal-evento').classList.add('hidden')"></div>
-    <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden z-10">
+    <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden z-10 modal-in">
         <img id="modal-evento-img" src="" class="w-full h-52 object-cover" alt="">
         <button onclick="document.getElementById('modal-evento').classList.add('hidden')"
             class="absolute top-3 right-3 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center hover:bg-black/60 transition-all">
@@ -248,7 +251,7 @@
         onclick="document.getElementById('modal-sugerir-evento').classList.add('hidden')"></div>
 
     <div class="relative flex min-h-full items-center justify-center p-4">
-        <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#1e293b] shadow-2xl">
+        <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-[#1e293b] shadow-2xl modal-in">
 
             {{-- Encabezado --}}
             <div class="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-700 px-6 py-5">

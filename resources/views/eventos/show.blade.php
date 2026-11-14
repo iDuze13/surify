@@ -4,24 +4,26 @@
 
 @section('content')
 
+<x-animaciones />
+
 {{-- Hero --}}
-<div class="relative w-full h-80 rounded-3xl overflow-hidden mb-8 shadow-lg">
+<div class="relative w-full h-80 rounded-3xl overflow-hidden mb-8 shadow-lg gal-in">
     @if($evento->imagen_url)
     <img src="{{ $evento->imagen_url
     ? (str_starts_with($evento->imagen_url, 'http')
         ? $evento->imagen_url
         : asset('storage/' . $evento->imagen_url))
     : '' }}"
-        class="w-full h-full object-cover" alt="{{ $evento->nombre }}">
+        class="w-full h-full object-cover kenburns" alt="{{ $evento->nombre }}">
     @else
     <div class="w-full h-full bg-gradient-to-br from-[#28628f] to-[#1a4669] flex items-center justify-center">
-        <span class="material-symbols-outlined text-white text-[80px] opacity-30">celebration</span>
+        <span class="material-symbols-outlined text-white text-[80px] opacity-30 float-y">celebration</span>
     </div>
     @endif
     <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent"></div>
 
     {{-- Breadcrumb --}}
-    <div class="absolute top-5 left-5">
+    <div class="absolute top-5 left-5 hero-in" style="--d:.1s">
         <a href="{{ route('eventos.index') }}" class="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-white/30 transition-all text-decoration-none">
             <span class="material-symbols-outlined text-[14px]">arrow_back</span>
             Volver a Eventos
@@ -33,23 +35,23 @@
         <div class="flex items-start justify-between gap-4">
             <div>
                 @if($evento->tipo)
-                <span class="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+                <span class="inline-block bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 hero-in" style="--d:.2s">
                     {{ $evento->tipo }}
                 </span>
                 @endif
-                <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight" style="font-family: 'Inter', sans-serif;">
+                <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight hero-in" style="font-family: 'Inter', sans-serif; --d:.3s">
                     {{ $evento->nombre }}
                 </h1>
                 @if($evento->provincia)
-                <p class="text-white/80 text-sm font-medium mt-1 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">location_on</span>
+                <p class="text-white/80 text-sm font-medium mt-1 flex items-center gap-1 hero-in" style="--d:.4s">
+                    <span class="material-symbols-outlined text-[14px] pin-bounce">location_on</span>
                     {{ $evento->provincia->nombre }}
                     @if($evento->destino) • {{ $evento->destino->nombre }} @endif
                 </p>
                 @endif
             </div>
             @if($evento->rango_precio)
-            <span class="shrink-0 bg-amber-400 text-slate-900 text-xs font-black px-3 py-1.5 rounded-xl">
+            <span class="shrink-0 bg-amber-400 text-slate-900 text-xs font-black px-3 py-1.5 rounded-xl hero-in" style="--d:.5s">
                 {{ $evento->rango_precio }}
             </span>
             @endif
@@ -63,7 +65,7 @@
     <div class="lg:col-span-2 space-y-6">
 
         {{-- Descripción --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal">
             <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f]">description</span>
                 Sobre este evento
@@ -74,7 +76,7 @@
         </div>
 
         {{-- Reseñas --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal" style="transition-delay: 100ms">
             <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f]">chat_bubble</span>
                 Reseñas de asistentes
@@ -82,7 +84,7 @@
             </h2>
 
             @forelse($evento->resenas as $resena)
-            <div class="flex gap-4 py-4 border-b border-slate-100 last:border-0">
+            <div class="flex gap-4 py-4 border-b border-slate-100 last:border-0 reveal from-left" style="transition-delay: {{ min($loop->index, 4) * 100 }}ms">
                 <div class="w-10 h-10 rounded-full bg-[#28628f]/10 flex items-center justify-center text-sm font-black text-[#28628f] shrink-0">
                     {{ ($resena->anonima || !$resena->user) ? '?' : strtoupper(substr($resena->user->name, 0, 1)) }}
                 </div>
@@ -108,7 +110,7 @@
             </div>
             @empty
             <div class="text-center py-8">
-                <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">chat_bubble</span>
+                <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2 float-y">chat_bubble</span>
                 <p class="text-slate-400 text-sm">Todavía no hay reseñas para este evento.</p>
                 <p class="text-slate-300 text-xs mt-1">¡Sé el primero en comentar!</p>
             </div>
@@ -164,7 +166,7 @@
     <div class="space-y-5">
 
         {{-- Fechas --}}
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal from-right">
             <h3 class="text-sm font-black text-slate-700 mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f] text-[18px]">calendar_month</span>
                 Fechas
@@ -182,7 +184,8 @@
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Duración</span>
                     <span class="text-sm font-bold text-[#28628f]">
-                        {{ $evento->fecha_inicio->diffInDays($evento->fecha_fin) + 1 }} días
+                        @php $duracion = (int) $evento->fecha_inicio->diffInDays($evento->fecha_fin) + 1; @endphp
+                        <span data-count="{{ $duracion }}" data-suffix=" días">{{ $duracion }} días</span>
                     </span>
                 </div>
                 @endif
@@ -202,7 +205,7 @@
 
         {{-- Acciones sobre el evento --}}
         @auth
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col gap-3">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col gap-3 reveal from-right" style="transition-delay: 100ms">
             <button id="btn-favorito" data-evento-id="{{ $evento->id }}"
                 onclick="toggleFavorito(this.dataset.eventoId)"
                 class="{{ $esFavorito ? 'bg-pink-400 text-white border-pink-400' : 'bg-white text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-400' }} w-full px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 justify-center border text-sm">
@@ -225,7 +228,7 @@
 
         {{-- Ubicación --}}
         @if($evento->provincia || $evento->destino)
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal from-right" style="transition-delay: 200ms">
             <h3 class="text-sm font-black text-slate-700 mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f] text-[18px]">location_on</span>
                 Ubicación
@@ -255,7 +258,7 @@
 
         {{-- Eventos relacionados --}}
         @if($eventosRelacionados->count() > 0)
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 reveal from-right" style="transition-delay: 300ms">
             <h3 class="text-sm font-black text-slate-700 mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#28628f] text-[18px]">celebration</span>
                 Otros eventos en la zona
@@ -271,7 +274,8 @@
                                     ? $rel->imagen_url
                                     : asset('storage/' . $rel->imagen_url))
                                 : '' }}"
-                            @else
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="">
+                        @else
                             <span class="material-symbols-outlined text-[#28628f] text-[18px]">celebration</span>
                         @endif
                     </div>
